@@ -204,7 +204,9 @@ main {
     margin-bottom: 8px;
 }
 
-.field-group input {
+.field-group input,
+.field-group select,
+.field-group .sp-toggle {
     width: 100%;
     padding: 14px 22px;
     background: rgba(180, 180, 180, 0.22);
@@ -217,11 +219,22 @@ main {
     transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
 }
 
+.field-group select {
+    appearance: auto;
+    cursor: pointer;
+}
+
+.field-group select option {
+    color: #1a1a2e;
+}
+
 .field-group input::placeholder {
     color: rgba(255, 255, 255, 0.2);
 }
 
-.field-group input:focus {
+.field-group input:focus,
+.field-group select:focus,
+.field-group .sp-toggle:focus {
     border-color: var(--red-bright);
     background: rgba(200, 200, 200, 0.25);
     box-shadow: 0 0 0 3px rgba(232, 34, 42, 0.2);
@@ -543,7 +556,9 @@ main {
     margin-bottom: 8px;
 }
 
-.field-group input {
+.field-group input,
+.field-group select,
+.field-group .sp-toggle {
     width: 100%;
     padding: 14px 22px;
     background: rgba(180, 180, 180, 0.22);
@@ -556,11 +571,22 @@ main {
     transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
 }
 
+.field-group select {
+    appearance: auto;
+    cursor: pointer;
+}
+
+.field-group select option {
+    color: #1a1a2e;
+}
+
 .field-group input::placeholder {
     color: rgba(255, 255, 255, 0.15);
 }
 
-.field-group input:focus {
+.field-group input:focus,
+.field-group select:focus,
+.field-group .sp-toggle:focus {
     border-color: var(--red-bright);
     background: rgba(200, 200, 200, 0.25);
     box-shadow: 0 0 0 3px rgba(232, 34, 42, 0.2);

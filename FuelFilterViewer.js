@@ -1,0 +1,285 @@
+import * as THREE from './three.module.js';
+import { GLTFLoader } from './GLTFLoader.js';
+import { OrbitControls } from './OrbitControls.js';
+
+export function initFuelFilterViewer(containerId, options = {}) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (container.querySelector('canvas')) return;
+
+    const {
+        enableDrag = true,
+        enableRotate = true,
+        enableSelection = false,
+        modelPath = 'models/Fuel_filter.glb',
+        extractName = 'Fuel_filter',
+    } = options;
+
+    requestAnimationFrame(() => {
+        // Get container dimensions - use defaults if hidden
+        let w = container.clientWidth || 400;
+        let h = container.clientHeight || 500;
+
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(35, w / h, 0.01, 100);
+        camera.position.set(0, 0, 2.5);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+        renderer.setSize(w, h);
+        renderer.setClearColor(0x000000, 0);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+
+        const canvas = renderer.domElement;
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.zIndex = '1000';
+        container.appendChild(canvas);
+
+        let fuelFilterModel = null;
+        let fuelFilterPivot = null;
+        let controls = null;
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const dragPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+        let isDragging = false;
+        let dragOffset = new THREE.Vector3();
+        let lastPointer = { x: 0, y: 0 };
+
+        scene.add(new THREE.HemisphereLight(0xffffff, 0x333333, 1.0));
+
+        const key = new THREE.DirectionalLight(0xffffff, 1.6);
+        key.position.set(2, 3, 2);
+        scene.add(key);
+
+        const fill = new THREE.DirectionalLight(0xffd7c2, 0.6);
+        fill.position.set(-2, 1, -1);
+        scene.add(fill);
+
+        let isRunning = false;
+        function requestRender() {
+            if (!isRunning) {
+                isRunning = true;
+                requestAnimationFrame(renderLoop);
+            }
+        }
+
+        function renderLoop() {
+            const needMore = controls ? controls.update() : false;
+            renderer.render(scene, camera);
+            if (needMore) {
+                requestAnimationFrame(renderLoop);
+            } else {
+                isRunning = false;
+            }
+        }
+
+        if (enableDrag || enableRotate || enableSelection) {
+            canvas.style.cursor = 'grab';
+
+            if (enableRotate) {
+                try {
+                    controls = new OrbitControls(camera, canvas);
+                    controls.enableDamping = true;
+                    controls.dampingFactor = 0.08;
+                    controls.enablePan = false;
+                    controls.enableZoom = false;
+                    controls.target.set(0, 0, 0);
+                    controls.addEventListener('change', requestRender);
+                    controls.update();
+                } catch (err) {
+                    console.warn('Fuel filter OrbitControls failed to initialize:', err);
+                }
+            }
+
+            canvas.addEventListener('pointerdown', (event) => {
+                if (!fuelFilterPivot) return;
+
+                const rect = container.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(fuelFilterPivot.children, true);
+
+                if (enableDrag && intersects.length > 0) {
+                    isDragging = true;
+                    canvas.style.cursor = 'grabbing';
+
+                    const intersectPoint = intersects[0].point;
+                    dragOffset.copy(fuelFilterPivot.position).sub(intersectPoint);
+                }
+            }, { passive: true });
+
+            window.addEventListener('pointermove', (event) => {
+                if (!fuelFilterPivot) return;
+
+                const rect = container.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                if (!isDragging) return;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersectPoint = new THREE.Vector3();
+
+                if (raycaster.ray.intersectPlane(dragPlane, intersectPoint)) {
+                    let newX = intersectPoint.x + dragOffset.x;
+                    let newY = intersectPoint.y + dragOffset.y;
+
+                    newX = Math.max(-0.25, Math.min(0.25, newX));
+                    newY = Math.max(-0.2, Math.min(0.2, newY));
+
+                    fuelFilterPivot.position.set(newX, newY, 0);
+
+                    const distance = Math.sqrt(newX * newX + newY * newY);
+                    if (distance < 0.05) {
+                        fuelFilterPivot.position.set(0, 0, 0);
+                        container.dispatchEvent(new CustomEvent('fuelFilterPositioned'));
+                    }
+                    requestRender();
+                }
+            }, { passive: true });
+
+            window.addEventListener('pointerup', (event) => {
+                const wasDragging = isDragging;
+                isDragging = false;
+                canvas.style.cursor = 'grab';
+
+                if (enableSelection && !wasDragging && fuelFilterPivot) {
+                    const rect = container.getBoundingClientRect();
+                    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                    raycaster.setFromCamera(mouse, camera);
+                    const intersects = raycaster.intersectObjects(fuelFilterPivot.children, true);
+                    if (intersects.length > 0) {
+                        const clicked = intersects[0].object;
+                        container.dispatchEvent(new CustomEvent('fuelFilterMeshClicked', {
+                            detail: {
+                                name: clicked.name || clicked.parent?.name || 'part',
+                                object: clicked,
+                            }
+                        }));
+                    }
+                }
+            }, { passive: true });
+
+            canvas.addEventListener('pointerleave', () => {
+                if (!isDragging) canvas.style.cursor = 'grab';
+            }, { passive: true });
+        }
+
+        const loader = new GLTFLoader();
+        loader.load(
+            modelPath,
+            (gltf) => {
+                let model = gltf.scene;
+
+                // Fuel_filter.glb is a kit scene — isolate the named filter node.
+                if (extractName) {
+                    let part = model.getObjectByName(extractName);
+                    if (!part) {
+                        const wanted = extractName.toLowerCase();
+                        model.traverse((o) => {
+                            if (!part && (o.name || '').toLowerCase() === wanted) part = o;
+                        });
+                    }
+                    if (part) {
+                        model = part.clone(true);
+                        model.position.set(0, 0, 0);
+                        model.quaternion.identity();
+                        model.scale.set(1, 1, 1);
+                    } else {
+                        console.warn('FuelFilterViewer: node not found for extractName:', extractName);
+                    }
+                }
+
+                const box = new THREE.Box3().setFromObject(model);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+
+                // Centre then scale: position is applied after scale in the
+                // world matrix, so the offset must be scaled too — otherwise
+                // geometry authored far from the origin renders off-camera.
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const fitScale = maxDim > 0 ? (1.0 / maxDim) * 1.4 : 1;
+                model.scale.setScalar(fitScale);
+                model.position.copy(center).multiplyScalar(-fitScale);
+
+                fuelFilterPivot = new THREE.Group();
+                fuelFilterPivot.add(model);
+                fuelFilterPivot.position.set(-0.15, 0.12, 0);
+                scene.add(fuelFilterPivot);
+                fuelFilterModel = model;
+
+                // Make nested meshes identifiable for click selection.
+                model.traverse((child) => {
+                    if (!child.isMesh) return;
+                    child.userData.selectable = true;
+                });
+
+                // Camera looks at center (target position)
+                camera.position.set(0, 0, 2.2);
+                camera.lookAt(0, 0, 0);
+
+                model.traverse((child) => {
+                    if (!child.isMesh) return;
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    const mats = Array.isArray(child.material) ? child.material : [child.material];
+                    mats.forEach((m) => {
+                        if (!m) return;
+                        m.side = THREE.DoubleSide;
+                        if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
+                        m.needsUpdate = true;
+                    });
+                });
+
+                requestRender();
+
+                container.dispatchEvent(new CustomEvent('fuelFilterViewerReady', {
+                    detail: { model: fuelFilterModel, pivot: fuelFilterPivot }
+                }));
+            },
+            undefined,
+            (err) => console.error('Failed to load fuel filter model:', err)
+        );
+
+        if (window.ResizeObserver) {
+            const ro = new ResizeObserver(() => {
+                const cw = container.clientWidth || 1;
+                const ch = container.clientHeight || 1;
+                camera.aspect = cw / ch;
+                camera.updateProjectionMatrix();
+                renderer.setSize(cw, ch);
+                requestRender();
+            });
+            ro.observe(container);
+        }
+
+        // Fix canvas size when container becomes visible (for modals)
+        function checkAndResize() {
+            const cw = container.clientWidth || 400;
+            const ch = container.clientHeight || 500;
+            if (cw > 1 && ch > 1) {
+                camera.aspect = cw / ch;
+                camera.updateProjectionMatrix();
+                renderer.setSize(cw, ch);
+                requestRender();
+            }
+        }
+        // Check multiple times over 2 seconds to catch when modal becomes visible
+        for (let i = 1; i <= 10; i++) {
+            setTimeout(checkAndResize, i * 200);
+        }
+    });
+}

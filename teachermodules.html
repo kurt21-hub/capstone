@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <script src="js/teacher-notif-badge.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MotoMaster – My Modules</title>
@@ -2638,7 +2639,10 @@
             </div>
 
             <script src="teacher-profile.js"></script>
+            <script src="teacher-live-refresh.js"></script>
             <script>
+                window.TEACHER_REFRESH_FN = 'fetchModulesData';
+
                 const modules = [
                     { id: 1, num: 1, title: 'Module 1: Engine Oil Change', subject: 'Maintenance Services', duration: '2 hours', difficulty: 'Beginner', students: 87, completion: 100, score: 82, lessons: 3, status: 'published', updated: 'May 20, 2025', desc: 'Track and manage engine oil change services.' },
                     { id: 2, num: 2, title: 'Module 2: Brake Pad Replacement', subject: 'Maintenance Services', duration: '3 hours', difficulty: 'Intermediate', students: 87, completion: 100, score: 74, lessons: 4, status: 'published', updated: 'May 22, 2025', desc: 'Monitor brake pad replacement operations.' },
@@ -2778,6 +2782,100 @@
                 function toggleCertOptions() { document.getElementById('certTemplateGroup').style.display = document.getElementById('nmCertSelect').value === 'yes' ? '' : 'none'; }
                 function saveAsDraft() { closeNewModuleModal(); const b = document.querySelector('.topbar-right .btn-primary'); const o = b.innerHTML; b.innerHTML = '<i class="fa-solid fa-check"></i> Draft Saved!'; b.style.background = '#6b7280'; setTimeout(() => { b.innerHTML = o; b.style.background = ''; }, 2000); }
                 function publishModuleNew() { const t = document.getElementById('nmTitle').value.trim(); if (!t) { alert('Please fill in the Module Title first.'); switchNMTab(0, document.querySelectorAll('.nm-tab')[0]); document.getElementById('nmTitle').focus(); return; } closeNewModuleModal(); const b = document.querySelector('.topbar-right .btn-primary'); const o = b.innerHTML; b.innerHTML = '<i class="fa-solid fa-check"></i> Published!'; b.style.background = '#16a34a'; setTimeout(() => { b.innerHTML = o; b.style.background = ''; }, 2500); }
+
+                // ── LIVE MODULE STATS (enrollees, completion, scores from student work) ──
+                async function fetchModulesData() {
+                    try {
+                        const res = await fetch('teacher_data_api.php?action=get_students_data');
+                        if (res.status === 403) { window.location.href = 'teacherlogin.html'; return; }
+                        const data = await res.json();
+                        if (!data.success) { console.error('Failed to load students:', data.message); return; }
+                        const studentsList = data.students || [];
+
+                        modules.forEach(m => {
+                            const modName = m.title.replace(/^Module \d+:\s*/, '');
+                            let progSum = 0, scoreSum = 0, scoreCount = 0;
+                            studentsList.forEach(s => {
+                                const mp = (s.moduleProgress || []).find(x => x.n === modName);
+                                if (mp) {
+                                    progSum += mp.p || 0;
+                                    if (mp.s > 0) { scoreSum += mp.s; scoreCount++; }
+                                }
+                            });
+                            m.students = studentsList.length;
+                            m.completion = studentsList.length > 0 ? Math.round(progSum / studentsList.length) : 0;
+                            m.score = scoreCount > 0 ? Math.round(scoreSum / scoreCount) : 0;
+                        });
+
+                        renderModuleStats();
+                    } catch (e) {
+                        console.error('Error fetching module stats:', e);
+                    }
+                }
+
+                function renderModuleStats() {
+                    modules.forEach(m => {
+                        const key = m.title.replace(/^Module \d+:\s*/, '').toLowerCase();
+                        const badgeClass = m.completion >= 100 ? 'badge-green' : m.completion > 0 ? 'badge-orange' : 'badge-gray';
+                        const badgeText = m.completion >= 100 ? 'Completed' : m.completion > 0 ? 'In Progress' : 'Not Started';
+                        const fillColor = m.completion >= 75 ? '#16a34a' : m.completion > 0 ? '#d97706' : '#e5e7eb';
+                        const scoreText = m.score > 0 ? m.score + '%' : '—';
+
+                        const row = document.querySelector('#moduleTableBody tr[data-title="' + key + '"]');
+                        if (row) {
+                            const tds = row.querySelectorAll('td');
+                            if (tds[1]) tds[1].textContent = m.students;
+                            const fill = row.querySelector('.prog-fill');
+                            const pct = row.querySelector('.prog-pct');
+                            if (fill) { fill.style.width = m.completion + '%'; fill.style.background = fillColor; }
+                            if (pct) pct.textContent = m.completion + '%';
+                            if (tds[3]) tds[3].textContent = scoreText;
+                            const badge = row.querySelector('.badge');
+                            if (badge) { badge.className = 'badge ' + badgeClass; badge.textContent = badgeText; }
+                        }
+
+                        const card = document.querySelector('#gridView .mod-card[data-title="' + key + '"]');
+                        if (card) {
+                            const metaItem = card.querySelector('.mod-card-meta-item');
+                            if (metaItem) metaItem.innerHTML = '<i class="fa-solid fa-users"></i> ' + m.students;
+                            const fill = card.querySelector('.prog-fill');
+                            const pct = card.querySelector('.prog-pct');
+                            if (fill) fill.style.width = m.completion + '%';
+                            if (pct) pct.textContent = m.completion + '% complete';
+                            const badge = card.querySelector('.mod-card-footer .badge');
+                            if (badge) { badge.className = 'badge ' + badgeClass; badge.textContent = badgeText; }
+                        }
+                    });
+
+                    const published = modules.filter(m => m.status === 'published').length;
+                    const avgCompletion = modules.length ? Math.round(modules.reduce((a, m) => a + m.completion, 0) / modules.length) : 0;
+                    const scored = modules.filter(m => m.score > 0);
+                    const avgScore = scored.length ? Math.round(scored.reduce((a, m) => a + m.score, 0) / scored.length) : 0;
+                    const enrollees = modules.length ? modules[0].students : 0;
+
+                    const kpiValues = document.querySelectorAll('.kpi-row .kpi-value');
+                    if (kpiValues.length >= 4) {
+                        kpiValues[0].textContent = modules.length;
+                        kpiValues[1].textContent = avgCompletion + '%';
+                        kpiValues[2].textContent = enrollees;
+                        kpiValues[3].textContent = avgScore + '%';
+                    }
+
+                    const kpiFoots = document.querySelectorAll('.kpi-row .kpi-foot');
+                    if (kpiFoots.length >= 3) {
+                        kpiFoots[0].innerHTML = '<span>All modules</span><span style="color:var(--accent)">' + published + ' published</span>';
+                        kpiFoots[2].innerHTML = '<span>Enrolled students</span><span style="color:var(--orange)">Across ' + published + ' modules</span>';
+                    }
+
+                    const tabs = document.querySelectorAll('.filter-tab');
+                    if (tabs.length >= 3) {
+                        tabs[0].innerHTML = 'All <span style="font-size:0.6rem;opacity:0.7">(' + modules.length + ')</span>';
+                        tabs[1].innerHTML = 'Published <span style="font-size:0.6rem;opacity:0.7">(' + published + ')</span>';
+                        tabs[2].innerHTML = 'Draft <span style="font-size:0.6rem;opacity:0.7">(' + (modules.length - published) + ')</span>';
+                    }
+                }
+
+                document.addEventListener('DOMContentLoaded', fetchModulesData);
             </script>
 </body>
 

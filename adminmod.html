@@ -2082,7 +2082,7 @@
                 const data = await res.json();
                 if (!data || !data.success) throw new Error(data.message || 'API error');
 
-                // Update KPI Cards directly from motomasterdb
+                // Update KPI Cards directly from motomaster
                 updateKPICards(data.kpis);
 
                 // Store all modules
@@ -2457,6 +2457,8 @@
         }
     </script>
 
+    <script src="admin-live-refresh.js"></script>
+    <script>window.ADMIN_REFRESH_FN = 'loadAdminModules';</script>
 </body>
 
 </html>

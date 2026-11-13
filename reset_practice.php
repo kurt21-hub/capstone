@@ -5,7 +5,7 @@ require_once __DIR__ . '/auth_session.php';
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 if ($mysqli->connect_errno) {
@@ -38,19 +38,40 @@ $payload = [
 $description = json_encode($payload, JSON_UNESCAPED_UNICODE);
 
 $existingId = null;
+$existingDescription = null;
 $find = $mysqli->prepare(
-    "SELECT simulation_id FROM simulation WHERE student_id = ? AND title = ? ORDER BY date_attempted DESC LIMIT 1"
+    "SELECT simulation_id, description FROM simulation WHERE student_id = ? AND title = ? ORDER BY simulation_id DESC LIMIT 1"
 );
 $find->bind_param('is', $studentId, $title);
 $find->execute();
-$find->bind_result($existingId);
+$find->bind_result($existingId, $existingDescription);
 $find->fetch();
 $find->close();
+
+// If the latest attempt already has recorded steps, keep that record in the
+// database and start a fresh row instead of wiping the stored progress.
+$hasRecordedProgress = false;
+if ($existingDescription) {
+    $prev = json_decode($existingDescription, true);
+    if (is_array($prev)) {
+        if (!empty($prev['step_instr_done'])) {
+            $hasRecordedProgress = true;
+        }
+        if (!$hasRecordedProgress && !empty($prev['steps']) && is_array($prev['steps'])) {
+            foreach ($prev['steps'] as $s) {
+                if (!empty($s['correct']) || !empty($s['mistakes'])) {
+                    $hasRecordedProgress = true;
+                    break;
+                }
+            }
+        }
+    }
+}
 
 $score = 0.0;
 $status = 'In Progress';
 
-if ($existingId !== null) {
+if ($existingId !== null && !$hasRecordedProgress) {
     $upd = $mysqli->prepare(
         'UPDATE simulation SET score = ?, completion_status = ?, description = ?, date_attempted = NOW() WHERE simulation_id = ? AND student_id = ?'
     );

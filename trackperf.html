@@ -7,6 +7,7 @@
     <title>Performance Tracking</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 
 <style>
@@ -166,7 +167,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <div>
                     <span style="font-size:0.65rem;color:#9ca3af;">Last Updated</span>
-                    <strong>June 3, 2026 10:30 AM</strong>
+                    <strong id="lastUpdated">—</strong>
                 </div>
             </div>
         </div>
@@ -181,48 +182,59 @@
                 <div class="sidebar-label">Modules</div>
             </div>
             <div class="modules-list">
-                <div class="module-item active" data-module="engine">
-                    <div class="mod-icon" style="background:linear-gradient(135deg,#93c5fd,#2563eb);">⚙️</div>
+                <div class="module-item" data-module="battery">
+                    <div class="mod-icon" style="background:linear-gradient(135deg,#5eead4,#0d9488);">🔋</div>
                     <div class="module-info">
-                        <div class="module-name">Engine Oil Change</div>
-                        <div class="module-status completed">Completed</div>
+                        <div class="module-name">Battery Servicing</div>
+                        <div class="module-status not-started">Not Started</div>
                     </div>
                     <div class="mod-right">
-                        <div class="module-percentage">100%</div>
-                        <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:100%"></div></div>
+                        <div class="module-percentage">0%</div>
+                        <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:0%"></div></div>
                     </div>
                 </div>
                 <div class="module-item" data-module="brake">
                     <div class="mod-icon" style="background:linear-gradient(135deg,#fca5a5,#ef4444);">🔧</div>
                     <div class="module-info">
                         <div class="module-name">Brake Pad Replacement</div>
-                        <div class="module-status in-progress">In Progress</div>
+                        <div class="module-status not-started">Not Started</div>
                     </div>
                     <div class="mod-right">
-                        <div class="module-percentage">60%</div>
-                        <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:60%"></div></div>
+                        <div class="module-percentage">0%</div>
+                        <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:0%"></div></div>
                     </div>
                 </div>
                 <div class="module-item" data-module="air">
                     <div class="mod-icon" style="background:linear-gradient(135deg,#86efac,#16a34a);">💨</div>
                     <div class="module-info">
                         <div class="module-name">Air Filter Replacement</div>
-                        <div class="module-status completed">Completed</div>
+                        <div class="module-status not-started">Not Started</div>
                     </div>
                     <div class="mod-right">
-                        <div class="module-percentage">100%</div>
-                        <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:100%"></div></div>
+                        <div class="module-percentage">0%</div>
+                        <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:0%"></div></div>
                     </div>
                 </div>
                 <div class="module-item" data-module="fuel">
                     <div class="mod-icon" style="background:linear-gradient(135deg,#fdba74,#ea580c);">🔩</div>
                     <div class="module-info">
                         <div class="module-name">Fuel Filter Replacement</div>
-                        <div class="module-status in-progress">In Progress</div>
+                        <div class="module-status not-started">Not Started</div>
                     </div>
                     <div class="mod-right">
-                        <div class="module-percentage">60%</div>
-                        <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:60%"></div></div>
+                        <div class="module-percentage">0%</div>
+                        <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:0%"></div></div>
+                    </div>
+                </div>
+                <div class="module-item active" data-module="engine">
+                    <div class="mod-icon" style="background:linear-gradient(135deg,#93c5fd,#2563eb);">⚙️</div>
+                    <div class="module-info">
+                        <div class="module-name">Engine Oil Change</div>
+                        <div class="module-status not-started">Not Started</div>
+                    </div>
+                    <div class="mod-right">
+                        <div class="module-percentage">0%</div>
+                        <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:0%"></div></div>
                     </div>
                 </div>
                 <div class="module-item" data-module="spark">
@@ -234,17 +246,6 @@
                     <div class="mod-right">
                         <div class="module-percentage">0%</div>
                         <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:0%"></div></div>
-                    </div>
-                </div>
-                <div class="module-item" data-module="battery">
-                    <div class="mod-icon" style="background:linear-gradient(135deg,#5eead4,#0d9488);">🔋</div>
-                    <div class="module-info">
-                        <div class="module-name">Battery Servicing</div>
-                        <div class="module-status completed">Completed</div>
-                    </div>
-                    <div class="mod-right">
-                        <div class="module-percentage">100%</div>
-                        <div class="progress-bar-mini"><div class="progress-bar-mini-fill" style="width:100%"></div></div>
                     </div>
                 </div>
             </div>
@@ -260,7 +261,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                     </div>
                     <div>
-                        <div class="stat-tile-num" id="statTotalTasks">6</div>
+                        <div class="stat-tile-num" id="statTotalTasks">—</div>
                         <div class="stat-tile-label">Total Tasks</div>
                     </div>
                 </div>
@@ -269,7 +270,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                     </div>
                     <div>
-                        <div class="stat-tile-num" id="statCompletedTasks">6</div>
+                        <div class="stat-tile-num" id="statCompletedTasks">—</div>
                         <div class="stat-tile-label">Completed Tasks</div>
                     </div>
                 </div>
@@ -278,7 +279,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </div>
                     <div>
-                        <div class="stat-tile-num" id="statBestTime">18m 42s</div>
+                        <div class="stat-tile-num" id="statBestTime">—</div>
                         <div class="stat-tile-label">Best Time</div>
                     </div>
                 </div>
@@ -287,7 +288,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     </div>
                     <div>
-                        <div class="stat-tile-num" id="statAttempts">3</div>
+                        <div class="stat-tile-num" id="statAttempts">—</div>
                         <div class="stat-tile-label">Total Attempts</div>
                     </div>
                 </div>
@@ -296,7 +297,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l8.5-8.5M16 4h4v4M8 22H4v-4M7 17L2 22"/><circle cx="12" cy="12" r="3"/></svg>
                     </div>
                     <div>
-                        <div class="stat-tile-num" id="statCompletionRate">100%</div>
+                        <div class="stat-tile-num" id="statCompletionRate">—</div>
                         <div class="stat-tile-label">Completion Rate</div>
                     </div>
                 </div>
@@ -326,13 +327,13 @@
                         <div class="score-donut-wrap">
                             <canvas id="scoreChart"></canvas>
                             <div class="score-overlay">
-                                <div class="score-num" id="overallScoreNum">76%</div>
-                                <div class="score-sub" id="overallScoreSub">Good Performance</div>
+                                <div class="score-num" id="overallScoreNum">—</div>
+                                <div class="score-sub" id="overallScoreSub">Loading</div>
                             </div>
                         </div>
                         <div class="score-msg" id="overallScoreMsg">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            <span id="overallScoreMsgText">Keep up the great work! You're performing well and improving consistently.</span>
+                            <span id="overallScoreMsgText">Loading your recorded results…</span>
                         </div>
                     </div>
 
@@ -407,126 +408,265 @@
             }
         };
 
-        const MODULE_PERFORMANCE = {
+        // Static per-module config — real numbers come from the student's
+        // saved practice/assessment records.
+        const MODULE_META = {
             engine: {
                 title: 'Engine Oil Change',
                 subtitle: 'Track and manage engine oil change services.',
-                stats: { totalTasks: 6, completedTasks: 6, bestTime: '18m 42s', attempts: 3, completionRate: '100%' },
-                overallScore: 76,
-                scoreLabel: 'Good Performance',
-                scoreMessage: 'Keep up the great work! You\'re performing well on oil change procedures.',
-                trend: { labels: ['Mar 1', 'Mar 8', 'Mar 15', 'Mar 22', 'Mar 29', 'Apr 5', 'Apr 12'], data: [25, 50, 70, 75, 70, 85, 92] },
-                tasks: {
-                    labels: ['Drain Oil', 'Replace Filter', 'Add New Oil', 'Check Level', 'Inspect for Leaks', 'Reset Oil Monitor'],
-                    data: [95, 90, 65, 75, 55, 70]
-                },
-                activity: [
-                    { label: 'Practice simulation', status: 'completed', score: '92%', time: 'Today, 10:30 AM', dot: 'green' },
-                    { label: 'Assessment attempt', status: 'completed', score: '88%', time: 'Apr 11, 2025', dot: 'green' },
-                    { label: 'Module review', status: 'completed', score: '100%', time: 'Apr 8, 2025', dot: 'green' },
-                    { label: 'First practice run', status: 'completed', score: '74%', time: 'Mar 29, 2025', dot: 'orange' }
-                ]
+                moduleKey: 'mod_progress_enginemodule',
+                practiceTitle: 'Engine Oil Change',
+                assessTitle: 'Engine Oil Change Assessment',
+                taskLabels: ['Drain Oil', 'Replace Filter', 'Add New Oil', 'Check Level', 'Inspect for Leaks', 'Reset Oil Monitor']
             },
             brake: {
                 title: 'Brake Pad Replacement',
                 subtitle: 'Track brake pad inspection, removal, and installation performance.',
-                stats: { totalTasks: 7, completedTasks: 4, bestTime: '24m 15s', attempts: 2, completionRate: '57%' },
-                overallScore: 58,
-                scoreLabel: 'Needs Work',
-                scoreMessage: 'Focus on caliper handling and torque sequence — scores are improving with each attempt.',
-                trend: { labels: ['Mar 5', 'Mar 12', 'Mar 19', 'Mar 26', 'Apr 2', 'Apr 9'], data: [15, 28, 35, 42, 48, 58] },
-                tasks: {
-                    labels: ['Lift Vehicle', 'Remove Wheel', 'Remove Caliper', 'Replace Pads', 'Reinstall Caliper', 'Bleed Brakes', 'Road Test'],
-                    data: [80, 72, 45, 52, 48, 38, 55]
-                },
-                activity: [
-                    { label: 'Practice simulation', status: 'in progress', score: '58%', time: 'Yesterday, 3:45 PM', dot: 'orange' },
-                    { label: 'Step 4 — Replace Pads', status: 'mistakes noted', score: '52%', time: 'Yesterday, 3:20 PM', dot: 'orange' },
-                    { label: 'Module progress', status: 'in progress', score: '60%', time: 'Apr 5, 2025', dot: 'orange' },
-                    { label: 'First attempt', status: 'started', score: '35%', time: 'Mar 26, 2025', dot: 'gray' }
-                ]
+                moduleKey: 'mod_progress_brakemodule',
+                practiceTitle: 'Brake Pad Replacement',
+                assessTitle: 'Brake Pad Replacement Assessment',
+                taskLabels: ['Lift Vehicle', 'Remove Wheel', 'Remove Caliper', 'Replace Pads', 'Reinstall Caliper', 'Bleed Brakes', 'Road Test']
             },
             air: {
                 title: 'Air Filter Replacement',
                 subtitle: 'Monitor air filter inspection and replacement accuracy.',
-                stats: { totalTasks: 5, completedTasks: 5, bestTime: '12m 08s', attempts: 2, completionRate: '100%' },
-                overallScore: 91,
-                scoreLabel: 'Excellent',
-                scoreMessage: 'Outstanding consistency — filter orientation and housing seal checks are strong.',
-                trend: { labels: ['Mar 10', 'Mar 17', 'Mar 24', 'Mar 31', 'Apr 7', 'Apr 14'], data: [55, 68, 78, 82, 88, 91] },
-                tasks: {
-                    labels: ['Open Housing', 'Remove Old Filter', 'Clean Housing', 'Install New Filter', 'Close & Verify'],
-                    data: [98, 94, 88, 92, 85]
-                },
-                activity: [
-                    { label: 'Assessment', status: 'completed', score: '94%', time: 'Apr 10, 2025', dot: 'green' },
-                    { label: 'Practice simulation', status: 'completed', score: '91%', time: 'Apr 7, 2025', dot: 'green' },
-                    { label: 'Module completed', status: 'completed', score: '100%', time: 'Apr 3, 2025', dot: 'green' }
-                ]
+                moduleKey: 'mod_progress_airmodule',
+                practiceTitle: 'Air Filter Replacement',
+                assessTitle: 'Air Filter Replacement Assessment',
+                taskLabels: ['Open Housing', 'Remove Old Filter', 'Clean Housing', 'Install New Filter', 'Close & Verify']
             },
             fuel: {
                 title: 'Fuel Filter Replacement',
                 subtitle: 'Track fuel line safety and filter replacement steps.',
-                stats: { totalTasks: 6, completedTasks: 4, bestTime: '21m 33s', attempts: 2, completionRate: '67%' },
-                overallScore: 62,
-                scoreLabel: 'Fair',
-                scoreMessage: 'Relieve fuel pressure before disconnecting lines — review step 2 before your next attempt.',
-                trend: { labels: ['Mar 8', 'Mar 15', 'Mar 22', 'Mar 29', 'Apr 5'], data: [20, 32, 45, 55, 62] },
-                tasks: {
-                    labels: ['Depressurize System', 'Disconnect Lines', 'Remove Old Filter', 'Install New Filter', 'Reconnect Lines', 'Leak Check'],
-                    data: [70, 48, 55, 62, 58, 68]
-                },
-                activity: [
-                    { label: 'Practice simulation', status: 'in progress', score: '62%', time: 'Apr 8, 2025', dot: 'orange' },
-                    { label: 'Depressurize step', status: 'mistakes noted', score: '48%', time: 'Apr 8, 2025', dot: 'orange' },
-                    { label: 'Module progress', status: 'in progress', score: '60%', time: 'Apr 2, 2025', dot: 'orange' }
-                ]
+                moduleKey: 'mod_progress_fuelmodule',
+                practiceTitle: 'Fuel Filter Replacement',
+                assessTitle: 'Fuel Filter Replacement Assessment',
+                taskLabels: ['Depressurize System', 'Disconnect Lines', 'Remove Old Filter', 'Install New Filter', 'Reconnect Lines', 'Leak Check']
             },
             spark: {
                 title: 'Spark Plug Replacement',
                 subtitle: 'Performance data will appear once you start this module.',
-                stats: { totalTasks: 6, completedTasks: 0, bestTime: '—', attempts: 0, completionRate: '0%' },
-                overallScore: 0,
-                scoreLabel: 'Not Started',
-                scoreMessage: 'Complete the learning module and practice simulation to unlock performance tracking.',
-                trend: { labels: ['—'], data: [0] },
-                tasks: {
-                    labels: ['Gap Plugs', 'Remove Old Plugs', 'Inspect Threads', 'Install New Plugs', 'Torque Plugs', 'Reconnect Coils'],
-                    data: [0, 0, 0, 0, 0, 0]
-                },
-                activity: [
-                    { label: 'Module', status: 'not started', score: '—', time: '—', dot: 'gray' },
-                    { label: 'Practice', status: 'locked', score: '—', time: '—', dot: 'gray' }
-                ]
+                moduleKey: 'mod_progress_sparkmodule',
+                practiceTitle: 'Spark Plug Replacement',
+                assessTitle: 'Spark Plug Replacement Assessment',
+                taskLabels: ['Gap Plugs', 'Remove Old Plugs', 'Inspect Threads', 'Install New Plugs', 'Torque Plugs', 'Reconnect Coils']
             },
             battery: {
                 title: 'Battery Servicing',
                 subtitle: 'Track battery inspection, terminal cleaning, and maintenance scores.',
-                stats: { totalTasks: 5, completedTasks: 5, bestTime: '16m 55s', attempts: 4, completionRate: '100%' },
-                overallScore: 84,
-                scoreLabel: 'Good Performance',
-                scoreMessage: 'Strong on inspection checklist — watch cap removal order on electrolyte steps.',
-                trend: { labels: ['Mar 12', 'Mar 19', 'Mar 26', 'Apr 2', 'Apr 9', 'Apr 16'], data: [40, 55, 62, 71, 78, 84] },
-                tasks: {
-                    labels: ['Inspect Condition', 'Clean Terminals', 'Check Electrolyte', 'Secure Mount', 'Test Electrical'],
-                    data: [88, 82, 76, 90, 85]
-                },
-                activity: [
-                    { label: 'Assessment', status: 'completed', score: '85%', time: 'Today, 9:15 AM', dot: 'green' },
-                    { label: 'Practice simulation', status: 'completed', score: '88%', time: 'Apr 14, 2025', dot: 'green' },
-                    { label: 'Attempt again reset', status: 'retried', score: '72%', time: 'Apr 12, 2025', dot: 'orange' },
-                    { label: 'First assessment', status: 'completed', score: '68%', time: 'Apr 9, 2025', dot: 'green' }
-                ]
+                moduleKey: 'mod_progress_batterymodule',
+                practiceTitle: 'Battery Maintenance',
+                assessTitle: 'Battery Maintenance Assessment',
+                taskLabels: ['Inspect Condition', 'Clean Terminals', 'Test Battery', 'Secure Mount', 'Test Electrical']
             }
         };
+
+        let practiceByTitle = {};
+        let assessByTitle = {};
+        let moduleProgress = {};
+        const modulePerformance = {};
+
+        function parseDbDate(value) {
+            if (!value) return null;
+            const d = new Date(String(value).replace(' ', 'T'));
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function formatDateObj(d) {
+            return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) +
+                ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+        }
+
+        function formatDbDate(value) {
+            const d = parseDbDate(value);
+            return d ? formatDateObj(d) : '—';
+        }
+
+        function formatElapsed(seconds) {
+            const s = parseInt(seconds, 10);
+            if (!s || s <= 0) return '—';
+            return Math.floor(s / 60) + 'm ' + String(s % 60).padStart(2, '0') + 's';
+        }
+
+        function scoreLabelFor(score) {
+            if (score >= 90) return 'Excellent';
+            if (score >= 75) return 'Good Performance';
+            if (score >= 60) return 'Fair';
+            if (score > 0) return 'Needs Work';
+            return 'Not Started';
+        }
+
+        function buildModuleData(key) {
+            const meta = MODULE_META[key];
+            const practice = practiceByTitle[meta.practiceTitle] || null;
+            const assess = assessByTitle[meta.assessTitle] || null;
+            const moduleRec = moduleProgress[meta.moduleKey] || null;
+            const modulePct = moduleRec
+                ? Math.max(0, Math.min(100, Math.round(Number(moduleRec.percent) || 0)))
+                : 0;
+
+            const score = assess ? Math.round(assess.score)
+                        : (practice ? Math.round(practice.score) : 0);
+            const stepSource = (assess && Array.isArray(assess.steps) && assess.steps.length) ? assess.steps
+                             : (practice && Array.isArray(practice.steps) && practice.steps.length) ? practice.steps
+                             : null;
+            const totalTasks = stepSource ? stepSource.length : meta.taskLabels.length;
+            const completedTasks = stepSource
+                ? stepSource.filter((s) => Number(s.score) > 0).length
+                : (practice && practice.completion_status === 'Completed' ? totalTasks : 0);
+
+            // Completion rate covers the whole pipeline: learning module,
+            // practice simulation, and assessment simulation.
+            const practicePct = !practice ? 0
+                : practice.completion_status === 'Completed' ? 100
+                : (!isNaN(Number(practice.current_step_index)) && totalTasks > 0
+                    ? Math.min(99, Math.round(((Number(practice.current_step_index) + 1) / totalTasks) * 100))
+                    : 10);
+            const completionRate = Math.round((modulePct + practicePct + (assess ? 100 : 0)) / 3) + '%';
+
+            const trendLabels = [];
+            const trendData = [];
+            if (modulePct > 0) { trendLabels.push('Module'); trendData.push(modulePct); }
+            if (practice) { trendLabels.push('Practice'); trendData.push(Math.round(practice.score)); }
+            if (assess) { trendLabels.push('Assessment'); trendData.push(Math.round(assess.score)); }
+            if (!trendLabels.length) { trendLabels.push('—'); trendData.push(0); }
+
+            const taskLabels = stepSource ? stepSource.map((s) => s.title || 'Step') : meta.taskLabels;
+            const taskData = stepSource
+                ? stepSource.map((s) => Math.max(0, Math.min(100, Math.round(Number(s.score) || 0))))
+                : meta.taskLabels.map(() => 0);
+
+            const activity = [];
+            if (moduleRec && modulePct > 0) {
+                activity.push({
+                    label: 'Learning module',
+                    status: modulePct >= 100 ? 'completed' : 'in progress',
+                    score: modulePct + '%',
+                    time: formatDbDate(moduleRec.date_updated),
+                    dot: modulePct >= 100 ? 'green' : 'orange',
+                    ts: parseDbDate(moduleRec.date_updated) || 0
+                });
+            }
+            if (practice) {
+                const done = practice.completion_status === 'Completed';
+                activity.push({
+                    label: 'Practice simulation',
+                    status: (practice.completion_status || 'recorded').toLowerCase(),
+                    score: Math.round(practice.score) + '%',
+                    time: formatDbDate(practice.date_attempted),
+                    dot: done ? 'green' : 'orange',
+                    ts: parseDbDate(practice.date_attempted) || 0
+                });
+            }
+            if (assess) {
+                activity.push({
+                    label: 'Assessment',
+                    status: (assess.remarks || 'completed').toLowerCase(),
+                    score: Math.round(assess.score) + '%',
+                    time: formatDbDate(assess.date_taken),
+                    dot: 'green',
+                    ts: parseDbDate(assess.date_taken) || 0
+                });
+            }
+            activity.sort((a, b) => b.ts - a.ts);
+            if (!activity.length) {
+                activity.push({ label: 'No activity yet', status: 'not started', score: '—', time: '—', dot: 'gray' });
+            }
+
+            let scoreMessage;
+            if (!modulePct && !practice && !assess) {
+                scoreMessage = 'Complete the learning module and practice simulation to start tracking performance.';
+            } else {
+                const parts = [];
+                if (modulePct > 0) parts.push(`Module ${modulePct}%`);
+                if (practice) parts.push(`Practice ${Math.round(practice.score)}% (${practice.completion_status})`);
+                if (assess) parts.push(`Assessment ${Math.round(assess.score)}% (${assess.remarks})`);
+                scoreMessage = parts.join(' · ') + '.';
+            }
+
+            return {
+                title: meta.title,
+                subtitle: meta.subtitle,
+                stats: {
+                    totalTasks,
+                    completedTasks,
+                    bestTime: formatElapsed((assess && assess.time_elapsed_seconds) || (practice && practice.time_elapsed_seconds)),
+                    attempts: (practice ? 1 : 0) + (assess ? 1 : 0),
+                    completionRate
+                },
+                overallScore: score,
+                modulePct,
+                scoreLabel: score > 0 ? scoreLabelFor(score) : (modulePct > 0 ? 'In Progress' : 'Not Started'),
+                scoreMessage,
+                trend: { labels: trendLabels, data: trendData },
+                tasks: { labels: taskLabels, data: taskData },
+                activity
+            };
+        }
+
+        function updateSidebarItem(key, data) {
+            const item = document.querySelector(`.module-item[data-module="${key}"]`);
+            if (!item) return;
+            const statusEl = item.querySelector('.module-status');
+            const pctEl = item.querySelector('.module-percentage');
+            const fillEl = item.querySelector('.progress-bar-mini-fill');
+            let status = 'Not Started';
+            let cls = 'not-started';
+            if (data.overallScore > 0 || data.stats.attempts > 0 || data.modulePct > 0) {
+                if (data.stats.completionRate === '100%') { status = 'Completed'; cls = 'completed'; }
+                else { status = 'In Progress'; cls = 'in-progress'; }
+            }
+            const sidebarPct = data.overallScore > 0 ? data.overallScore : data.modulePct;
+            statusEl.textContent = status;
+            statusEl.className = 'module-status ' + cls;
+            pctEl.textContent = sidebarPct + '%';
+            fillEl.style.width = sidebarPct + '%';
+        }
+
+        async function loadPerformanceData() {
+            try {
+                const [pRes, aRes, mRes] = await Promise.all([
+                    fetch('get_practice_progress.php?title=all'),
+                    fetch('get_assessment_progress.php?title=all'),
+                    fetch('student_progress.php')
+                ]);
+                const [pData, aData, mData] = await Promise.all([pRes.json(), aRes.json(), mRes.json()]);
+                ((pData && pData.progress) || []).forEach((r) => { practiceByTitle[r.title] = r; });
+                ((aData && aData.progress) || []).forEach((r) => { assessByTitle[r.title] = r; });
+                ((mData && mData.progress_details) || []).forEach((r) => {
+                    moduleProgress[r.module_key] = {
+                        percent: Number(r.progress_percent) || 0,
+                        date_updated: r.date_updated
+                    };
+                });
+
+                const dates = [
+                    ...Object.values(practiceByTitle).map((r) => parseDbDate(r.date_attempted)),
+                    ...Object.values(assessByTitle).map((r) => parseDbDate(r.date_taken)),
+                    ...Object.values(moduleProgress).map((r) => parseDbDate(r.date_updated))
+                ].filter(Boolean).sort((a, b) => b - a);
+                const lastEl = document.getElementById('lastUpdated');
+                if (lastEl && dates.length) lastEl.textContent = formatDateObj(dates[0]);
+            } catch (e) {
+                console.warn('TrackPerf: failed to load saved progress', e);
+            }
+
+            Object.keys(MODULE_META).forEach((key) => {
+                modulePerformance[key] = buildModuleData(key);
+                updateSidebarItem(key, modulePerformance[key]);
+            });
+
+            const active = document.querySelector('.module-item.active');
+            selectModule((active && active.dataset.module) || 'engine');
+        }
 
         const performanceChart = new Chart(document.getElementById('performanceChart').getContext('2d'), {
             type: 'line',
             data: {
-                labels: MODULE_PERFORMANCE.engine.trend.labels,
+                labels: [],
                 datasets: [{
                     label: 'Performance',
-                    data: MODULE_PERFORMANCE.engine.trend.data,
+                    data: [],
                     borderColor: '#2563eb',
                     backgroundColor: 'rgba(37,99,235,0.08)',
                     borderWidth: 2.5,
@@ -545,7 +685,7 @@
             type: 'doughnut',
             data: {
                 datasets: [{
-                    data: [76, 24],
+                    data: [0, 100],
                     backgroundColor: ['#2563eb', '#e5e7eb'],
                     borderWidth: 0
                 }]
@@ -556,10 +696,10 @@
         const taskChart = new Chart(document.getElementById('taskChart').getContext('2d'), {
             type: 'bar',
             data: {
-                labels: MODULE_PERFORMANCE.engine.tasks.labels,
+                labels: [],
                 datasets: [{
                     label: 'Score',
-                    data: MODULE_PERFORMANCE.engine.tasks.data,
+                    data: [],
                     backgroundColor: '#2563eb',
                     borderRadius: 4,
                     borderSkipped: false,
@@ -591,7 +731,7 @@
         }
 
         function selectModule(moduleId) {
-            const data = MODULE_PERFORMANCE[moduleId];
+            const data = modulePerformance[moduleId];
             if (!data) return;
 
             document.getElementById('navTitle').textContent = data.title;
@@ -631,7 +771,7 @@
             });
         });
 
-        renderActivityList(MODULE_PERFORMANCE.engine.activity);
+        loadPerformanceData();
     </script>
 
 </body>

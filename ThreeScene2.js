@@ -12,7 +12,7 @@ function initThreeScene() {
     camera.position.set(0, 1.6, 5.0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -36,6 +36,16 @@ function initThreeScene() {
     controls.enablePan = false;
     controls.minDistance = 1.6;
     controls.maxDistance = 30;
+
+    let isRunning = false;
+    function requestRender() {
+        if (!isRunning) {
+            isRunning = true;
+            requestAnimationFrame(renderLoop);
+        }
+    }
+    window.requestThreeSceneRender = requestRender;
+    controls.addEventListener('change', requestRender);
 
     const hemi = new THREE.HemisphereLight(0xffffff, 0x222222, 1.0);
     scene.add(hemi);
@@ -61,6 +71,9 @@ function initThreeScene() {
     // battery terminal cap interaction holders
     let batteryCapPivots = [];
     let batteryCapState = [];
+    // air filter housing pivot holders
+    let airFilterBoxPivot = null;
+    let airFilterBoxState = null;
     let hoveredCapIndex = null;
     let capTooltipElement = null;
     const raycaster = new THREE.Raycaster();
@@ -112,7 +125,7 @@ function initThreeScene() {
     }
 
     loader.load(
-        'models/NEW_CARWITHENGINE.glb',
+        window.THREE_SCENE_CAR_MODEL || 'models/NEW_CARWITHENGINE.glb',
         function (gltf) {
             model = gltf.scene;
             model.rotation.y = Math.PI * 0.28;
@@ -128,8 +141,7 @@ function initThreeScene() {
                     child.visible = false;
                     return;
                 }
-                // ensure meshes have proper normals
-                try { if (child.geometry && child.geometry.isBufferGeometry) child.geometry.computeVertexNormals(); } catch (e) { console.warn('computeVertexNormals failed for', child.name, e); }
+                // meshes already have proper normals exported in glTF
             });
 
             console.log('Car GLB mesh names:', meshNames);
@@ -190,9 +202,49 @@ function initThreeScene() {
                 }
             });
 
-            // If the GLB only contains wheels for one side, mirror them to the other side
+            // If the GLB only contains wheels for one side, mirror them to the other side.
+            // WHEELS merges the front and rear wheels of one side into a single
+            // indexed geometry — split the front tire out (triangle centroids
+            // past z > -0.2) so it can be removed independently.
+            const frontWheelMeshes = { right: null, left: null };
             try {
                 const wheels = exterior.getObjectByName('WHEELS');
+                // Mirrored wheels must reflect across the body's centerline —
+                // some source models are off-center, so mirroring about x = 0
+                // leaves the copies floating away from the car.
+                let wheelMirrorAxisX = 0;
+                const mirrorAxisRef = exterior.getObjectByName('BODY');
+                if (mirrorAxisRef) {
+                    exterior.updateMatrixWorld(true);
+                    // wheels.position is in exterior-local space, so the mirror
+                    // axis must be too — convert the world-space body center
+                    // back through the car transform (it is already rotated).
+                    const axisWorld = new THREE.Box3().setFromObject(mirrorAxisRef).getCenter(new THREE.Vector3());
+                    wheelMirrorAxisX = exterior.worldToLocal(axisWorld).x;
+                }
+                let frontWheelGeom = null;
+                if (wheels && wheels.geometry) {
+                    const g = wheels.geometry;
+                    const pos = g.attributes.position;
+                    const idx = g.index ? g.index.array : null;
+                    const triCount = idx ? idx.length / 3 : pos.count / 3;
+                    const frontIdx = [];
+                    const rearIdx = [];
+                    for (let t = 0; t < triCount; t++) {
+                        const a = idx ? idx[t * 3] : t * 3;
+                        const b = idx ? idx[t * 3 + 1] : t * 3 + 1;
+                        const c = idx ? idx[t * 3 + 2] : t * 3 + 2;
+                        const cz = (pos.getZ(a) + pos.getZ(b) + pos.getZ(c)) / 3;
+                        (cz > -0.2 ? frontIdx : rearIdx).push(a, b, c);
+                    }
+                    if (frontIdx.length && rearIdx.length) {
+                        frontWheelGeom = g.clone();
+                        frontWheelGeom.setIndex(frontIdx);
+                        const rearGeom = g.clone();
+                        rearGeom.setIndex(rearIdx);
+                        wheels.geometry = rearGeom;
+                    }
+                }
                 if (wheels && !exterior.getObjectByName('WHEELS_MIRROR')) {
                     const geom = wheels.geometry && wheels.geometry.clone ? wheels.geometry.clone() : null;
                     if (geom) {
@@ -203,9 +255,9 @@ function initThreeScene() {
                         geom.computeVertexNormals();
                         const mirror = new THREE.Mesh(geom, mat);
                         mirror.name = 'WHEELS_MIRROR';
-                        // position mirror: flip X of original world position relative to model
+                        // position mirror: reflect X across the body centerline
                         mirror.position.copy(wheels.position);
-                        mirror.position.x *= -1;
+                        mirror.position.x = 2 * wheelMirrorAxisX - wheels.position.x;
                         mirror.quaternion.copy(wheels.quaternion);
                         mirror.scale.copy(wheels.scale);
                         if (mirror.material) mirror.material.side = THREE.DoubleSide;
@@ -216,10 +268,194 @@ function initThreeScene() {
                         console.log('Added mirrored wheels as WHEELS_MIRROR');
                     }
                 }
+
+                // Separate mesh per front tire so each can be removed on its own
+                if (frontWheelGeom) {
+                    const mkFrontWheel = (geom, name, mirrored) => {
+                        const mat = wheels.material && wheels.material.clone ? wheels.material.clone() : new THREE.MeshStandardMaterial({ color: 0x666666 });
+                        const m = new THREE.Mesh(geom, mat);
+                        m.name = name;
+                        m.position.copy(wheels.position);
+                        if (mirrored) m.position.x = 2 * wheelMirrorAxisX - wheels.position.x;
+                        m.quaternion.copy(wheels.quaternion);
+                        m.scale.copy(wheels.scale);
+                        if (mirrored && m.material) m.material.side = THREE.DoubleSide;
+                        m.userData.isFrontWheel = true;
+                        m.userData.wheelSide = mirrored ? 'left' : 'right';
+                        exterior.add(m);
+                        return m;
+                    };
+                    frontWheelMeshes.right = mkFrontWheel(frontWheelGeom, 'WHEEL_FRONT', false);
+                    const mirrorFrontGeom = frontWheelGeom.clone();
+                    mirrorFrontGeom.applyMatrix4(new THREE.Matrix4().makeScale(-1, 1, 1));
+                    mirrorFrontGeom.computeVertexNormals();
+                    frontWheelMeshes.left = mkFrontWheel(mirrorFrontGeom, 'WHEEL_FRONT_MIRROR', true);
+                }
+
+                // Brake assembly mounted behind the front-right tire — restyle it
+                // flat white (disc/pads) and red (caliper), and keep refs so an
+                // emissive lift can reveal it once the tire is off. The assembly
+                // is located by its dot-free group names since GLTFLoader strips
+                // dots from node names.
+                const brakeMeshes = [];
+                const brakeGroupColors = { 'Brake_Caliper_2': 0xd22f2f, 'Brake_Disc_1': 0xf2f2f2, 'Brake_Pads_0': 0xf2f2f2 };
+                ['Brake_Caliper_2', 'Brake_Disc_1', 'Brake_Pads_0'].forEach((n) => {
+                    const grp = exterior.getObjectByName(n);
+                    if (!grp) return;
+                    grp.traverse((c) => {
+                        if (!c.isMesh || !c.material) return;
+                        c.material = c.material.clone();
+                        c.material.map = null;
+                        if (c.material.color) c.material.color.setHex(brakeGroupColors[n]);
+                        c.material.needsUpdate = true;
+                        brakeMeshes.push(c);
+                    });
+                });
+                if (!brakeMeshes.length) console.warn('Brake assembly meshes not found for removal highlight');
+
+                // Align the disc meshes concentrically — the drilled rotor is the
+                // reference; the disc face/hub parts sit slightly off-axis.
+                const discGrp = exterior.getObjectByName('Brake_Disc_1');
+                if (discGrp) {
+                    const discMeshes = [];
+                    discGrp.traverse((c) => { if (c.isMesh) discMeshes.push(c); });
+                    const refMesh = discGrp.getObjectByName('diss_brake') || discMeshes[0];
+                    if (refMesh && discMeshes.length > 1) {
+                        // update the full exterior subtree first so bounding boxes
+                        // and worldToLocal agree on one matrix space
+                        exterior.updateMatrixWorld(true);
+                        const refC = new THREE.Box3().setFromObject(refMesh).getCenter(new THREE.Vector3());
+                        discMeshes.forEach((m) => {
+                            if (m === refMesh) return;
+                            const c = new THREE.Box3().setFromObject(m).getCenter(new THREE.Vector3());
+                            m.position.add(m.parent.worldToLocal(refC.clone()).sub(m.parent.worldToLocal(c)));
+                        });
+                    }
+
+                    // Seat the caliper and pads on the rotor's rim edge at hub
+                    // height so they wrap the disc like a real assembly.
+                    const dbox = new THREE.Box3().setFromObject(discGrp);
+                    const dc = dbox.getCenter(new THREE.Vector3());
+                    [exterior.getObjectByName('Brake_Caliper_2'), exterior.getObjectByName('Brake_Pads_0')].forEach((grp) => {
+                        if (!grp) return;
+                        const gc = new THREE.Box3().setFromObject(grp).getCenter(new THREE.Vector3());
+                        const edgeZ = gc.z > dc.z ? dbox.max.z : dbox.min.z;
+                        const target = new THREE.Vector3(gc.x, dc.y, edgeZ);
+                        const lin = grp.parent.matrixWorld.clone().setPosition(0, 0, 0).invert();
+                        grp.position.add(target.sub(gc).applyMatrix4(lin));
+                    });
+                }
+
+                // Front tire removal API — hiding the tire reveals the brake
+                // disc/caliper assembly mounted behind it.
+                window.setFrontWheelRemoved = function (side, removed) {
+                    const mesh = frontWheelMeshes[side || 'right'];
+                    if (!mesh) return false;
+                    mesh.visible = !removed;
+                    if (!side || side === 'right') {
+                        brakeMeshes.forEach((m) => {
+                            if (m.material && m.material.emissive) {
+                                m.material.emissive.setHex(removed ? 0x4a4a4a : 0x000000);
+                            }
+                        });
+                    }
+                    requestRender();
+                    return true;
+                };
+                window.isFrontWheelRemoved = function (side) {
+                    const mesh = frontWheelMeshes[side || 'right'];
+                    return mesh ? !mesh.visible : false;
+                };
+                window.getFrontWheelMesh = function (side) {
+                    return frontWheelMeshes[side || 'right'];
+                };
+                window.getBrakePadMesh = function () {
+                    return exterior.getObjectByName('brake_pad') || null;
+                };
+                // Returns a brake assembly group ('caliper' | 'pads' | 'disc')
+                // for previews of removed parts.
+                window.getBrakePartMesh = function (part) {
+                    const grpName = part === 'caliper' ? 'Brake_Caliper_2' : part === 'pads' ? 'Brake_Pads_0' : part === 'disc' ? 'Brake_Disc_1' : null;
+                    return grpName ? (exterior.getObjectByName(grpName) || null) : null;
+                };
+                // Hide/show brake assembly groups (used by the brake practice
+                // flow when the caliper or pads are "removed" during the sim).
+                window.setBrakeAssemblyPartRemoved = function (part, removed) {
+                    const grpName = part === 'caliper' ? 'Brake_Caliper_2' : part === 'pads' ? 'Brake_Pads_0' : null;
+                    const grp = grpName && exterior.getObjectByName(grpName);
+                    if (!grp) return false;
+                    grp.visible = !removed;
+                    requestRender();
+                    return true;
+                };
+                // Clicking a brake assembly part fires 'brakePartClicked' with the
+                // group it belongs to (caliper / disc / pads).
+                const brakePartGroups = { 'Brake_Caliper_2': 'caliper', 'Brake_Disc_1': 'disc', 'Brake_Pads_0': 'pads' };
+                let bpDown = null;
+                renderer.domElement.addEventListener('pointerdown', (e) => { bpDown = { x: e.clientX, y: e.clientY }; }, false);
+                renderer.domElement.addEventListener('click', (e) => {
+                    if (bpDown && Math.hypot(e.clientX - bpDown.x, e.clientY - bpDown.y) > 8) return;
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                    raycaster.setFromCamera(pointer, camera);
+                    const intersects = raycaster.intersectObjects(exterior.children, true);
+                    for (let inter of intersects) {
+                        if (!inter.object.visible) continue;
+                        let obj = inter.object;
+                        while (obj && !brakePartGroups[obj.name]) obj = obj.parent;
+                        if (obj && brakePartGroups[obj.name]) {
+                            window.dispatchEvent(new CustomEvent('brakePartClicked', { detail: { x: e.clientX, y: e.clientY, part: brakePartGroups[obj.name] } }));
+                            break;
+                        }
+                    }
+                }, false);
             } catch (e) { console.warn('wheel mirror failed', e); }
 
             // frame and show exterior as the target
             frameModel(exterior);
+
+            // --- Jack stand placement (shown when the tool is used in Step 1) ---
+            window.placeJackStand = function () {
+                if (window.__jackStandObject) {
+                    window.__jackStandObject.visible = true;
+                    requestRender();
+                    return true;
+                }
+                const standLoader = new GLTFLoader();
+                standLoader.load('models/car_jack_stand.glb', (jg) => {
+                    const stand = jg.scene;
+                    stand.name = 'JackStand';
+
+                    exterior.updateMatrixWorld(true);
+                    const ebox = new THREE.Box3().setFromObject(exterior);
+                    const esize = ebox.getSize(new THREE.Vector3());
+                    const ecenter = ebox.getCenter(new THREE.Vector3());
+
+                    const sbox = new THREE.Box3().setFromObject(stand);
+                    const ssize = sbox.getSize(new THREE.Vector3());
+                    const scenter = sbox.getCenter(new THREE.Vector3());
+
+                    // scale the stand so its height reaches about the underbody (~22% of car height)
+                    if (ssize.y > 0) stand.scale.setScalar((esize.y * 0.22) / ssize.y);
+                    const k = stand.scale.x;
+
+                    // place it on the ground, centered under the front of the car
+                    stand.position.set(
+                        ecenter.x - scenter.x * k,
+                        ebox.min.y - sbox.min.y * k,
+                        (ecenter.z + esize.z * 0.25) - scenter.z * k
+                    );
+
+                    scene.add(stand);
+                    stand.updateMatrixWorld(true);
+                    // attach to the car group so it follows if the car moves/rotates
+                    exterior.attach(stand);
+                    window.__jackStandObject = stand;
+                    requestRender();
+                }, undefined, (err) => console.error('Failed to load jack stand model:', err));
+                return true;
+            };
 
             // --- HOOD INTERACTION ---
             try {
@@ -364,6 +600,7 @@ function initThreeScene() {
                         const idx = Math.min(Math.max(0, index), doorPivots.length - 1);
                         doorState[idx].open = !doorState[idx].open;
                         doorState[idx].target = doorState[idx].open ? (doorState[idx].openAngle * (doorState[idx].openSign || 1)) : 0;
+                        requestRender();
                         return doorState[idx].open;
                     };
                 } catch (e) { console.warn('door setup failed', e); }
@@ -398,11 +635,13 @@ function initThreeScene() {
                         if (!c.isMesh) return;
                         const n = (c.name || '').toUpperCase();
 
-                        // Method 1: Name patterns
-                        const isCapByName = n.includes('CAP') || n.includes('TERMINAL') ||
+                        // Method 1: Name patterns — only battery terminal caps
+                        // (Oil_cap / Ragiator_cap are unrelated service caps)
+                        const isUnrelatedCap = /OIL|RAGIATOR|RADIATOR|FUEL|BRAKE|WASHER|COOLANT|RESERVOIR/.test(n);
+                        const isCapByName = !isUnrelatedCap && (n.includes('CAP') || n.includes('TERMINAL') ||
                             (n.includes('POS') && n.length < 10) ||
                             (n.includes('NEG') && n.length < 10) ||
-                            n.includes('PLUS') || n.includes('MINUS');
+                            n.includes('PLUS') || n.includes('MINUS'));
 
                         // Method 2: Small objects on TOP of battery (not just near it)
                         let isCapByPosition = false;
@@ -521,6 +760,24 @@ function initThreeScene() {
                         } catch (e) { console.warn('battery cap pivot failed', e); }
                     });
 
+                    // Identical black caps can't be told apart by name or
+                    // color, so every cap lands on the same type. Assign
+                    // connector/coil by position instead — the leftmost cap is
+                    // the connector (negative), the rest are coils (positive).
+                    if (batteryCapState.length > 1 &&
+                        batteryCapState.every(s => s.capType === batteryCapState[0].capType)) {
+                        const order = batteryCapMeshes
+                            .map((c, i) => ({ i, x: (c.userData.capPivot ? c.userData.capPivot.position.x : 0) }))
+                            .sort((a, b) => a.x - b.x);
+                        order.forEach((o, k) => {
+                            const t = k === 0 ? 'negative' : 'positive';
+                            batteryCapState[o.i].capType = t;
+                            batteryCapState[o.i].capName = t === 'positive' ? 'Positive (+) Cap' : 'Negative (-) Cap';
+                            batteryCapMeshes[o.i].userData.capType = t;
+                            batteryCapMeshes[o.i].userData.displayName = batteryCapState[o.i].capName;
+                        });
+                    }
+
                     if (batteryCapMeshes.length > 0) {
                         console.log(`Found ${batteryCapMeshes.length} battery terminal cap(s):`, batteryCapMeshes.map(c => ({ name: c.name, type: c.userData.capType })));
                     }
@@ -532,6 +789,7 @@ function initThreeScene() {
                         const state = batteryCapState[index];
                         state.removed = !state.removed;
                         state.target = state.removed ? 1 : 0;
+                        requestRender();
                         return { index, removed: state.removed, name: state.capName, type: state.capType };
                     };
 
@@ -756,6 +1014,18 @@ function initThreeScene() {
 
                             console.log('toggleBattery called, new removed state:', state.batteryRemoved);
 
+                            // Sims that reuse the battery purely as a state flag
+                            // (the spark-plug sim uses it to track the lifted-out
+                            // plug) suppress the lift-out animation so the real
+                            // battery stays seated and visible.
+                            if (window.__suppressBatteryVisual) {
+                                requestRender();
+                                return {
+                                    removed: state.batteryRemoved,
+                                    name: batteryMainMesh.name || 'Battery'
+                                };
+                            }
+
                             // Ensure visibility when installing (not removed)
                             if (!state.batteryRemoved) {
                                 console.log('Ensuring battery visibility');
@@ -777,6 +1047,7 @@ function initThreeScene() {
                             batteryPivot.userData.targetY = batteryPivot.userData.baseY + targetY;
                             batteryPivot.userData.targetRot = targetRot;
                             batteryPivot.userData.animate = true;
+                            requestRender();
 
                             return {
                                 removed: state.batteryRemoved,
@@ -792,6 +1063,16 @@ function initThreeScene() {
 
                             // Set as not removed
                             state.batteryRemoved = false;
+
+                            // Same opt-out as toggleBattery — state only.
+                            if (window.__suppressBatteryVisual) {
+                                requestRender();
+                                return {
+                                    removed: false,
+                                    name: batteryMainMesh.name || 'Battery',
+                                    installed: true
+                                };
+                            }
 
                             // Get base position data
                             const baseY = batteryPivot.userData.baseY || 0;
@@ -826,6 +1107,7 @@ function initThreeScene() {
                             batteryPivot.userData.targetY = baseY;
                             batteryPivot.userData.targetRot = 0;
                             batteryPivot.userData.animate = false;
+                            requestRender();
 
                             console.log('Battery installed at ORIGINAL position:', batteryPivot.position);
 
@@ -847,6 +1129,128 @@ function initThreeScene() {
                         console.log('Battery interaction setup complete');
                     }
                 } catch (e) { console.warn('battery setup failed', e); }
+
+                // --- Fuel filter interaction (Car_with_fuel_filter.glb) ---
+                // Same remove/install pattern as the battery: a pivot at the
+                // part's base lifts it out of the bracket when "removed".
+                try {
+                    let fuelFilterMesh = exterior.getObjectByName('fuel_filter');
+                    if (!fuelFilterMesh) {
+                        exterior.traverse((o) => {
+                            if (!fuelFilterMesh && o.isMesh && /fuel[ _]?filter/i.test(o.name || '')) fuelFilterMesh = o;
+                        });
+                    }
+                    if (fuelFilterMesh) {
+                        fuelFilterMesh.userData.isFuelFilter = true;
+                        fuelFilterMesh.userData.fuelFilterRemoved = false;
+                        fuelFilterMesh.traverse((child) => {
+                            if (child.isMesh) child.userData.isFuelFilter = true;
+                        });
+
+                        const fuelFilterPivot = new THREE.Group();
+                        const ffBox = new THREE.Box3().setFromObject(fuelFilterMesh);
+                        const ffCenter = ffBox.getCenter(new THREE.Vector3());
+                        const pivotWorld = ffCenter.clone();
+                        pivotWorld.y = ffBox.min.y;
+                        exterior.updateMatrixWorld(true);
+                        exterior.worldToLocal(pivotWorld);
+                        fuelFilterPivot.position.copy(pivotWorld);
+                        exterior.add(fuelFilterPivot);
+                        fuelFilterPivot.attach(fuelFilterMesh);
+
+                        fuelFilterPivot.userData.baseY = fuelFilterPivot.position.y;
+                        fuelFilterPivot.userData.basePos = {
+                            x: fuelFilterPivot.position.x,
+                            y: fuelFilterPivot.position.y,
+                            z: fuelFilterPivot.position.z
+                        };
+                        fuelFilterPivot.userData.baseRot = fuelFilterPivot.rotation.clone();
+
+                        window.fuelFilterPivot = fuelFilterPivot;
+                        window.fuelFilterMesh = fuelFilterMesh;
+
+                        window.checkFuelFilter = function () {
+                            return {
+                                removed: fuelFilterMesh.userData.fuelFilterRemoved,
+                                name: 'Fuel Filter'
+                            };
+                        };
+
+                        window.toggleFuelFilter = function () {
+                            const state = fuelFilterMesh.userData;
+                            state.fuelFilterRemoved = !state.fuelFilterRemoved;
+
+                            if (!state.fuelFilterRemoved) {
+                                fuelFilterPivot.visible = true;
+                                fuelFilterMesh.visible = true;
+                                fuelFilterPivot.traverse((child) => {
+                                    if (child.isMesh) {
+                                        child.visible = true;
+                                        if (child.material) child.material.visible = true;
+                                    }
+                                });
+                            }
+
+                            const targetY = state.fuelFilterRemoved ? 0.35 : 0;
+                            const targetRot = state.fuelFilterRemoved ? Math.PI * 0.15 : 0;
+                            fuelFilterPivot.userData.targetY = fuelFilterPivot.userData.baseY + targetY;
+                            fuelFilterPivot.userData.targetRot = targetRot;
+                            fuelFilterPivot.userData.animate = true;
+                            requestRender();
+
+                            return {
+                                removed: state.fuelFilterRemoved,
+                                name: 'Fuel Filter'
+                            };
+                        };
+
+                        window.installFuelFilter = function () {
+                            const state = fuelFilterMesh.userData;
+                            state.fuelFilterRemoved = false;
+
+                            const baseY = fuelFilterPivot.userData.baseY || 0;
+                            const basePos = fuelFilterPivot.userData.basePos || { x: 0, y: 0, z: 0 };
+                            const baseRot = fuelFilterPivot.userData.baseRot || { x: 0, y: 0, z: 0 };
+                            fuelFilterPivot.position.set(basePos.x, baseY, basePos.z);
+                            fuelFilterPivot.rotation.set(baseRot.x, baseRot.y, baseRot.z);
+                            fuelFilterPivot.userData.currentY = baseY;
+                            fuelFilterPivot.userData.currentRot = 0;
+
+                            fuelFilterPivot.visible = true;
+                            fuelFilterMesh.visible = true;
+                            fuelFilterPivot.traverse((child) => {
+                                child.visible = true;
+                                if (child.isMesh && child.material) {
+                                    child.material.visible = true;
+                                    if (child.material.opacity !== undefined) {
+                                        child.material.opacity = 1;
+                                        child.material.transparent = false;
+                                    }
+                                }
+                            });
+
+                            fuelFilterPivot.userData.targetY = baseY;
+                            fuelFilterPivot.userData.targetRot = 0;
+                            fuelFilterPivot.userData.animate = false;
+                            requestRender();
+
+                            return {
+                                removed: false,
+                                name: 'Fuel Filter',
+                                installed: true,
+                                position: fuelFilterPivot.position.clone()
+                            };
+                        };
+
+                        window.onFuelFilterClicked = function (filterInfo, screenX, screenY) {
+                            window.dispatchEvent(new CustomEvent('fuelFilterClicked', {
+                                detail: { ...filterInfo, screenX, screenY }
+                            }));
+                        };
+
+                        console.log('Fuel filter interaction setup complete');
+                    }
+                } catch (e) { console.warn('fuel filter setup failed', e); }
 
                 // expose tuning functions to allow live adjustment from UI
                 window.tuneHood = function (index = 0, dy = 0, dz = 0) {
@@ -876,7 +1280,14 @@ function initThreeScene() {
                     const idx = Math.min(Math.max(0, index), hoodPivots.length - 1);
                     hoodState[idx].open = !hoodState[idx].open;
                     hoodState[idx].target = hoodState[idx].open ? -Math.PI * 0.5 * 0.62 : 0;
+                    requestRender();
+                    window.dispatchEvent(new CustomEvent('hoodToggled', { detail: { open: hoodState[idx].open, index: idx } }));
                     return hoodState[idx].open;
+                };
+
+                window.isHoodOpen = function (index = 0) {
+                    const idx = Math.min(Math.max(0, index), hoodState.length - 1);
+                    return hoodState[idx] ? !!hoodState[idx].open : false;
                 };
 
                 // pointer click handler to toggle hood by clicking the mesh
@@ -895,6 +1306,8 @@ function initThreeScene() {
                             if (idx >= 0) {
                                 hoodState[idx].open = !hoodState[idx].open;
                                 hoodState[idx].target = hoodState[idx].open ? -Math.PI * 0.5 * 0.62 : 0;
+                                requestRender();
+                                window.dispatchEvent(new CustomEvent('hoodToggled', { detail: { open: hoodState[idx].open, index: idx } }));
                             }
                             break;
                         }
@@ -917,6 +1330,7 @@ function initThreeScene() {
                             if (idx >= 0) {
                                 doorState[idx].open = !doorState[idx].open;
                                 doorState[idx].target = doorState[idx].open ? (doorState[idx].openAngle * (doorState[idx].openSign || 1)) : 0;
+                                requestRender();
                             }
                             break;
                         }
@@ -928,6 +1342,7 @@ function initThreeScene() {
 
                 // pointer move handler - shows hover card and tracks cursor
                 function onPointerMoveBatteryCaps(event) {
+                    if (window.__disableBatteryInteractions) return;
                     const rect = renderer.domElement.getBoundingClientRect();
                     pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
                     pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -937,13 +1352,23 @@ function initThreeScene() {
                     let foundCap = null;
                     let foundCapInfo = null;
                     let foundBattery = false;
+                    let foundFuelFilter = false;
 
                     for (let inter of intersects) {
                         let obj = inter.object;
 
                         // Check for battery cap first
-                        while (obj && !obj.userData.isBatteryCap && !obj.userData.isBattery) {
+                        while (obj && !obj.userData.isBatteryCap && !obj.userData.isBattery && !obj.userData.isFuelFilter) {
                             obj = obj.parent;
+                        }
+
+                        if (obj && obj.userData.isFuelFilter) {
+                            foundFuelFilter = true;
+                            renderer.domElement.style.cursor = 'pointer';
+                            if (window.onFuelFilterHover && typeof window.checkFuelFilter === 'function') {
+                                window.onFuelFilterHover(window.checkFuelFilter(), event.clientX, event.clientY);
+                            }
+                            break;
                         }
 
                         if (obj && obj.userData.isBatteryCap) {
@@ -962,8 +1387,12 @@ function initThreeScene() {
                             break;
                         }
 
-                        // Check for main battery
+                        // Check for main battery — pages can mark the body
+                        // inert on steps where it isn't a service target
+                        // (the spark-plug sim only uses it as the plug stand-in
+                        // on the remove / inspect / install steps).
                         if (obj && obj.userData.isBattery) {
+                            if (window.__batteryBodyEnabled === false) continue;
                             console.log('Battery hovered:', obj.name);
                             foundBattery = true;
                             renderer.domElement.style.cursor = 'pointer';
@@ -980,13 +1409,27 @@ function initThreeScene() {
                         }
                     }
 
-                    if (foundCap === null && !foundBattery) {
+                    if (foundCap === null && !foundBattery && !foundFuelFilter) {
                         renderer.domElement.style.cursor = 'default';
+                        // pointer cursor over wheels so they read as interactive
+                        const wheelRe = /WHEEL|TIRE|RIM/i;
+                        for (let inter of intersects) {
+                            if (!inter.object.visible) continue;
+                            let obj = inter.object;
+                            while (obj && !wheelRe.test(obj.name || '') && !obj.userData.isFrontWheel) obj = obj.parent;
+                            if (obj && wheelRe.test(obj.name || '')) {
+                                renderer.domElement.style.cursor = 'pointer';
+                                break;
+                            }
+                        }
                         if (window.onBatteryCapHoverEnd) {
                             window.onBatteryCapHoverEnd();
                         }
                         if (window.onBatteryHoverEnd) {
                             window.onBatteryHoverEnd();
+                        }
+                        if (window.onFuelFilterHoverEnd) {
+                            window.onFuelFilterHoverEnd();
                         }
                     }
 
@@ -996,6 +1439,7 @@ function initThreeScene() {
 
                 // pointer down handler - locks card position when cap or battery is clicked
                 function onPointerDownBatteryCaps(event) {
+                    if (window.__disableBatteryInteractions) return;
                     const rect = renderer.domElement.getBoundingClientRect();
                     pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
                     pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1007,8 +1451,15 @@ function initThreeScene() {
                         let obj = inter.object;
 
                         // Check for battery cap
-                        while (obj && !obj.userData.isBatteryCap && !obj.userData.isBattery) {
+                        while (obj && !obj.userData.isBatteryCap && !obj.userData.isBattery && !obj.userData.isFuelFilter) {
                             obj = obj.parent;
+                        }
+
+                        if (obj && obj.userData.isFuelFilter) {
+                            if (window.onFuelFilterClicked && typeof window.checkFuelFilter === 'function') {
+                                window.onFuelFilterClicked(window.checkFuelFilter(), event.clientX, event.clientY);
+                            }
+                            break;
                         }
 
                         if (obj && obj.userData.isBatteryCap) {
@@ -1023,6 +1474,7 @@ function initThreeScene() {
 
                         // Check for main battery
                         if (obj && obj.userData.isBattery) {
+                            if (window.__batteryBodyEnabled === false) continue;
                             if (window.onBatteryClicked) {
                                 const batteryInfo = window.checkBattery();
                                 window.onBatteryClicked(batteryInfo, event.clientX, event.clientY);
@@ -1032,6 +1484,515 @@ function initThreeScene() {
                     }
                 }
                 renderer.domElement.addEventListener('pointerdown', onPointerDownBatteryCaps, false);
+
+                // Spark plug cover parts — meshes whose bounding box overlaps the
+                // real "Spark Plug" node physically hide it (the ignition coil sits
+                // over the plug well). The inspection step enables click-to-remove
+                // so the plug becomes visible.
+                let plugCoverMeshes = [];
+                // world matrices must be current before measuring positions
+                exterior.updateMatrixWorld(true);
+                let sparkPlugGroup = exterior.getObjectByName('Spark Plug') || exterior.getObjectByName('Spark_Plug');
+                if (!sparkPlugGroup) {
+                    exterior.traverse((o) => {
+                        if (!sparkPlugGroup && o.name && /Spark[ _]?Plug/i.test(o.name)) sparkPlugGroup = o;
+                    });
+                }
+                if (sparkPlugGroup) {
+                    const plugPos = sparkPlugGroup.getWorldPosition(new THREE.Vector3());
+                    const coverSkip = /^(Spark[ _]?Plug|BATTERY|HOOD|BODY|DOOR|DASHBOARD|SEATS|WHEELS|WINDOW|BACK WINDOW|Air_Intake|Engine_Cover|oil_filter|Oil_cap|Ragiator_cap|brake_pad|diss_brake|Object_)/i;
+                    const coverBox = new THREE.Box3();
+                    const coverSize = new THREE.Vector3();
+                    exterior.traverse((obj) => {
+                        if (!obj.isMesh || !obj.name || coverSkip.test(obj.name)) return;
+                        coverBox.setFromObject(obj);
+                        coverBox.getSize(coverSize);
+                        // Shell/engine-block sized meshes aren't removable covers
+                        if (Math.max(coverSize.x, coverSize.y, coverSize.z) > 0.6) return;
+                        if (coverBox.containsPoint(plugPos) || coverBox.distanceToPoint(plugPos) < 0.025) {
+                            plugCoverMeshes.push(obj);
+                        }
+                    });
+                    // The ignition coil always sits over the plug — include it
+                    // even when its bounds don't quite overlap the plug node.
+                    const coilMesh = exterior.getObjectByName('Ignition_Coil');
+                    if (coilMesh && !plugCoverMeshes.includes(coilMesh)) {
+                        coilMesh.traverse((c) => { if (c.isMesh) plugCoverMeshes.push(c); });
+                        if (coilMesh.isMesh === false && !plugCoverMeshes.length) plugCoverMeshes.push(coilMesh);
+                    }
+                    console.log('Plug cover parts:', plugCoverMeshes.map(m => m.name));
+                }
+
+                window.setPlugCoversVisible = function (visible) {
+                    plugCoverMeshes.forEach((m) => { m.visible = !!visible; });
+                    requestRender();
+                };
+                window.getPlugCoverCount = function () {
+                    return plugCoverMeshes.filter(m => m.visible).length;
+                };
+                window.getPlugCoverTotal = function () {
+                    return plugCoverMeshes.length;
+                };
+                window.hidePlugCoverAt = function (index) {
+                    const m = plugCoverMeshes[index];
+                    if (m) { m.visible = false; requestRender(); }
+                };
+                window.showPlugCoverAt = function (index) {
+                    const m = plugCoverMeshes[index];
+                    if (m) { m.visible = true; requestRender(); }
+                };
+
+                // The plug assembly ("Spark Plug.001" group + "Spark Plug" node)
+                // stays rendered even after the plug is lifted out — hide it so
+                // the well reads empty. On install the plug reappears, except
+                // cover meshes that are still marked removed.
+                let sparkPlugHiddenCovers = [];
+                window.setSparkPlugVisible = function (visible) {
+                    if (!visible) {
+                        // Hide EVERY spark-plug-named object in the car — the
+                        // seated plug, its material-part siblings and any other
+                        // cylinder's plug — so nothing plug-shaped stays drawn.
+                        sparkPlugHiddenCovers = [];
+                        exterior.traverse((o) => {
+                            if (!o.name || !/Spark[ _]?Plug/i.test(o.name)) return;
+                            o.visible = false;
+                            o.traverse((c) => {
+                                if (!c.isMesh) return;
+                                if (plugCoverMeshes.includes(c) && c.visible) sparkPlugHiddenCovers.push(c);
+                                c.visible = false;
+                            });
+                        });
+                    } else {
+                        exterior.traverse((o) => {
+                            if (!o.name || !/Spark[ _]?Plug/i.test(o.name)) return;
+                            o.visible = true;
+                            o.traverse((c) => {
+                                if (!c.isMesh) return;
+                                if (plugCoverMeshes.includes(c)) {
+                                    if (sparkPlugHiddenCovers.includes(c)) c.visible = true;
+                                    return;
+                                }
+                                c.visible = true;
+                            });
+                        });
+                        sparkPlugHiddenCovers = [];
+                    }
+                    requestRender();
+                };
+
+                let plugCoverEnabled = false;
+                window.setPlugCoverEnabled = (on) => { plugCoverEnabled = !!on; };
+
+                // Debug helper — lists every plug/coil/battery-named node with
+                // its effective (inherited) visibility so we can tell which
+                // mesh is still drawn while the plug is in Removed Items.
+                window.debugPlugVisibility = function () {
+                    const report = [];
+                    exterior.traverse((o) => {
+                        if (!o.name || !/spark|plug|batter|coil|ignit/i.test(o.name)) return;
+                        let n = o, eff = true;
+                        while (n) { if (n.visible === false) { eff = false; break; } n = n.parent; }
+                        report.push({ name: o.name, mesh: !!o.isMesh, visible: o.visible, effVisible: eff });
+                    });
+                    report.push({ name: 'batteryPivot.visible', mesh: false, visible: window.batteryPivot ? window.batteryPivot.visible : 'n/a', effVisible: '' });
+                    report.push({ name: 'checkBattery().removed', mesh: false, visible: (typeof window.checkBattery === 'function') ? window.checkBattery().removed : 'n/a', effVisible: '' });
+                    console.table ? console.table(report) : console.log(report);
+                    return report;
+                };
+
+                // Hovering a cover part dispatches 'plugCoverHovered' with the
+                // part name so the page can show a remove card next to it.
+                renderer.domElement.addEventListener('pointermove', (e) => {
+                    if (!plugCoverEnabled || !plugCoverMeshes.length) return;
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                    raycaster.setFromCamera(pointer, camera);
+                    const hits = raycaster.intersectObjects(plugCoverMeshes.filter(m => m.visible), false);
+                    if (hits.length) {
+                        const idx = plugCoverMeshes.indexOf(hits[0].object);
+                        renderer.domElement.style.cursor = 'pointer';
+                        window.dispatchEvent(new CustomEvent('plugCoverHovered', {
+                            detail: { x: e.clientX, y: e.clientY, index: idx, name: hits[0].object.name }
+                        }));
+                    } else {
+                        renderer.domElement.style.cursor = '';
+                        window.dispatchEvent(new CustomEvent('plugCoverHoverEnd'));
+                    }
+                }, false);
+
+                let plugCoverDown = null;
+                renderer.domElement.addEventListener('pointerdown', (e) => { plugCoverDown = { x: e.clientX, y: e.clientY }; }, false);
+                renderer.domElement.addEventListener('click', (e) => {
+                    if (!plugCoverEnabled || !plugCoverMeshes.length) return;
+                    if (plugCoverDown && Math.hypot(e.clientX - plugCoverDown.x, e.clientY - plugCoverDown.y) > 8) return;
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                    raycaster.setFromCamera(pointer, camera);
+                    const hits = raycaster.intersectObjects(plugCoverMeshes.filter(m => m.visible), false);
+                    if (!hits.length) return;
+                    // Spark-plug-named covers belong to the inspect-click flow
+                    if (/Spark[ _]?Plug/i.test(hits[0].object.name || '')) return;
+                    const idx = plugCoverMeshes.indexOf(hits[0].object);
+                    window.dispatchEvent(new CustomEvent('plugCoverClicked', {
+                        detail: { x: e.clientX, y: e.clientY, index: idx, name: hits[0].object.name }
+                    }));
+                }, false);
+
+                // Spark plug meshes the student can interact with — every
+                // plug-named mesh, the lifted-out stand-in, and anything
+                // sitting at the plug well.
+                function getPlugMeshes() {
+                    const list = [];
+                    const plugPos = sparkPlugGroup ? sparkPlugGroup.getWorldPosition(new THREE.Vector3()) : null;
+                    const tmpBox = new THREE.Box3();
+                    const tmpCenter = new THREE.Vector3();
+                    exterior.traverse((o) => {
+                        if (!o.isMesh) return;
+                        // The battery body stands in for the plug only while a
+                        // page enables it — otherwise it is just the battery.
+                        if (o.userData.isBattery) {
+                            if (window.__batteryBodyEnabled !== false) list.push(o);
+                            return;
+                        }
+                        const named = o.name && /Spark[ _]?Plug/i.test(o.name);
+                        let near = false;
+                        if (!named && plugPos) {
+                            tmpBox.setFromObject(o);
+                            tmpBox.getCenter(tmpCenter);
+                            near = tmpCenter.distanceTo(plugPos) < 0.15;
+                        }
+                        if (named || near) list.push(o);
+                    });
+                    return list;
+                }
+
+                // Hovering the plug shows a pointer cursor and fires
+                // 'sparkPlugHovered' — the page floats the option card.
+                renderer.domElement.addEventListener('pointermove', (e) => {
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                    raycaster.setFromCamera(pointer, camera);
+                    const hits = raycaster.intersectObjects(getPlugMeshes().filter(m => m.visible), false);
+                    if (hits.length) {
+                        renderer.domElement.style.cursor = 'pointer';
+                        window.dispatchEvent(new CustomEvent('sparkPlugHovered', {
+                            detail: { x: e.clientX, y: e.clientY, name: 'Spark Plug' }
+                        }));
+                    } else {
+                        window.dispatchEvent(new CustomEvent('sparkPlugHoverEnd'));
+                    }
+                }, false);
+
+                // Clicking the exposed spark plug dispatches 'sparkPlugClicked' —
+                // the page opens the option card on the inspect step.
+                renderer.domElement.addEventListener('click', (e) => {
+                    if (plugCoverDown && Math.hypot(e.clientX - plugCoverDown.x, e.clientY - plugCoverDown.y) > 8) return;
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                    raycaster.setFromCamera(pointer, camera);
+                    const hits = raycaster.intersectObjects(getPlugMeshes().filter(m => m.visible), false);
+                    if (!hits.length) return;
+                    window.dispatchEvent(new CustomEvent('sparkPlugClicked', {
+                        detail: { x: e.clientX, y: e.clientY, name: hits[0].object.name }
+                    }));
+                }, false);
+
+                // Debug helper: report the frontmost mesh name on every click so
+                // unnamed interactive targets can be identified in the page UI.
+                renderer.domElement.addEventListener('click', (e) => {
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                    raycaster.setFromCamera(pointer, camera);
+                    const hits = raycaster.intersectObjects(exterior.children, true);
+                    if (hits.length) {
+                        window.dispatchEvent(new CustomEvent('debugMeshClicked', {
+                            detail: { name: hits[0].object.name || '(unnamed mesh)' }
+                        }));
+                    }
+                }, false);
+
+                // Underchassis detection — when the camera is rotated low enough to
+                // see the underside, clicking the car fires 'underchassisInspected'
+                // every time and 'underchassisClicked' once for legacy listeners.
+                let ucDown = null;
+                let underchassisSeen = false;
+                renderer.domElement.addEventListener('pointerdown', (e) => { ucDown = { x: e.clientX, y: e.clientY }; }, false);
+                renderer.domElement.addEventListener('click', (e) => {
+                    if (ucDown && Math.hypot(e.clientX - ucDown.x, e.clientY - ucDown.y) > 8) return;
+                    if (controls.getPolarAngle() <= 1.6) return; // camera must be below the car's level
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                    raycaster.setFromCamera(pointer, camera);
+                    const intersects = raycaster.intersectObjects(exterior.children, true);
+                    if (!intersects.length) return;
+                    window.dispatchEvent(new CustomEvent('underchassisInspected', { detail: { point: intersects[0].point.toArray() } }));
+                    if (underchassisSeen) return;
+                    underchassisSeen = true;
+                    window.dispatchEvent(new CustomEvent('underchassisClicked', { detail: { point: intersects[0].point.toArray() } }));
+                }, false);
+
+                // Oil filter interaction — clicking the oil_filter mesh fires
+                // 'oilFilterClicked'; the mesh can be hidden/shown via setOilFilterRemoved.
+                // A gasket ring sits at the filter's position and shows while it is removed.
+                const oilFilterMesh = exterior.getObjectByName('oil_filter');
+                if (oilFilterMesh) {
+                    exterior.updateMatrixWorld(true);
+                    const fb = new THREE.Box3().setFromObject(oilFilterMesh);
+                    const fsize = fb.getSize(new THREE.Vector3());
+                    const fcen = fb.getCenter(new THREE.Vector3());
+                    const extScale = exterior.getWorldScale(new THREE.Vector3());
+                    const ringR = Math.max(fsize.x, fsize.y, fsize.z) * 0.4 / Math.max(extScale.x, 0.0001);
+                    const oilFilterGasket = new THREE.Mesh(
+                        new THREE.TorusGeometry(ringR, ringR * 0.18, 12, 40),
+                        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9 })
+                    );
+                    exterior.add(oilFilterGasket);
+                    oilFilterGasket.position.copy(exterior.worldToLocal(fcen));
+                    oilFilterGasket.quaternion.copy(exterior.getWorldQuaternion(new THREE.Quaternion()).invert());
+                    oilFilterGasket.rotateX(Math.PI / 2);
+                    oilFilterGasket.visible = false;
+
+                    window.checkOilFilter = function () {
+                        return { removed: !oilFilterMesh.visible };
+                    };
+                    window.setOilFilterRemoved = function (removed) {
+                        oilFilterMesh.visible = !removed;
+                        oilFilterGasket.visible = !!removed;
+                        requestRender();
+                        return window.checkOilFilter();
+                    };
+                    let ofDown = null;
+                    renderer.domElement.addEventListener('pointerdown', (e) => { ofDown = { x: e.clientX, y: e.clientY }; }, false);
+                    renderer.domElement.addEventListener('click', (e) => {
+                        if (ofDown && Math.hypot(e.clientX - ofDown.x, e.clientY - ofDown.y) > 8) return;
+                        const rect = renderer.domElement.getBoundingClientRect();
+                        pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                        pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                        raycaster.setFromCamera(pointer, camera);
+                        const intersects = raycaster.intersectObjects(exterior.children, true);
+                        for (let inter of intersects) {
+                            let obj = inter.object;
+                            while (obj && obj !== oilFilterMesh && obj !== oilFilterGasket) obj = obj.parent;
+                            if (obj === oilFilterMesh) {
+                                window.dispatchEvent(new CustomEvent('oilFilterClicked', { detail: { x: e.clientX, y: e.clientY } }));
+                                break;
+                            }
+                            // gasket ring is only interactive while the filter is removed
+                            if (obj === oilFilterGasket && !oilFilterMesh.visible) {
+                                window.dispatchEvent(new CustomEvent('oilFilterGasketClicked', { detail: { x: e.clientX, y: e.clientY } }));
+                                break;
+                            }
+                        }
+                    }, false);
+                }
+
+                // Oil filler cap interaction — clicking the Oil_cap mesh fires
+                // 'oilCapClicked'; the cap can be hidden/shown via setOilCapRemoved
+                const oilCapMesh = exterior.getObjectByName('Oil_cap');
+                if (!oilCapMesh) console.warn('Oil_cap mesh not found in car model');
+                if (oilCapMesh) {
+                    window.checkOilCap = function () {
+                        return { removed: !oilCapMesh.visible };
+                    };
+                    // screen-space position of the filler cap, for oil drop targeting
+                    window.getOilCapScreenPos = function () {
+                        const v = new THREE.Vector3();
+                        oilCapMesh.getWorldPosition(v);
+                        v.project(camera);
+                        const rect = renderer.domElement.getBoundingClientRect();
+                        return {
+                            x: rect.left + (v.x + 1) * 0.5 * rect.width,
+                            y: rect.top + (1 - (v.y + 1) * 0.5) * rect.height,
+                            behind: v.z > 1
+                        };
+                    };
+                    window.setOilCapRemoved = function (removed) {
+                        oilCapMesh.visible = !removed;
+                        requestRender();
+                        return window.checkOilCap();
+                    };
+                    let ocDown = null;
+                    renderer.domElement.addEventListener('pointerdown', (e) => { ocDown = { x: e.clientX, y: e.clientY }; }, false);
+                    renderer.domElement.addEventListener('click', (e) => {
+                        if (ocDown && Math.hypot(e.clientX - ocDown.x, e.clientY - ocDown.y) > 8) return;
+                        const rect = renderer.domElement.getBoundingClientRect();
+                        pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                        pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                        raycaster.setFromCamera(pointer, camera);
+                        const intersects = raycaster.intersectObjects(exterior.children, true);
+                        for (let inter of intersects) {
+                            let obj = inter.object;
+                            while (obj && obj !== oilCapMesh) obj = obj.parent;
+                            if (obj === oilCapMesh) {
+                                window.dispatchEvent(new CustomEvent('oilCapClicked', { detail: { x: e.clientX, y: e.clientY } }));
+                                break;
+                            }
+                        }
+                    }, false);
+                }
+
+                // Air filter housing interaction — the Air_Filter_Box is a single
+                // combined mesh, so the whole cover is pulled straight off on a
+                // pivot that lifts it up and hides it (it goes to the removed
+                // items storage). Clicking the box fires 'airFilterBoxClicked';
+                // setAirFilterBoxOpen(true) pulls it off, (false) refits it.
+                // Clicking Air_Filter fires 'airFilterClicked' (with boxOpen in
+                // the detail); setAirFilterRemoved hides/shows it.
+                // Air_Intake_Hose fires 'airIntakeHoseClicked' and can be
+                // hidden/shown via setAirIntakeHoseRemoved.
+                const airFilterBoxMesh = exterior.getObjectByName('Air_Filter_Box');
+                const airFilterMesh = exterior.getObjectByName('Air_Filter');
+                const airIntakeHoseMesh = exterior.getObjectByName('Air_Intake_Hose');
+                if (!airFilterBoxMesh) console.warn('Air_Filter_Box mesh not found in car model');
+                if (!airFilterMesh) console.warn('Air_Filter mesh not found in car model');
+                if (!airIntakeHoseMesh) console.warn('Air_Intake_Hose mesh not found in car model');
+                if (airFilterBoxMesh) {
+                    exterior.updateMatrixWorld(true);
+                    const bbox = new THREE.Box3().setFromObject(airFilterBoxMesh);
+                    const bsize = bbox.getSize(new THREE.Vector3());
+                    const bcenter = bbox.getCenter(new THREE.Vector3());
+                    // pivot at the box center so the cover lifts straight off
+                    const liftWorld = bcenter.clone();
+
+                    const pivot = new THREE.Group();
+                    pivot.name = 'AirFilterBox_pivot';
+                    exterior.worldToLocal(liftWorld);
+                    pivot.position.copy(liftWorld);
+                    exterior.add(pivot);
+                    pivot.attach(airFilterBoxMesh);
+                    airFilterBoxMesh.userData.isAirFilterBox = true;
+                    airFilterBoxPivot = pivot;
+                    airFilterBoxState = {
+                        open: false,
+                        lift: 0,
+                        target: 0,
+                        basePos: pivot.position.clone(),
+                        liftDist: Math.max(bsize.y * 2.2, 0.25)
+                    };
+
+                    window.checkAirFilterBox = function () {
+                        return { open: airFilterBoxState.open };
+                    };
+                    window.setAirFilterBoxOpen = function (open) {
+                        airFilterBoxState.open = !!open;
+                        // when refitting, make the cover visible so it can drop back on
+                        if (!airFilterBoxState.open) airFilterBoxPivot.visible = true;
+                        airFilterBoxState.target = airFilterBoxState.open ? 1 : 0;
+                        requestRender();
+                        return window.checkAirFilterBox();
+                    };
+                }
+                if (airFilterMesh) {
+                    airFilterMesh.userData.isAirFilter = true;
+                    window.checkAirFilter = function () {
+                        return { removed: !airFilterMesh.visible };
+                    };
+                    window.setAirFilterRemoved = function (removed) {
+                        airFilterMesh.visible = !removed;
+                        requestRender();
+                        return window.checkAirFilter();
+                    };
+                }
+                if (airIntakeHoseMesh) {
+                    airIntakeHoseMesh.userData.isAirIntakeHose = true;
+                    window.checkAirIntakeHose = function () {
+                        return { removed: !airIntakeHoseMesh.visible };
+                    };
+                    window.setAirIntakeHoseRemoved = function (removed) {
+                        airIntakeHoseMesh.visible = !removed;
+                        requestRender();
+                        return window.checkAirIntakeHose();
+                    };
+                }
+                if (airFilterBoxMesh || airFilterMesh || airIntakeHoseMesh) {
+                    let afDown = null;
+                    renderer.domElement.addEventListener('pointerdown', (e) => { afDown = { x: e.clientX, y: e.clientY }; }, false);
+                    renderer.domElement.addEventListener('click', (e) => {
+                        if (afDown && Math.hypot(e.clientX - afDown.x, e.clientY - afDown.y) > 8) return;
+                        const rect = renderer.domElement.getBoundingClientRect();
+                        pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                        pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                        raycaster.setFromCamera(pointer, camera);
+                        const intersects = raycaster.intersectObjects(exterior.children, true);
+                        for (let inter of intersects) {
+                            if (!inter.object.visible) continue;
+                            let obj = inter.object;
+                            while (obj && !obj.userData.isAirFilterBox && !obj.userData.isAirFilter && !obj.userData.isAirIntakeHose) obj = obj.parent;
+                            if (obj && obj.userData.isAirFilterBox && airFilterBoxState && airFilterBoxState.open) {
+                                continue; // cover is pulled off — its hidden mesh must not eat this hit
+                            }
+                            if (obj && obj.userData.isAirFilter) {
+                                window.dispatchEvent(new CustomEvent('airFilterClicked', { detail: { x: e.clientX, y: e.clientY, boxOpen: !!(airFilterBoxState && airFilterBoxState.open) } }));
+                                break;
+                            }
+                            if (obj && obj.userData.isAirFilterBox) {
+                                window.dispatchEvent(new CustomEvent('airFilterBoxClicked', { detail: { x: e.clientX, y: e.clientY } }));
+                                break;
+                            }
+                            if (obj && obj.userData.isAirIntakeHose) {
+                                window.dispatchEvent(new CustomEvent('airIntakeHoseClicked', { detail: { x: e.clientX, y: e.clientY } }));
+                                break;
+                            }
+                        }
+                    }, false);
+
+                    // pointer cursor over the interactive air filter parts
+                    renderer.domElement.addEventListener('pointermove', (e) => {
+                        const rect = renderer.domElement.getBoundingClientRect();
+                        pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                        pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                        raycaster.setFromCamera(pointer, camera);
+                        const intersects = raycaster.intersectObjects(exterior.children, true);
+                        for (let inter of intersects) {
+                            if (!inter.object.visible) continue;
+                            let obj = inter.object;
+                            while (obj && !obj.userData.isAirFilterBox && !obj.userData.isAirIntakeHose && !obj.userData.isAirFilter) obj = obj.parent;
+                            if (obj && obj.userData.isAirFilterBox && airFilterBoxState && airFilterBoxState.open) {
+                                continue; // cover is pulled off — not interactive
+                            }
+                            if (obj && (obj.userData.isAirFilterBox || obj.userData.isAirIntakeHose || obj.userData.isAirFilter)) {
+                                renderer.domElement.style.cursor = 'pointer';
+                                break;
+                            }
+                        }
+                    }, false);
+                }
+
+                // Wheel interaction — clicking a wheel/tire/rim mesh fires
+                // 'wheelClicked'; clicking a front tire fires 'frontWheelClicked'
+                // instead (used by the brake pad practice flow to confirm removal).
+                const wheelNameRe = /WHEEL|TIRE|RIM/i;
+                let whDown = null;
+                renderer.domElement.addEventListener('pointerdown', (e) => { whDown = { x: e.clientX, y: e.clientY }; }, false);
+                renderer.domElement.addEventListener('click', (e) => {
+                    if (whDown && Math.hypot(e.clientX - whDown.x, e.clientY - whDown.y) > 8) return;
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                    raycaster.setFromCamera(pointer, camera);
+                    const intersects = raycaster.intersectObjects(exterior.children, true);
+                    for (let inter of intersects) {
+                        if (!inter.object.visible) continue;
+                        let obj = inter.object;
+                        while (obj && !wheelNameRe.test(obj.name || '') && !obj.userData.isFrontWheel) obj = obj.parent;
+                        if (obj && (wheelNameRe.test(obj.name || '') || obj.userData.isFrontWheel)) {
+                            if (obj.userData.isFrontWheel) {
+                                window.dispatchEvent(new CustomEvent('frontWheelClicked', { detail: { x: e.clientX, y: e.clientY, name: obj.name, side: obj.userData.wheelSide } }));
+                            } else {
+                                window.dispatchEvent(new CustomEvent('wheelClicked', { detail: { x: e.clientX, y: e.clientY, name: obj.name } }));
+                            }
+                            break;
+                        }
+                    }
+                }, false);
+
+                requestRender();
             } catch (e) {
                 console.warn('Hood setup failed', e);
             }
@@ -1042,17 +2003,25 @@ function initThreeScene() {
         }
     );
 
-    function animate() {
-        requestAnimationFrame(animate);
-        controls.update();
+    function renderLoop() {
+        let needsMore = false;
+        if (controls && controls.update()) {
+            needsMore = true;
+        }
+
         // animate hood pivots towards their targets
         if (hoodPivots && hoodPivots.length) {
             for (let i = 0; i < hoodPivots.length; i++) {
                 const pivot = hoodPivots[i];
                 const state = hoodState[i] || { target: 0 };
                 const cur = pivot.rotation.x;
-                const next = THREE.MathUtils.lerp(cur, state.target || 0, 0.08);
-                pivot.rotation.x = next;
+                const target = state.target || 0;
+                if (Math.abs(cur - target) > 0.001) {
+                    pivot.rotation.x = THREE.MathUtils.lerp(cur, target, 0.08);
+                    needsMore = true;
+                } else {
+                    pivot.rotation.x = target;
+                }
             }
         }
 
@@ -1062,8 +2031,13 @@ function initThreeScene() {
                 const p = doorPivots[i];
                 const st = doorState[i] || { target: 0 };
                 const cur = p.rotation.y;
-                const next = THREE.MathUtils.lerp(cur, st.target || 0, 0.12);
-                p.rotation.y = next;
+                const target = st.target || 0;
+                if (Math.abs(cur - target) > 0.001) {
+                    p.rotation.y = THREE.MathUtils.lerp(cur, target, 0.12);
+                    needsMore = true;
+                } else {
+                    p.rotation.y = target;
+                }
             }
         }
 
@@ -1074,20 +2048,29 @@ function initThreeScene() {
                 const state = batteryCapState[i];
                 if (!state) continue;
 
-                // target opacity: 1 = visible, 0 = removed (invisible)
                 const targetOpacity = state.removed ? 0 : 1;
-                pivot.userData.opacity = THREE.MathUtils.lerp(pivot.userData.opacity || 1, targetOpacity, 0.15);
-
-                // Apply opacity to all materials
-                if (pivot.userData.materials) {
-                    pivot.userData.materials.forEach(mat => {
-                        mat.opacity = pivot.userData.opacity;
-                    });
-                }
-
-                // Hide completely when fully transparent
-                if (pivot.children[0]) {
-                    pivot.children[0].visible = pivot.userData.opacity > 0.01;
+                const curOpacity = pivot.userData.opacity !== undefined ? pivot.userData.opacity : 1;
+                if (Math.abs(curOpacity - targetOpacity) > 0.005) {
+                    pivot.userData.opacity = THREE.MathUtils.lerp(curOpacity, targetOpacity, 0.15);
+                    if (pivot.userData.materials) {
+                        pivot.userData.materials.forEach(mat => {
+                            mat.opacity = pivot.userData.opacity;
+                        });
+                    }
+                    if (pivot.children[0]) {
+                        pivot.children[0].visible = pivot.userData.opacity > 0.01;
+                    }
+                    needsMore = true;
+                } else {
+                    pivot.userData.opacity = targetOpacity;
+                    if (pivot.userData.materials) {
+                        pivot.userData.materials.forEach(mat => {
+                            mat.opacity = targetOpacity;
+                        });
+                    }
+                    if (pivot.children[0]) {
+                        pivot.children[0].visible = targetOpacity > 0.01;
+                    }
                 }
             }
         }
@@ -1101,22 +2084,74 @@ function initThreeScene() {
             pivot.position.y = THREE.MathUtils.lerp(pivot.position.y, targetY, 0.08);
             pivot.rotation.x = THREE.MathUtils.lerp(pivot.rotation.x, targetRot, 0.08);
 
-            // Stop animating when close to target
             if (Math.abs(pivot.position.y - targetY) < 0.001 &&
                 Math.abs(pivot.rotation.x - targetRot) < 0.001) {
+                pivot.position.y = targetY;
+                pivot.rotation.x = targetRot;
                 pivot.userData.animate = false;
+            } else {
+                needsMore = true;
             }
         }
+
+        // animate fuel filter (lifts out of the bracket when removed)
+        if (window.fuelFilterPivot && window.fuelFilterPivot.userData.animate) {
+            const pivot = window.fuelFilterPivot;
+            const targetY = pivot.userData.targetY || pivot.userData.baseY;
+            const targetRot = pivot.userData.targetRot || 0;
+
+            pivot.position.y = THREE.MathUtils.lerp(pivot.position.y, targetY, 0.08);
+            pivot.rotation.x = THREE.MathUtils.lerp(pivot.rotation.x, targetRot, 0.08);
+
+            if (Math.abs(pivot.position.y - targetY) < 0.001 &&
+                Math.abs(pivot.rotation.x - targetRot) < 0.001) {
+                pivot.position.y = targetY;
+                pivot.rotation.x = targetRot;
+                pivot.userData.animate = false;
+            } else {
+                needsMore = true;
+            }
+        }
+
+        // animate air filter housing pivot (cover lifts off / drops back on)
+        if (airFilterBoxPivot && airFilterBoxState) {
+            const cur = airFilterBoxState.lift || 0;
+            const target = airFilterBoxState.target || 0;
+            let next = cur;
+            if (Math.abs(cur - target) > 0.001) {
+                next = cur + (target - cur) * 0.08;
+                needsMore = true;
+            } else {
+                next = target;
+            }
+            airFilterBoxState.lift = next;
+            const d = airFilterBoxState.liftDist || 0.25;
+            airFilterBoxPivot.position.copy(airFilterBoxState.basePos);
+            airFilterBoxPivot.position.y += next * d;
+            airFilterBoxPivot.position.z -= next * d * 0.3;
+            // once fully lifted the cover is in the removed-items storage
+            if (airFilterBoxState.open && Math.abs(next - 1) <= 0.001) {
+                airFilterBoxPivot.visible = false;
+            }
+        }
+
         renderer.render(scene, camera);
+
+        if (needsMore) {
+            requestAnimationFrame(renderLoop);
+        } else {
+            isRunning = false;
+        }
     }
 
-    animate();
+    requestRender();
 
     const syncToContainer = () => {
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(container.clientWidth, container.clientHeight);
         if (activeExterior) frameModel(activeExterior);
+        requestRender();
     };
 
     if (window.ResizeObserver) {

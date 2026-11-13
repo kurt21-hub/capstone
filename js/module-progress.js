@@ -114,14 +114,31 @@
 
         saveTimers[storageKey] = setTimeout(async () => {
             try {
-                await fetch('student_progress.php', {
+                const student = getLoggedInStudent();
+                const payload = {
+                    module_key: storageKey,
+                    progress_percent: clampPct(pct)
+                };
+                
+                // Add student_id if available for fallback authentication
+                if (student && student.student_id) {
+                    payload.student_id = student.student_id;
+                }
+                
+                console.log('Saving module progress:', payload);
+                
+                const response = await fetch('student_progress.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        module_key: storageKey,
-                        progress_percent: clampPct(pct)
-                    })
+                    body: JSON.stringify(payload)
                 });
+                
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    console.warn('Failed to save module progress:', data.message);
+                } else {
+                    console.log('Module progress saved successfully');
+                }
             } catch (e) {
                 console.warn('Could not save progress to server', e);
             }

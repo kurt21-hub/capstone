@@ -8,6 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
         rel="stylesheet" />
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 <style>
     *,
@@ -246,65 +247,6 @@
         border-top: 1px solid #f0f0f5;
     }
 
-    /* Restrictions list (step 2) - non-numbered concise phrases */
-    .restrictions-list {
-        list-style: none;
-        padding-left: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 8px;
-    }
-
-    .restrictions-list li {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        color: #374151;
-        font-size: 0.8rem;
-    }
-
-    .restrictions-list li::before {
-        content: '';
-        width: 10px;
-        height: 10px;
-        background: #2563eb;
-        border-radius: 50%;
-        margin-top: 6px;
-        flex-shrink: 0;
-    }
-
-    /* Movement history in right panel */
-    .history-list {
-        list-style: none;
-        padding-left: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        max-height: 160px;
-        overflow-y: auto;
-        padding-right: 6px;
-    }
-
-    .history-list li {
-        font-size: 0.75rem;
-        color: #374151;
-        background: #fff;
-        border-radius: 8px;
-        padding: 8px 10px;
-        border: 1px solid #eef2ff;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .history-timestamp {
-        color: #9ca3af;
-        font-size: 0.68rem;
-        margin-left: auto;
-    }
-
     .view-all-btn {
         display: flex;
         align-items: center;
@@ -326,13 +268,6 @@
 
     .view-all-btn:hover {
         background: #eff6ff;
-    }
-
-    /* Next button disabled state */
-    .step-nav-btn.next[disabled] {
-        opacity: 0.5;
-        cursor: not-allowed;
-        pointer-events: none;
     }
 
     /* ── CENTER SIMULATION ── */
@@ -474,6 +409,106 @@
     .rp-section {
         padding: 14px 14px;
         border-bottom: 1px solid #f0f0f5;
+    }
+
+    /* Assessment: instruction lists are hidden from the student — the same
+       step verification still runs underneath via stepInstrDone/DOM state */
+    #inspectionChecklist,
+    .rp-section:has(#instrList) {
+        display: none !important;
+    }
+
+    .sound-toggle-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+        border: 1.5px solid #dbe7ff;
+        border-radius: 12px;
+    }
+
+    .sound-toggle-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+    }
+
+    .sound-toggle-label {
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: #2563eb;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+    }
+
+    .sound-toggle-copy strong {
+        font-size: 0.82rem;
+        color: #1a1a2e;
+        line-height: 1.2;
+    }
+
+    .sound-toggle-copy span {
+        font-size: 0.68rem;
+        color: #6b7280;
+        line-height: 1.35;
+    }
+
+    .sound-switch {
+        position: relative;
+        width: 62px;
+        height: 32px;
+        flex-shrink: 0;
+    }
+
+    .sound-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+    }
+
+    .sound-slider {
+        position: absolute;
+        inset: 0;
+        background: #cbd5e1;
+        border-radius: 999px;
+        transition: 0.25s ease;
+        cursor: pointer;
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.14);
+    }
+
+    .sound-slider::before {
+        content: '';
+        position: absolute;
+        height: 24px;
+        width: 24px;
+        left: 4px;
+        top: 4px;
+        background: #fff;
+        border-radius: 50%;
+        transition: 0.25s ease;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.22);
+    }
+
+    .sound-switch input:checked+.sound-slider {
+        background: #2563eb;
+    }
+
+    .sound-switch input:checked+.sound-slider::before {
+        transform: translateX(30px);
+    }
+
+    .sound-state {
+        display: block;
+        margin-top: 2px;
+        font-size: 0.66rem;
+        font-weight: 800;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        color: #2563eb;
     }
 
     .rp-label {
@@ -755,7 +790,7 @@
             </svg>
         </div>
         <div class="nav-title-group">
-            <div class="nav-title">Assessment Simulation</div>
+            <div class="nav-title">ASSESSMENT SIMULATION</div>
             <div class="nav-subtitle">Battery Maintenance</div>
         </div>
         <div class="nav-right">
@@ -769,7 +804,7 @@
                     <div class="timer-val" id="timer">00:00:00</div>
                 </div>
             </div>
-            <button class="end-btn" onclick="window.location.href='feature.html'">
+            <button class="end-btn" onclick="endSimulationAndSave()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10" />
                     <line x1="15" y1="9" x2="9" y2="15" />
@@ -823,6 +858,10 @@
                     <div class="tool-3d-placeholder" id="papertowel-model"></div>
                     <div class="tool-label">Paper Towel</div>
                 </div>
+                <div class="tool-card" id="testerToolCard">
+                    <div class="tool-3d-placeholder" id="tester-model" style="cursor:pointer;user-select:none;"></div>
+                    <div class="tool-label">Battery Tester</div>
+                </div>
             </div>
             <a href="#" class="view-all-btn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -855,7 +894,7 @@
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">3</div>
-                        <div class="step-name">Check Electrolyte</div>
+                        <div class="step-name">Test Battery</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
@@ -907,8 +946,23 @@
                     Current Task
                 </div>
                 <div class="rp-task-title">Inspect Battery Condition</div>
-                <div class="rp-task-desc">Check battery casing for cracks, leaks, or swelling. Verify terminal
-                    connections.</div>
+                <div class="rp-task-desc">Check the battery body, terminals, and cables for cracks, leaks, swelling,
+                    or damage.</div>
+            </div>
+
+            <div class="rp-section">
+                <div class="sound-toggle-card">
+                    <div class="sound-toggle-copy">
+                        <div class="sound-toggle-label">Engine Swipe</div>
+                        <strong>Engine sound</strong>
+                        <span>Starts ON — switch OFF to service safely.</span>
+                        <span class="sound-state" id="engineSoundState">ON</span>
+                    </div>
+                    <label class="sound-switch" for="engineSwipeToggle" aria-label="Engine sound toggle">
+                        <input type="checkbox" id="engineSwipeToggle">
+                        <span class="sound-slider"></span>
+                    </label>
+                </div>
             </div>
 
             <!-- Progress -->
@@ -922,13 +976,7 @@
                 </div>
             </div>
 
-            <!-- Battery Diagnostic Status Indicator -->
-            <div id="batteryStatusIndicator" style="display:none;margin-bottom:15px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.05);border:1.5px solid #e5e7eb;">
-                <div style="font-size:0.75rem;color:#6b7280;font-weight:700;margin-bottom:4px;">BATTERY DIAGNOSTIC STATUS</div>
-                <div id="batteryStatusValue" style="font-size:0.9rem;font-weight:800;display:flex;align-items:center;gap:6px;">
-                    <!-- Filled dynamically -->
-                </div>
-            </div>
+            <!-- Battery Diagnostic Status Indicator removed -->
 
             <!-- Instructions -->
             <div class="rp-section">
@@ -945,73 +993,25 @@
                 </div>
                 <ol class="instr-list" id="instrList">
                     <li>Ensure ignition is off and keys are removed</li>
-                    <li>Visually inspect battery case for cracks, bulging, or leaks</li>
+                    <li>Visually inspect the battery for cracks, bulging, or leaks</li>
                     <li>Check terminal connections are tight and corrosion-free</li>
                     <li>Inspect battery cables for fraying or damage</li>
-                    <li>Verify battery manufacture date and age</li>
                 </ol>
             </div>
 
-            <!-- Restrictions (Step 2 only) -->
-            <div class="rp-section" id="step2Restrictions" style="display:none;">
-                <div class="rp-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                        <path d="M9 12l2 2 4-4" />
-                    </svg>
-                    Restrictions
-                </div>
-                <ul class="restrictions-list">
-                    <li>PPE required</li>
-                    <li>No bridging</li>
-                    <li>No fluids</li>
-                    <li>Authorized tools only</li>
-                    <li>Assessment constraints apply</li>
-                </ul>
-            </div>
-
-            <!-- Restrictions (Step 3 only) -->
-            <div class="rp-section" id="step3Restrictions" style="display:none;">
-                <div class="rp-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                        <path d="M9 12l2 2 4-4" />
-                    </svg>
-                    Restrictions
-                </div>
-                <ul class="restrictions-list">
-                    <li>PPE required</li>
-                    <li>No open flames</li>
-                    <li>Work area clear</li>
-                    <li>Authorized tools only</li>
-                    <li>Assessment constraints apply</li>
-                </ul>
-            </div>
-
-            <!-- Inspection Checklist (Step 1 only) -->
+            <!-- Inspection List (Step 1 only) -->
             <div class="rp-section" id="inspectionChecklist" style="display:none;">
                 <div class="rp-label">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M9 11l3 3L22 4" />
                     </svg>
-                    Inspection Checklist
+                    Inspection
                 </div>
-                <div id="inspectionList" style="display:flex;flex-direction:column;gap:10px;">
-                    <label
-                        style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:8px;cursor:pointer;transition:all 0.2s;">
-                        <input type="checkbox" class="inspect-check" data-index="0"
-                            style="width:18px;height:18px;accent-color:#2563eb;cursor:pointer;">
-                        <span style="font-size:0.75rem;color:#374151;flex:1;">Ignition off and keys removed</span>
-                    </label>
-                    <label
-                        style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:8px;cursor:pointer;transition:all 0.2s;">
-                        <input type="checkbox" class="inspect-check" data-index="1"
-                            style="width:18px;height:18px;accent-color:#2563eb;cursor:pointer;">
-                        <span style="font-size:0.75rem;color:#374151;flex:1;">Battery case has no
-                            cracks/bulging/leaks</span>
-                    </label>
-                </div>
+                <ol class="instr-list" id="inspectionList">
+                    <li data-index="0">Ignition off and keys removed</li>
+                    <li data-index="1">Battery has no cracks, bulging, or leaks</li>
+                </ol>
                 <div
                     style="margin-top:12px;padding:10px 12px;background:#f1f5f9;border-radius:8px;border-left:3px solid #2563eb;">
                     <span style="font-size:0.75rem;color:#64748b;">✓ Complete all inspections, then click <strong>Next
@@ -1053,24 +1053,6 @@
                 </div>
             </div>
 
-            <!-- Movement History -->
-            <div class="rp-section">
-                <div class="rp-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 12h18" />
-                        <path d="M3 6h18" />
-                        <path d="M3 18h18" />
-                    </svg>
-                    Movement History
-                </div>
-                <div id="historyContainer"
-                    style="padding:8px;background:#f9fafb;border-radius:10px;border:1px solid #eef2ff;">
-                    <ul id="historyList" class="history-list">
-                        <!-- movements appended here -->
-                    </ul>
-                </div>
-            </div>
-
             <!-- Mixing Station moved to the simulation area (right side) -->
 
         </div>
@@ -1107,6 +1089,7 @@
         <img src="images/back.png" alt="">
     </div>
 
+    <script src="js/assessment_progress.js"></script>
     <script>
         const toggleBtn = document.getElementById('toggleBtn');
         const panel = document.querySelector('.panel');
@@ -1286,6 +1269,13 @@
             initBowlViewer('bowl-model');
         });
     </script>
+    <script type="module">
+        import { initTesterViewer } from './TesterViewer.js';
+
+        window.addEventListener('load', () => {
+            initTesterViewer('tester-model');
+        });
+    </script>
     <script>
         // Bowl drag-and-drop to open mixing modal + confirm flow
         window.addEventListener('load', () => {
@@ -1350,7 +1340,7 @@
             function onPointerDown(e) {
                 // Require inspection completion before allowing mixing station interactions
                 if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
-                    showSequenceWarning('Please complete the inspection checklist and proceed to the next step before using the mixing station.');
+                    showSequenceWarning('Please complete the inspection and proceed to the next step before using the mixing station.');
                     return;
                 }
 
@@ -1412,7 +1402,7 @@
             function onItemPointerDown(e, type) {
                 // Require inspection completion before allowing mixing station interactions
                 if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
-                    showSequenceWarning('Please complete the inspection checklist and proceed to the next step before using the mixing station.');
+                    showSequenceWarning('Please complete the inspection and proceed to the next step before using the mixing station.');
                     return;
                 }
 
@@ -1449,6 +1439,11 @@
                 ghost = null;
 
                 if (hit) {
+                    if (!bowlPlaced) {
+                        showSequenceWarning('Please place the bowl in the mixing area first.');
+                        draggingItemType = null;
+                        return;
+                    }
                     if (draggingItemType === 'soda' && sodaModal) {
                         sodaModal.style.display = 'flex';
                         if (sodaInput) sodaInput.value = 10;
@@ -1522,15 +1517,6 @@
                             }
                         })();
                     }
-
-                    // After placing bowl, open soda confirm modal
-                    if (sodaModal) {
-                        sodaModal.style.display = 'flex';
-                        if (sodaInput) sodaInput.value = 10;
-                    } else {
-                        // fallback to mix modal if soda modal not present
-                        mixModal.style.display = 'flex';
-                    }
                 } else {
                     // small feedback animation
                     const el = document.createElement('div');
@@ -1549,14 +1535,46 @@
 
             bowlEl.addEventListener('pointerdown', onPointerDown, { passive: false });
 
+            function updateMixResult() {
+                const bVal = Number(document.getElementById('mixBakingInput')?.value) || 0;
+                const wVal = Number(document.getElementById('mixWaterInput')?.value) || 0;
+                const ratio = bVal > 0 ? (wVal / bVal).toFixed(1) : '—';
+                let note = '';
+                if (ratio === '—') note = 'Invalid amounts';
+                else if (ratio < 1) note = 'Very thick paste';
+                else if (ratio < 2) note = 'Thick paste - good for scrubbing';
+                else if (ratio < 4) note = 'Paste - moderate consistency';
+                else note = 'Thin solution - good for rinsing';
+
+                mixResult.textContent = `Mixed ${bVal}g baking soda with ${wVal}ml water (ratio ${ratio}:1) — ${note}.`;
+            }
+
+            document.getElementById('mixBakingInput')?.addEventListener('input', updateMixResult);
+            document.getElementById('mixWaterInput')?.addEventListener('input', updateMixResult);
+
+            function showMixModal() {
+                if (mixModal) {
+                    if (document.getElementById('mixBakingInput')) document.getElementById('mixBakingInput').value = sodaAmount;
+                    if (document.getElementById('mixWaterInput')) document.getElementById('mixWaterInput').value = waterAmount;
+                    updateMixResult();
+                    mixModal.style.display = 'flex';
+                }
+            }
+
             // Soda modal handlers
             if (btnSodaConfirm) btnSodaConfirm.addEventListener('click', () => {
                 sodaAmount = Number(sodaInput.value) || 0;
                 sodaModal.style.display = 'none';
-                // then open water modal
-                if (waterModal) {
-                    waterModal.style.display = 'flex';
-                    if (waterInput) waterInput.value = 30;
+                
+                // If both are now added, show the mix modal
+                if (sodaAmount > 0 && waterAmount > 0) {
+                    showMixModal();
+                } else {
+                    const t = document.createElement('div');
+                    t.textContent = 'Baking soda added to bowl. Now drag and drop Water into the bowl.';
+                    t.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 14px;border-radius:10px;z-index:100050;font-weight:700;';
+                    document.body.appendChild(t);
+                    setTimeout(() => t.remove(), 2500);
                 }
             });
             if (btnSodaCancel) btnSodaCancel.addEventListener('click', () => {
@@ -1567,22 +1585,16 @@
             if (btnWaterConfirm) btnWaterConfirm.addEventListener('click', () => {
                 waterAmount = Number(waterInput.value) || 0;
                 waterModal.style.display = 'none';
-                // show final summary in mix modal
-                if (mixModal) {
-                    if (document.getElementById('mixBakingInput')) document.getElementById('mixBakingInput').value = sodaAmount;
-                    if (document.getElementById('mixWaterInput')) document.getElementById('mixWaterInput').value = waterAmount;
-
-                    // compute simple summary
-                    const ratio = sodaAmount > 0 ? (waterAmount / sodaAmount).toFixed(1) : '—';
-                    let note = '';
-                    if (ratio === '—') note = 'Invalid amounts';
-                    else if (ratio < 1) note = 'Very thick paste';
-                    else if (ratio < 2) note = 'Thick paste - good for scrubbing';
-                    else if (ratio < 4) note = 'Paste - moderate consistency';
-                    else note = 'Thin solution - good for rinsing';
-
-                    mixResult.textContent = `Mixed ${sodaAmount}g baking soda with ${waterAmount}ml water (ratio ${ratio}:1) — ${note}.`;
-                    mixModal.style.display = 'flex';
+                
+                // If both are now added, show the mix modal
+                if (sodaAmount > 0 && waterAmount > 0) {
+                    showMixModal();
+                } else {
+                    const t = document.createElement('div');
+                    t.textContent = 'Water added to bowl. Now drag and drop Baking Soda into the bowl.';
+                    t.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 14px;border-radius:10px;z-index:100050;font-weight:700;';
+                    document.body.appendChild(t);
+                    setTimeout(() => t.remove(), 2500);
                 }
             });
             if (btnWaterCancel) btnWaterCancel.addEventListener('click', () => {
@@ -1591,6 +1603,11 @@
 
             // Mix modal Done button: finalize and close
             if (btnDoMix) btnDoMix.addEventListener('click', () => {
+                const mixBakingInput = document.getElementById('mixBakingInput');
+                const mixWaterInput = document.getElementById('mixWaterInput');
+                if (mixBakingInput) sodaAmount = Number(mixBakingInput.value) || 0;
+                if (mixWaterInput) waterAmount = Number(mixWaterInput.value) || 0;
+
                 mixModal.style.display = 'none';
                 const t = document.createElement('div');
                 t.textContent = 'Mixture added to bowl.';
@@ -1611,8 +1628,6 @@
                         if (li) li.classList.add('done');
                     }
                 } catch (e) { console.warn('Failed to mark instruction done', e); }
-                // Movement log
-                addMovement('Mixed cleaning paste');
             });
 
             if (btnCloseMix) btnCloseMix.addEventListener('click', () => { mixModal.style.display = 'none'; });
@@ -1950,6 +1965,8 @@
             padding: 30px 32px 24px;
             width: 440px;
             max-width: 94vw;
+            max-height: 85vh;
+            overflow-y: auto;
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
             display: flex;
             flex-direction: column;
@@ -2042,11 +2059,30 @@
 
         .sr-item.mistake {
             background: #fef2f2;
-            color: #b91c1c;
+            color: #991b1b;
         }
 
         .sr-item.mistake svg {
             color: #dc2626;
+        }
+
+        .sr-feedback-box {
+            animation: feedbackPulse 2s ease-in-out;
+        }
+
+        .sr-feedback-box.critical {
+            animation: criticalPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes feedbackPulse {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(4px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes criticalPulse {
+            0%, 100% { background: #fef2f2; }
+            50% { background: #fee2e2; }
         }
 
         .sr-score {
@@ -2211,7 +2247,6 @@
                 <span class="sr-score-val" id="srScore"></span>
             </div>
             <div class="sr-actions">
-                <button class="sr-btn outline" onclick="closeStepReview(false)">Do It Again</button>
                 <button class="sr-btn primary" onclick="closeStepReview(true)" id="srProceedBtn">Proceed to Next Step
                     →</button>
             </div>
@@ -2224,9 +2259,8 @@
             <div class="fs-header">
                 <div class="fs-icon" id="fsIcon"></div>
                 <div>
-                    <div class="fs-title" id="fsTitle">Assessment Results</div>
-                    <div class="fs-subtitle" id="fsSubtitle">Review your assessment score, feedback, and performance by
-                        step.</div>
+                    <div class="fs-title" id="fsTitle">Simulation Complete</div>
+                    <div class="fs-subtitle" id="fsSubtitle">Review your score, feedback, and performance by step.</div>
                 </div>
             </div>
 
@@ -2264,27 +2298,12 @@
         </div>
     </div>
 
-    <script src="js/assessment_progress.js"></script>
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const ASSESSMENT_TITLE = urlParams.get('title') || 'Battery Maintenance Assessment';
-
-        // Update nav title and subtitle dynamically
-        document.addEventListener('DOMContentLoaded', () => {
-            const navTitle = document.querySelector('.nav-title');
-            const navSubtitle = document.querySelector('.nav-subtitle');
-            if (navTitle && urlParams.has('title')) {
-                navTitle.textContent = ASSESSMENT_TITLE;
-                if (navSubtitle) {
-                    navSubtitle.textContent = ASSESSMENT_TITLE.replace(' Assessment', '');
-                }
-            }
-        });
-
+        // ── STEP REVIEW DATA (tracked from user actions during simulation) ───
         const STEP_REVIEW_TITLES = [
             'Step 1: Inspect Battery Condition',
             'Step 2: Clean Battery Terminals',
-            'Step 3: Check Electrolyte Level',
+            'Step 3: Test Battery Health',
             'Step 4: Secure Battery Mount',
             'Step 5: Test Electrical System'
         ];
@@ -2292,7 +2311,15 @@
         function getRecommendationForMistake(message) {
             const m = (message || '').toLowerCase();
             
-            // Checkbox mistakes
+            // Critical battery feedback
+            if (m.includes('critical battery condition') || m.includes('critical battery not replaced')) {
+                return 'CRITICAL WARNING: A damaged battery with cracks, bulging, or leaks must be replaced immediately. If you continue without replacement: (1) The vehicle will likely not start due to insufficient voltage, (2) Acid leaks can corrode surrounding components and the engine bay, (3) A damaged battery may explode during charging or operation, causing injury. Always replace batteries showing physical damage.';
+            }
+            if (m.includes('battery installed successfully') && window.batteryNeedsReplacement) {
+                return 'ERROR: You installed the old damaged battery instead of replacing it with a new one. The battery has critical damage and must be replaced. Drag the NEW battery from the tools area and install it instead. Installing a damaged battery will cause the vehicle to fail to start and poses serious safety risks.';
+            }
+            
+            // Inspection mistakes
             if (m.includes('ignition off and keys removed')) {
                 return 'Tip: Always verify that ignition is off and keys are removed before inspecting or working on the battery to ensure safety.';
             }
@@ -2326,32 +2353,23 @@
             if (m.includes('reconnect positive') && m.includes('negative') && m.includes('terminal')) {
                 return 'Tip: When reconnecting, connect the positive (+) terminal first, then the negative (-) terminal to avoid sparking.';
             }
-            if (m.includes('remove battery caps carefully') || m.includes('wear safety goggles')) {
-                return 'Tip: Always wear safety goggles and open caps carefully; batteries contain sulfuric acid.';
+            if (m.includes('terminal caps')) {
+                return 'Tip: Remove both terminal caps first so the tester leads can reach the battery posts.';
             }
-            if (m.includes('electrolyte level')) {
-                return 'Tip: Verify that the liquid inside each cell reaches the proper MIN/MAX indicators.';
+            if (m.includes('tester leads')) {
+                return 'Tip: Connect the red lead to positive (+) and the black lead to negative (−) — reversed leads give false readings.';
             }
-            if (m.includes('distilled water')) {
-                return 'Tip: Use ONLY distilled water to top up cells; tap water contains minerals that damage batteries.';
+            if (m.includes('voltage result') || m.includes('battery test')) {
+                return 'Tip: A healthy resting battery reads 12.4V or higher — below that it may need charging or replacement.';
             }
-            if (m.includes('do not overfill')) {
-                return 'Tip: Do not overfill the cells; electrolyte expands during charging and could boil over.';
-            }
-            if (m.includes('replace caps securely')) {
-                return 'Tip: Re-secure all battery caps tightly and clean up any spilled liquid immediately.';
+            if (m.includes('passes') || m.includes('under load')) {
+                return 'Tip: The battery must hold voltage under load — a big voltage drop means a weak or failing battery.';
             }
             if (m.includes('hold-down bracket for tightness') || m.includes('bracket for tightness')) {
                 return 'Tip: Securely tighten the hold-down bracket to prevent the battery from moving or getting damaged.';
             }
             if (m.includes('bracket bolts')) {
                 return 'Tip: Inspect the bracket bolts for damage or rust to ensure the mounting holds securely.';
-            }
-            if (m.includes('sits level and does not shift') || m.includes('sits level and does not')) {
-                return 'Tip: The battery must rest flat and secure in its tray; physically push it to verify stability.';
-            }
-            if (m.includes('tray is not rusted')) {
-                return 'Tip: A rusted tray can weaken the battery mount; ensure it is structurally intact.';
             }
             if (m.includes('tighten bracket evenly')) {
                 return 'Tip: Tighten the bracket bolts evenly to avoid putting too much stress on the battery case.';
@@ -2404,7 +2422,7 @@
                 const text = (message || '').trim();
                 if (!text) return;
                 const list = this.steps[stepIdx][type];
-                if (list.some((item) => String(item).toLowerCase() === text.toLowerCase())) return;
+                if (list.some((item) => item.toLowerCase() === text.toLowerCase())) return;
                 list.push(text);
             },
             addCorrect(message, stepIdx) {
@@ -2418,22 +2436,364 @@
         window.simulationTracker = simulationTracker;
         const stepReviewData = simulationTracker.steps;
 
-        let __assessmentProgressLoaded = false;
+        // Progress persistence integration
+        let __progressAutoSaveInterval = null;
+        let __progressLoaded = false;
+        window.__practiceCompleted = false;
 
-        function formatReviewItem(item) {
-            if (typeof item === 'string') return item;
-            if (item && typeof item === 'object') return item.message || item.text || String(item);
-            return String(item);
+        /**
+         * Load saved progress from database on page load
+         */
+        async function loadSavedProgress() {
+            if (__progressLoaded) return;
+
+            console.log('PracticeArea: Loading saved progress...');
+            const data = await AssessmentProgress.loadProgress('Battery Maintenance Assessment');
+
+            if (data && data.current_progress) {
+                const saved = data.current_progress;
+                console.log('PracticeArea: Restoring progress from', saved.date_attempted);
+
+                if (saved.completion_status === 'Completed') {
+                    // Assessment attempts are final — a completed/interrupted
+                    // attempt cannot be retaken, send the student back
+                    console.log('AssessmentArea: Attempt already finalized. Returning to tasks.');
+                    window.__assessmentRedirecting = true;
+                    window.location.href = 'assessmenttasks.html';
+                    return;
+                } else {
+                    // Restore tracker data
+                    AssessmentProgress.restoreProgress(saved, simulationTracker);
+
+                    // Restore step position and in-page UI state so the student
+                    // lands back on the step they were working on
+                    if (typeof saved.current_step_index === 'number' && !isNaN(saved.current_step_index)) {
+                        currentStepIndex = Math.max(0, Math.min(saved.current_step_index, totalSteps - 1));
+                    }
+                    if (saved.time_elapsed_seconds) {
+                        window.__practiceElapsedSeconds = saved.time_elapsed_seconds;
+                        if (typeof startPracticeTimer === 'function') {
+                            startPracticeTimer();
+                        }
+                    }
+                    if (saved.step_instr_done && typeof saved.step_instr_done === 'object') {
+                        // Only restore steps 4 and 5 (indices 3 and 4) where the
+                        // verification actions are UI-driven and repeatable.
+                        // Steps 0-2 depend on scene objects that do not survive
+                        // reload, so those checkmarks must be re-earned.
+                        window.stepInstrDone = {};
+                        [3, 4].forEach((idx) => {
+                            if (saved.step_instr_done[idx]) {
+                                window.stepInstrDone[idx] = saved.step_instr_done[idx];
+                            }
+                        });
+                    }
+                    // The engine sound is only for Step 1 — a reload landing on
+                    // a later step must leave the engine OFF.
+                    if (currentStepIndex !== 0) {
+                        try { setEngineSwipeEnabled(false); } catch (e) {}
+                    }
+                    updateStepUI();
+                    console.log('PracticeArea: Resumed at step', currentStepIndex + 1, 'of', totalSteps);
+                }
+
+                // Show welcome back notification with previous score
+                if (data.statistics && data.statistics.total_attempts > 0) {
+                    const stats = data.statistics;
+                    const notification = document.createElement('div');
+                    notification.id = 'progressNotification';
+                    notification.style.cssText = `
+                        position: fixed;
+                        top: 70px;
+                        right: 20px;
+                        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+                        color: #fff;
+                        padding: 14px 18px;
+                        border-radius: 12px;
+                        box-shadow: 0 8px 24px rgba(37,99,235,0.3);
+                        z-index: 10000;
+                        font-size: 0.85rem;
+                        max-width: 320px;
+                        animation: slideInRight 0.4s ease;
+                    `;
+                    notification.innerHTML = `
+                        <div style="font-weight: 700; margin-bottom: 4px;">Welcome Back!</div>
+                        <div style="opacity: 0.95; line-height: 1.4;">
+                            Previous score: <strong>${saved.score}%</strong><br>
+                            Attempt #${stats.total_attempts} • Best: ${stats.best_score}%
+                        </div>
+                        <button onclick="dismissProgressNotification()" style="
+                            margin-top: 10px;
+                            padding: 6px 12px;
+                            background: rgba(255,255,255,0.2);
+                            border: none;
+                            border-radius: 6px;
+                            color: #fff;
+                            font-size: 0.75rem;
+                            cursor: pointer;
+                            font-weight: 600;
+                        ">Dismiss</button>
+                    `;
+                    document.body.appendChild(notification);
+
+                    // Auto-dismiss after 8 seconds
+                    setTimeout(() => {
+                        const n = document.getElementById('progressNotification');
+                        if (n) {
+                            n.style.animation = 'slideOutRight 0.4s ease forwards';
+                            setTimeout(() => n.remove(), 400);
+                        }
+                    }, 8000);
+                }
+
+                __progressLoaded = true;
+            } else {
+                console.log('PracticeArea: No saved progress found');
+            }
         }
+
+        function dismissProgressNotification() {
+            const n = document.getElementById('progressNotification');
+            if (n) {
+                n.style.animation = 'slideOutRight 0.4s ease forwards';
+                setTimeout(() => n.remove(), 400);
+            }
+        }
+
+        // Score = items actually completed / total items. Reviewed steps are
+        // final but not guaranteed complete — count every step's persisted
+        // done flags rather than assuming earlier steps finished in full.
+        function getAttemptScore() {
+            const itemCounts = [2, 5, 5, 3, 2]; // inspection list + step 2-5 instruction items
+            let done = 0, total = 0;
+            for (let s = 0; s < itemCounts.length; s++) {
+                total += itemCounts[s];
+                const arr = (window.stepInstrDone && window.stepInstrDone[s]) || [];
+                let c = 0;
+                for (let i = 0; i < itemCounts[s]; i++) if (arr[i]) c++;
+                if (s === 0) {
+                    c = Math.max(c, document.querySelectorAll('#inspectionList li.done').length);
+                }
+                if (s === currentStepIndex) {
+                    c = Math.max(c, document.querySelectorAll('#instrList li.done').length);
+                }
+                done += c;
+            }
+            return total > 0 ? Math.round((done / total) * 100) : 0;
+        }
+
+        /**
+         * Build the progress payload used for both periodic saves and unload beacons
+         */
+        function buildProgressPayload(status) {
+            const student = getLoggedInStudent();
+            const payload = {
+                title: 'Battery Maintenance Assessment',
+                type: 'Battery',
+                score: getAttemptScore(),
+                completion_status: status,
+                time_elapsed_seconds: window.__practiceElapsedSeconds || 0,
+                current_step_index: currentStepIndex,
+                step_instr_done: window.stepInstrDone || {},
+                battery_needs_replacement: !!window.batteryNeedsReplacement,
+                steps: stepReviewData.map((step) => ({
+                    title: step.title,
+                    correct: [...step.correct],
+                    mistakes: [...step.mistakes],
+                    score: getStepScore(step)
+                }))
+            };
+            if (student && student.student_id) {
+                payload.student_id = student.student_id;
+            }
+            if (student) {
+                payload.student = student;
+            }
+            return payload;
+        }
+
+        /**
+         * Save current progress to database
+         */
+        async function saveCurrentProgress(status = 'Completed') {
+            const payload = buildProgressPayload(status);
+            if (!payload) return;
+
+            const result = await AssessmentProgress.saveProgress(payload);
+            if (result.success) {
+                console.log('PracticeArea: Progress saved', result);
+            }
+            return result;
+        }
+
+        async function endSimulationAndSave() {
+            try {
+                await saveCurrentProgress('Completed');
+            } catch (err) {
+                console.error('Failed to save progress during end simulation:', err);
+            }
+            window.__assessmentRedirecting = true;
+            window.location.href = 'assessmenttasks.html';
+        }
+        window.endSimulationAndSave = endSimulationAndSave;
+
+        /**
+         * Start auto-save interval (saves every 30 seconds)
+         */
+        function startAutoSave() {
+            if (__progressAutoSaveInterval) clearInterval(__progressAutoSaveInterval);
+            __progressAutoSaveInterval = setInterval(() => {
+                saveCurrentProgress('Completed');
+            }, 30000); // Save every 30 seconds
+        }
+
+        /**
+         * Stop auto-save
+         */
+        function stopAutoSave() {
+            if (__progressAutoSaveInterval) {
+                clearInterval(__progressAutoSaveInterval);
+                __progressAutoSaveInterval = null;
+            }
+        }
+
+        // Load progress on page load
+        window.addEventListener('load', () => {
+            setTimeout(loadSavedProgress, 1000); // Load after 1 second
+            startAutoSave();
+        });
+
+        // Save on page unload — sendBeacon survives the unload, unlike async fetch.
+        // An interrupted assessment is finalized as Completed — no resume/retry,
+        // but the score achieved so far is still recorded.
+        window.addEventListener('beforeunload', () => {
+            // Skip when the unload is our own redirect — otherwise the beacon
+            // would overwrite the real record with an empty zombie row
+            if (window.__practiceCompleted || window.__assessmentRedirecting) return;
+            const payload = buildProgressPayload('Completed');
+            if (!payload) return;
+            try {
+                const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain' });
+                const sent = navigator.sendBeacon('save_assessment.php', blob);
+                if (!sent) {
+                    fetch('save_assessment.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        keepalive: true
+                    });
+                }
+            } catch (e) {
+                saveCurrentProgress('Completed');
+            }
+        });
+
+        // Anti-switch restriction — leaving the tab or window (Alt+Tab,
+        // minimizing, switching apps) ends the assessment. The attempt is
+        // saved where the student left off and they are sent back to the
+        // assessment list, same as an interrupted attempt.
+        function endAssessmentOnFocusLoss(reason) {
+            if (window.__assessmentFocusEnded || window.__assessmentRedirecting || window.__practiceCompleted) return;
+            window.__assessmentFocusEnded = true;
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.72);display:flex;align-items:center;justify-content:center;z-index:100200;';
+            overlay.innerHTML = `<div style="background:#fff;border-radius:14px;padding:24px 28px;max-width:340px;text-align:center;font-family:'Nunito',sans-serif;">
+                <div style="font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;color:#1a1a2e;margin-bottom:6px;">Assessment Ended</div>
+                <div style="font-size:0.85rem;color:#4b5563;">The assessment closed because the window lost focus (${reason}). Your progress was saved.</div>
+            </div>`;
+            document.body.appendChild(overlay);
+            const savePromise = Promise.resolve(saveCurrentProgress('Completed')).catch(() => {});
+            const minDelay = new Promise((resolve) => setTimeout(resolve, 900));
+            Promise.all([savePromise, minDelay]).finally(() => {
+                window.__assessmentRedirecting = true;
+                window.location.href = 'assessmenttasks.html';
+            });
+        }
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) endAssessmentOnFocusLoss('tab switch');
+        });
+        window.addEventListener('blur', () => {
+            // Brief delay — clicks into in-page elements can transiently blur.
+            setTimeout(() => { if (!document.hasFocus()) endAssessmentOnFocusLoss('window focus lost'); }, 150);
+        });
+
+        // Cross-tab guard — a practice simulation opened in another tab ends
+        // the assessment the same way as leaving: save and exit.
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'motomasterActiveSim' && typeof e.newValue === 'string' && e.newValue.startsWith('practice:')) {
+                endAssessmentOnFocusLoss('practice simulation opened');
+            }
+        });
+
+        const engineSwipeAudio = new Audio('music/notstarting.mp3');
+        engineSwipeAudio.loop = true;
+        engineSwipeAudio.preload = 'auto';
+
+        let engineSwipeEnabled = false;
+
+        async function setEngineSwipeEnabled(enabled) {
+            engineSwipeEnabled = enabled;
+            const stateLabel = document.getElementById('engineSoundState');
+            const toggle = document.getElementById('engineSwipeToggle');
+
+            if (stateLabel) {
+                stateLabel.textContent = enabled ? 'ON' : 'OFF';
+            }
+            if (toggle && toggle.checked !== enabled) {
+                toggle.checked = enabled;
+            }
+
+            if (enabled) {
+                try {
+                    await engineSwipeAudio.play();
+                } catch (error) {
+                    console.warn('Engine swipe audio could not start:', error);
+                    // Browsers block autoplay before the first user gesture.
+                    // Keep the engine ON and keep retrying on every user
+                    // interaction until the audio actually starts playing.
+                    const startEvents = ['pointerdown', 'keydown', 'touchstart', 'click'];
+                    const stopRetrying = () => {
+                        startEvents.forEach((evt) => document.removeEventListener(evt, retryPlay));
+                    };
+                    function retryPlay() {
+                        if (!engineSwipeEnabled) {
+                            stopRetrying();
+                            return;
+                        }
+                        engineSwipeAudio.play()
+                            .then(stopRetrying)
+                            .catch(() => { /* still blocked — try again on the next gesture */ });
+                    }
+                    startEvents.forEach((evt) => document.addEventListener(evt, retryPlay));
+                }
+            } else {
+                engineSwipeAudio.pause();
+                engineSwipeAudio.currentTime = 0;
+            }
+        }
+
+        window.setEngineSwipeEnabled = setEngineSwipeEnabled;
+
+        let currentStepIndex = 0;
+        const totalSteps = stepReviewData.length;
+
+        function syncPracticeStepIndex() {
+            window.practiceStepIndex = currentStepIndex;
+        }
+        syncPracticeStepIndex();
 
         function classifySequenceMessage(message) {
             const text = (message || '').toLowerCase();
+            // If battery needs replacement, 'battery installed successfully' is NOT correct
+            // Only 'accepted and installed' (new battery from tools) should be correct
+            if (window.batteryNeedsReplacement && text.includes('battery installed successfully')) {
+                return 'mistake';
+            }
             if (
                 text.includes('successfully') ||
                 text.includes('refilled') ||
                 text.includes('accepted and installed') ||
-                text.includes('marked for disposal') ||
-                text.includes('cleaned successfully')
+                text.includes('marked for disposal')
             ) {
                 return 'correct';
             }
@@ -2448,11 +2808,11 @@
         }
 
         function recordSimulationEvent(message) {
-            if (!message) return;
-            const stepIdx = typeof window.assessmentStepIndex === 'number' ? window.assessmentStepIndex : 0;
-            const kind = classifySequenceMessage(message);
-            if (kind === 'correct') simulationTracker.addCorrect(message, stepIdx);
-            else if (kind === 'mistake') simulationTracker.addMistake(message, stepIdx);
+            // Assessment scoring is completion-based: warning/hint toasts (e.g.
+            // "this tool is used during Step 3") are guidance, not errors, so
+            // they must not be recorded as mistakes — otherwise exploratory
+            // clicks inflate the mistake count and crash the score.
+            return;
         }
         window.recordSimulationEvent = recordSimulationEvent;
 
@@ -2460,14 +2820,14 @@
             const data = simulationTracker.steps[stepIdx];
             data.title = STEP_REVIEW_TITLES[stepIdx];
 
-            // Clear previous correct items for checklists to prevent carryover of unchecked/previous states
+            // Clear previous correct items for list-verified steps to prevent carryover of stale states
             if (stepIdx === 0 || stepIdx === 3 || stepIdx === 4) {
                 data.correct = [];
             } else if (stepIdx === 1 || stepIdx === 2) {
                 // Remove list-item instructions from correct array to re-evaluate them cleanly
                 const instructionsList = [
                     ['Mix baking soda', 'Disconnect negative', 'Apply paste', 'Wipe terminals', 'Reconnect positive', 'Remove the old battery', 'Drag and drop the new battery'],
-                    ['Remove battery caps', 'Check electrolyte', 'Top up', 'Do not overfill', 'Replace caps']
+                    ['terminal caps', 'tester leads', 'voltage', 'passes', 'replace the terminal caps']
                 ];
                 const activeInstrs = instructionsList[stepIdx - 1];
                 data.correct = data.correct.filter(c => {
@@ -2477,9 +2837,9 @@
             }
 
             if (stepIdx === 0) {
-                document.querySelectorAll('.inspect-check').forEach((cb) => {
-                    const label = cb.closest('label')?.querySelector('span')?.textContent?.trim();
-                    if (cb.checked && label) simulationTracker.addCorrect(label, 0);
+                document.querySelectorAll('#inspectionList li').forEach((li) => {
+                    const label = li.textContent?.trim();
+                    if (li.classList.contains('done') && label) simulationTracker.addCorrect(label, 0);
                 });
             } else {
                 const done = window.stepInstrDone?.[stepIdx] || [];
@@ -2499,7 +2859,24 @@
             }
         }
 
-        async function saveAssessmentToDatabase(overallScore, status) {
+        function getLoggedInStudent() {
+            try {
+                const raw = localStorage.getItem('motomasterStudent') || sessionStorage.getItem('motomasterStudent');
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function savePracticeSimulationToDatabase(overallScore) {
+            const student = getLoggedInStudent();
+            console.log('Student info:', student);
+            
+            if (!student || (student.student_id === undefined && !student.email)) {
+                console.warn('Practice results not saved: student not signed in.');
+                return;
+            }
+
             const stepsPayload = stepReviewData.map((step) => ({
                 title: step.title,
                 correct: [...step.correct],
@@ -2507,47 +2884,57 @@
                 score: getStepScore(step)
             }));
 
-            return AssessmentProgress.saveProgress({
-                title: ASSESSMENT_TITLE,
-                score: overallScore,
-                completion_status: status || 'Completed',
-                time_elapsed_seconds: window.__assessmentElapsedSeconds || 0,
-                steps: stepsPayload
-            });
-        }
+            console.log('Steps payload:', stepsPayload);
 
-        async function loadSavedAssessmentProgress() {
-            if (__assessmentProgressLoaded) return;
-            const data = await AssessmentProgress.loadProgress(ASSESSMENT_TITLE);
-            if (data && data.current_progress) {
-                const saved = data.current_progress;
-                const score = Number(saved.score) || 0;
-                const status = saved.completion_status || '';
-                const hasStepData = (saved.steps || []).some((s) => {
-                    const c = (s.correct_actions || s.correct || []).length;
-                    const m = (s.mistake_actions || s.mistakes || []).length;
-                    return c + m > 0;
-                });
-                if (status !== 'Not Started' && (score > 0 || hasStepData)) {
-                    AssessmentProgress.restoreProgress(saved, simulationTracker);
+            try {
+                const payload = {
+                    title: 'Battery Maintenance Assessment',
+                    type: 'Battery',
+                    score: overallScore,
+                    completion_status: 'Completed',
+                    time_elapsed_seconds: window.__practiceElapsedSeconds || 0,
+                    current_step_index: currentStepIndex,
+                    step_instr_done: window.stepInstrDone || {},
+                    steps: stepsPayload
+                };
+                
+                // Add student_id if available
+                if (student.student_id) {
+                    payload.student_id = student.student_id;
+                    console.log('Including student_id:', student.student_id);
                 }
-                __assessmentProgressLoaded = true;
+                
+                // Add full student object as fallback
+                payload.student = student;
+
+                console.log('Sending payload to server:', payload);
+
+                const res = await fetch('save_assessment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log('Response status:', res.status);
+                
+                const data = await res.json();
+                console.log('Response data:', data);
+                
+                if (!res.ok || !data.success) {
+                    console.warn('Failed to save practice simulation:', data.message || res.status);
+                } else {
+                    console.log('Practice simulation saved successfully:', data);
+                }
+            } catch (err) {
+                console.error('Failed to save practice simulation:', err);
             }
         }
-
-        let currentStepIndex = 0;
-        const totalSteps = stepReviewData.length;
-
-        function syncAssessmentStepIndex() {
-            window.assessmentStepIndex = currentStepIndex;
-        }
-        syncAssessmentStepIndex();
 
         function getStepScore(stepData) {
             const correctCount = stepData.correct.length;
             const mistakeCount = stepData.mistakes.length;
             const total = correctCount + mistakeCount;
-            if (total === 0) return 100;
+            if (total === 0) return 0; // step never attempted in the assessment
             return Math.round((correctCount / total) * 100);
         }
 
@@ -2580,7 +2967,7 @@
                                 ${stepData.correct.map((item) => `
                                     <div class="fs-item">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                        <span>${formatReviewItem(item)}</span>
+                                        <span>${item}</span>
                                     </div>`).join('')}
                             </div>
                         </div>
@@ -2591,7 +2978,7 @@
                                     <div class="fs-item" style="flex-direction: column; align-items: stretch; gap: 4px;">
                                         <div style="display: flex; align-items: flex-start; gap: 8px;">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-top: 1px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                            <span style="color: #b91c1c;">${formatReviewItem(item)}</span>
+                                            <span style="color: #b91c1c;">${item}</span>
                                         </div>
                                         <div style="font-size: 0.7rem; color: #7f1d1d; font-weight: 600; opacity: 0.85; padding-left: 22px; display: flex; align-items: center; gap: 4px;">
                                             <span>💡</span>
@@ -2618,22 +3005,28 @@
             correctList.innerHTML = data.correct.map(c => `
                 <div class="sr-item correct">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    ${formatReviewItem(c)}
+                    ${c}
                 </div>`).join('');
 
             // Mistake items
             const mistakeList = document.getElementById('srMistakeList');
-            mistakeList.innerHTML = data.mistakes.map(m => `
-                <div class="sr-item mistake" style="flex-direction: column; align-items: stretch; gap: 4px;">
+            mistakeList.innerHTML = data.mistakes.map(m => {
+                const recommendation = getRecommendationForMistake(m);
+                const isCritical = recommendation && (recommendation.includes('CRITICAL') || recommendation.includes('WARNING'));
+                return `
+                <div class="sr-item mistake" style="flex-direction: column; align-items: stretch; gap: 6px;">
                     <div style="display: flex; align-items: flex-start; gap: 9px;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-top: 1px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        <span>${formatReviewItem(m)}</span>
+                        <span style="font-weight: 600;">${m}</span>
                     </div>
-                    <div style="font-size: 0.72rem; color: #b91c1c; font-weight: 600; opacity: 0.85; padding-left: 23px; display: flex; align-items: center; gap: 4px;">
-                        <span>💡</span>
-                        <span>${getRecommendationForMistake(m)}</span>
+                    <div class="sr-feedback-box ${isCritical ? 'critical' : ''}" style="padding: 10px 12px; border-radius: 8px; background: ${isCritical ? '#fef2f2' : '#f0fdf4'}; border-left: 4px solid ${isCritical ? '#dc2626' : '#16a34a'}; margin-left: 23px;">
+                        <div style="display: flex; align-items: flex-start; gap: 8px;">
+                            <span style="font-size: 1.1rem;">${isCritical ? '⚠️' : '💡'}</span>
+                            <span style="font-size: 0.78rem; color: ${isCritical ? '#991b1b' : '#166534'}; font-weight: 600; line-height: 1.5;">${recommendation}</span>
+                        </div>
                     </div>
-                </div>`).join('');
+                </div>`;
+            }).join('');
 
             // Score
             const score = getStepScore(data);
@@ -2652,30 +3045,40 @@
             overlay.classList.remove('show');
 
             if (proceed) {
-                // Only proceed if the current step is completed
-                if (!canProceedFromStep(currentStepIndex)) {
-                    showSequenceWarning('Complete the current step before proceeding.');
-                    return;
-                }
+                // Assessment steps are final once reviewed — proceed regardless
+                // of leftover items; they are already scored as mistakes.
                 if (currentStepIndex === totalSteps - 1) {
                     openFinalSummary();
                     return;
                 }
                 currentStepIndex = Math.min(currentStepIndex + 1, totalSteps - 1);
                 updateStepUI();
-                try { addMovement(`Proceeded to step ${currentStepIndex + 1}`); } catch (e) { }
             }
         }
 
         // Return true if the user can proceed from the given step index
         function canProceedFromStep(stepIdx) {
-            // All steps are non-blocking; missed or unfinished tasks/instructions are logged as mistakes upon proceeding
-            return true;
+            // Step 0 uses the inspection list — items verify from real actions
+            if (stepIdx === 0) {
+                const items = document.querySelectorAll('#inspectionList li');
+                if (!items || items.length === 0) return true;
+                return Array.from(items).every(li => li.classList.contains('done'));
+            }
+
+            // For other steps, ensure every instruction list item is marked done
+            const instrList = document.getElementById('instrList');
+            if (!instrList) return true; // defensive
+            const items = instrList.querySelectorAll('li');
+            if (!items || items.length === 0) return true;
+            return Array.from(items).every(li => li.classList.contains('done'));
         }
 
         function openFinalSummary() {
+            window.__practiceCompleted = true;
+            stopAutoSave();
             const totalScores = stepReviewData.map(getStepScore);
             const overallScore = Math.round(totalScores.reduce((sum, value) => sum + value, 0) / totalScores.length);
+            console.log('Opening final summary with overall score:', overallScore);
             const overlay = document.getElementById('finalSummaryOverlay');
             const reviewArea = document.getElementById('fsReviewArea');
             const icon = document.getElementById('fsIcon');
@@ -2700,7 +3103,8 @@
             if (reviewBtn) reviewBtn.textContent = 'Review Steps';
 
             overlay.classList.add('show');
-            saveAssessmentToDatabase(overallScore, 'Completed');
+            console.log('Saving practice simulation to database...');
+            savePracticeSimulationToDatabase(overallScore);
         }
 
         function toggleFinalReview() {
@@ -2720,7 +3124,27 @@
         }
 
         function updateStepUI() {
-            syncAssessmentStepIndex();
+            syncPracticeStepIndex();
+
+            // Update engine sound source depending on the step: start.mp3 for Step 5 (index 4), notstarting.mp3 for Steps 1-4
+            if (typeof engineSwipeAudio !== 'undefined') {
+                const targetSrc = (currentStepIndex === 4) ? 'music/start.mp3' : 'music/notstarting.mp3';
+                if (!engineSwipeAudio.src.endsWith(targetSrc)) {
+                    const wasPlaying = !engineSwipeAudio.paused;
+                    engineSwipeAudio.src = targetSrc;
+                    engineSwipeAudio.load();
+                    if (wasPlaying && engineSwipeEnabled) {
+                        engineSwipeAudio.play().catch(err => console.warn('Failed to play engine sound:', err));
+                    }
+                }
+            }
+
+            // Steps 2–4 (indices 1–3): the engine must stay OFF — force it off
+            // whenever one of those steps becomes active.
+            if (currentStepIndex >= 1 && currentStepIndex <= 3 && engineSwipeEnabled) {
+                setEngineSwipeEnabled(false);
+            }
+
             // Update step bar circles
             document.querySelectorAll('.step-circle').forEach((el, i) => {
                 el.classList.remove('active', 'done');
@@ -2733,11 +3157,11 @@
             });
 
             // Update right panel task title & desc
-            const titles = ['Inspect Battery Condition', 'Clean Battery Terminals', 'Check Electrolyte Level', 'Secure Battery Mount', 'Test Electrical System'];
+            const titles = ['Inspect Battery Condition', 'Clean Battery Terminals', 'Test Battery Health', 'Secure Battery Mount', 'Test Electrical System'];
             const descs = [
                 'Check battery casing for cracks, leaks, or swelling. Verify terminal connections.',
                 'Remove corrosion from terminals using a wire brush and baking soda solution.',
-                'Check electrolyte levels in each cell and top up with distilled water if needed.',
+                'Use a battery tester to check voltage and overall health — this maintenance-free battery has no cell caps to open.',
                 'Ensure battery hold-down bracket is tight and battery does not move.',
                 'Start engine and verify charging system voltage. Check all electrical functions.'
             ];
@@ -2746,60 +3170,30 @@
 
             // Update instructions list
             const instructions = [
-                ['Ensure ignition is off and keys are removed', 'Visually inspect battery case for cracks, bulging, or leaks'],
-                window.batteryNeedsReplacement ?
-                    ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Remove the old battery from the car engine bay', 'Drag and drop the new battery from the tools area to install it', 'Reconnect positive (+) first, then negative (-) terminal'] :
-                    ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Apply paste to terminals and use wire brush to remove corrosion', 'Wipe terminals clean with a damp cloth and dry thoroughly', 'Reconnect positive (+) first, then negative (-) terminal'],
-                ['Remove battery caps carefully — wear safety goggles', 'Check electrolyte level in each cell against MIN/MAX marks', 'Top up ONLY with distilled water if below minimum', 'Do not overfill — leave space for expansion', 'Replace caps securely and wipe any spills'],
-                ['Check battery hold-down bracket for tightness', 'Inspect bracket bolts for corrosion and tightness', 'Ensure battery sits level and does not shift when pushed', 'Check that battery tray is not rusted through', 'Tighten bracket evenly — do not over-tighten'],
-                ['Reconnect all terminals and start the engine', 'Listen for smooth starter motor operation', 'Record battery test results and service date in log']
+                ['Ensure ignition is off and keys are removed', 'Visually inspect the battery for cracks, bulging, or leaks'],
+                ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Apply paste to terminals and use wire brush to remove corrosion', 'Wipe terminals clean with a damp cloth and dry thoroughly', 'Reconnect positive (+) first, then negative (-) terminal'],
+                ['Remove the terminal caps to access the battery posts', 'Connect the tester leads — red to positive (+), black to negative (−)', 'Run the battery test and read the voltage result', 'Verify the battery passes — 12.4V or higher under load', 'Remove the tester leads and replace the terminal caps'],
+                ['Check battery hold-down bracket for tightness', 'Inspect bracket bolts for corrosion and tightness', 'Tighten bracket evenly — do not over-tighten'],
+                ['Listen for smooth starter motor operation', 'Record battery test results and service date in log']
             ];
             const safetyNotes = [
                 'Always wear safety goggles and gloves — battery acid can cause burns.',
                 'Disconnect negative terminal first to avoid short circuits.',
-                'Never smoke or create sparks near a battery — hydrogen gas is explosive.',
+                'Always connect tester leads to the correct terminals — reversed leads can damage the tester and battery electronics.',
                 'Do not overtighten hold-down bracket — it can crack the battery case.',
                 'If battery is hot, wait for it to cool before opening caps.'
             ];
             const instrList = document.getElementById('instrList');
-            const restrictionsSection2 = document.getElementById('step2Restrictions');
-            const restrictionsSection3 = document.getElementById('step3Restrictions');
             if (instrList) {
-                const checklistMode = currentStepIndex === 3 || currentStepIndex === 4;
-                instrList.classList.toggle('checklist-mode', checklistMode);
+                // All steps are action-verified — no manual checkboxes
+                instrList.classList.remove('checklist-mode');
                 window.stepInstrDone = window.stepInstrDone || {};
                 const doneArray = window.stepInstrDone[currentStepIndex] || [];
                 instrList.innerHTML = (instructions[currentStepIndex] || instructions[0])
                     .map((item, index) => {
                         const done = doneArray[index] ? 'done' : '';
-                        if (!checklistMode) {
-                            return `<li class="${done}">${item}</li>`;
-                        }
-                        const checkedAttr = doneArray[index] ? 'checked' : '';
-                        return `
-                                <li class="${done}">
-                                    <label class="instr-check-row">
-                                        <input type="checkbox" ${checkedAttr} data-step="${currentStepIndex}" data-idx="${index}" class="instr-step-check" />
-                                        <span>${item}</span>
-                                    </label>
-                                </li>`;
+                        return `<li class="${done}">${item}</li>`;
                     }).join('');
-
-                // wire checkbox change for checklist mode to persist done state
-                setTimeout(() => {
-                    const checkboxes = instrList.querySelectorAll('input[type="checkbox"]');
-                    checkboxes.forEach(cb => {
-                        cb.addEventListener('change', (e) => {
-                            const idx = parseInt(cb.getAttribute('data-idx') || '0', 10);
-                            window.stepInstrDone[currentStepIndex] = window.stepInstrDone[currentStepIndex] || [];
-                            window.stepInstrDone[currentStepIndex][idx] = !!cb.checked;
-                            const li = cb.closest('li');
-                            if (li) li.classList.toggle('done', !!cb.checked);
-                            // Refresh UI so the Next button state updates immediately
-                            try { updateStepUI(); } catch (err) { }
-                        });
-                    });
-                }, 30);
             }
             const safetyEl = document.getElementById('safetyText');
             if (safetyEl) safetyEl.textContent = safetyNotes[currentStepIndex] || safetyNotes[0];
@@ -2809,46 +3203,23 @@
             document.getElementById('progressFill').style.width = pct + '%';
             document.getElementById('progressText').textContent = pct + '%';
 
-            // Enable/disable Next Step button depending on whether current step is complete
-            try {
-                const nextBtn = document.getElementById('nextStepBtn');
-                if (nextBtn) {
-                    const allowed = canProceedFromStep(currentStepIndex);
-                    if (!allowed) {
-                        nextBtn.setAttribute('disabled', 'disabled');
-                    } else {
-                        nextBtn.removeAttribute('disabled');
-                    }
-                }
-            } catch (e) { /* ignore */ }
-
-            // Show/hide inspection checklist (Step 1 only)
+            // Show/hide inspection list (Step 1 only)
             const inspectionSection = document.getElementById('inspectionChecklist');
-            // Find the instructions parent section robustly: prefer closest parent of instrList
-            let instructionsSection = null;
-            if (instrList) instructionsSection = instrList.closest('.rp-section');
-            if (!instructionsSection) instructionsSection = document.querySelector('.rp-section:has(#instrList)');
+            const instructionsSection = document.querySelector('.rp-section:has(#instrList)');
             if (inspectionSection) {
                 if (currentStepIndex === 0) {
                     inspectionSection.style.display = 'block';
                     if (instructionsSection) instructionsSection.style.display = 'none';
-                    if (restrictionsSection2) restrictionsSection2.style.display = 'none';
-                    if (restrictionsSection3) restrictionsSection3.style.display = 'none';
-                } else if (currentStepIndex === 1) {
-                    inspectionSection.style.display = 'none';
-                    if (instructionsSection) instructionsSection.style.display = 'none';
-                    if (restrictionsSection2) restrictionsSection2.style.display = 'block';
-                    if (restrictionsSection3) restrictionsSection3.style.display = 'none';
-                } else if (currentStepIndex === 2) {
-                    inspectionSection.style.display = 'none';
-                    if (instructionsSection) instructionsSection.style.display = 'none';
-                    if (restrictionsSection2) restrictionsSection2.style.display = 'none';
-                    if (restrictionsSection3) restrictionsSection3.style.display = 'block';
+                    // Restore verified state — inspection items persist in stepInstrDone[0]
+                    const inspectDone = (window.stepInstrDone && window.stepInstrDone[0]) || [];
+                    document.querySelectorAll('#inspectionList li').forEach((li, i) => {
+                        li.classList.toggle('done', !!inspectDone[i]);
+                    });
+                    // The ignition-off item tracks the live engine state
+                    if (typeof window.syncEngineOffChecklist === 'function') window.syncEngineOffChecklist();
                 } else {
                     inspectionSection.style.display = 'none';
                     if (instructionsSection) instructionsSection.style.display = 'block';
-                    if (restrictionsSection2) restrictionsSection2.style.display = 'none';
-                    if (restrictionsSection3) restrictionsSection3.style.display = 'none';
                 }
             }
 
@@ -2856,29 +3227,15 @@
             const mixDrop = document.getElementById('mixDropZone');
             if (mixDrop) mixDrop.style.display = (currentStepIndex === 1) ? 'flex' : 'none';
 
-            // Show/hide Step 2 Battery Replacement Diagnostic Status indicator
-            const statusIndicator = document.getElementById('batteryStatusIndicator');
-            if (statusIndicator) {
-                if (currentStepIndex === 1) {
-                    statusIndicator.style.display = 'block';
-                    const valueEl = document.getElementById('batteryStatusValue');
-                    if (valueEl) {
-                        if (window.batteryNeedsReplacement) {
-                            valueEl.innerHTML = '<span style="color:#dc2626;">REPLACE BATTERY (Health: 42%)</span>';
-                        } else {
-                            valueEl.innerHTML = '<span style="color:#22c55e;">GOOD (Health: 88%)</span>';
-                        }
-                    }
-                } else {
-                    statusIndicator.style.display = 'none';
-                }
-            }
-
-            // Update battery hover action label: CLEAN BATTERY on Step 2, otherwise CHECK BATTERY
+            // Update battery hover action label per step
             const btnCheck = document.getElementById('btnCheckBattery');
             const btnLabel = document.getElementById('btnCheckBatteryLabel');
             if (btnLabel) {
-                btnLabel.textContent = (currentStepIndex === 1) ? 'CLEAN BATTERY' : 'CHECK BATTERY';
+                btnLabel.textContent = (currentStepIndex === 1) ? 'CLEAN BATTERY'
+                    : (currentStepIndex === 0) ? 'INSPECT BATTERY'
+                    : (currentStepIndex === 2) ? 'TEST BATTERY'
+                    : (currentStepIndex === 3) ? 'INSPECT MOUNT'
+                    : 'CHECK BATTERY';
             }
 
             // Disable battery tool in tools area for steps 1, 4, and 5 (indices 0, 3, 4)
@@ -2899,36 +3256,25 @@
 
         }
 
-        // Handle checkbox changes for visual feedback
-        document.querySelectorAll('.inspect-check').forEach(cb => {
-            cb.addEventListener('change', () => {
-                // Visual feedback
-                const label = cb.closest('label');
-                if (cb.checked) {
-                    label.style.background = '#dbeafe';
-                    label.style.border = '1px solid #93c5fd';
-                } else {
-                    label.style.background = '#f9fafb';
-                    label.style.border = 'none';
-                }
-                // Update UI to immediately reflect Next button enable/disable
-                try { updateStepUI(); } catch (e) { }
-            });
-        });
-
         // Wire Next Step button
         document.getElementById('nextStepBtn').addEventListener('click', () => {
-            // Identify unchecked checkboxes as mistakes
+            // Identify unverified inspection items as mistakes
             if (currentStepIndex === 0) {
                 // Clear all mistakes for Step 1
                 simulationTracker.steps[0].mistakes = [];
-                const checkboxes = document.querySelectorAll('.inspect-check');
-                checkboxes.forEach(cb => {
-                    if (!cb.checked) {
-                        const labelText = cb.closest('label').querySelector('span').textContent.trim();
-                        simulationTracker.addMistake(`Missed inspection: ${labelText}`, 0);
+                document.querySelectorAll('#inspectionList li').forEach(li => {
+                    if (!li.classList.contains('done')) {
+                        simulationTracker.addMistake(`Missed inspection: ${li.textContent.trim()}`, 0);
                     }
                 });
+
+                // Check if battery is critical but user didn't complete the casing inspection
+                if (window.batteryNeedsReplacement) {
+                    const inspectionDone = (window.stepInstrDone && window.stepInstrDone[0]) || [];
+                    if (!inspectionDone[1]) {
+                        simulationTracker.addMistake('Critical battery condition not addressed: Battery has cracks/bulging/leaks and needs replacement. If not replaced, the battery may fail to start the vehicle, cause electrical system issues, or pose safety risks from acid leaks.', 0);
+                    }
+                }
             } else if (currentStepIndex === 1 || currentStepIndex === 2) {
                 // Clear only previous unfinished task mistakes so we don't duplicate them
                 simulationTracker.steps[currentStepIndex].mistakes = simulationTracker.steps[currentStepIndex].mistakes.filter(
@@ -2944,39 +3290,97 @@
                         }
                     });
                 }
+                
+                // Check if battery needs replacement but wasn't replaced in Step 2
+                if (currentStepIndex === 1 && window.batteryNeedsReplacement) {
+                    const instructionsDone = window.stepInstrDone?.[1] || [];
+                    const batteryRemoved = instructionsDone[2]; // Index 2 is "Remove the old battery"
+                    const batteryInstalled = instructionsDone[3]; // Index 3 is "Drag and drop the new battery"
+                    
+                    if (!batteryRemoved || !batteryInstalled) {
+                        simulationTracker.addMistake('Critical battery not replaced: The battery has critical damage (cracks/bulging/leaks) and must be replaced. Continuing with a damaged battery will result in the vehicle not starting, unreliable electrical performance, and potential safety hazards from acid leakage or battery explosion.', 1);
+                    }
+                }
             } else if (currentStepIndex === 3 || currentStepIndex === 4) {
-                // Clear all mistakes for checklist steps (Step 4 & 5)
-                simulationTracker.steps[currentStepIndex].mistakes = [];
-                const checkboxes = document.querySelectorAll('#instrList input[type="checkbox"]');
-                checkboxes.forEach(cb => {
-                    if (!cb.checked) {
-                        const labelText = cb.closest('label').querySelector('span').textContent.trim();
-                        simulationTracker.addMistake(`Missed instruction: ${labelText}`, currentStepIndex);
+                // Steps 4 & 5 are action-verified — unfinished items are li's not marked done
+                simulationTracker.steps[currentStepIndex].mistakes = simulationTracker.steps[currentStepIndex].mistakes.filter(
+                    m => !m.startsWith('Missed instruction:')
+                );
+                document.querySelectorAll('#instrList li').forEach(li => {
+                    if (!li.classList.contains('done')) {
+                        simulationTracker.addMistake(`Missed instruction: ${li.textContent.trim()}`, currentStepIndex);
                     }
                 });
-            }
-
-            // Prevent opening review/advancing if the required actions/instructions for the current step are not complete
-            if (!canProceedFromStep(currentStepIndex)) {
-                showSequenceWarning('Complete the required actions for this step before proceeding.');
-                return;
             }
             openStepReview();
         });
 
+        const engineSwipeToggle = document.getElementById('engineSwipeToggle');
+        if (engineSwipeToggle) {
+            engineSwipeToggle.addEventListener('change', () => {
+                // Steps 2–4 (indices 1–3): the engine stays OFF — snap the toggle back.
+                if (engineSwipeToggle.checked && typeof currentStepIndex !== 'undefined' && currentStepIndex >= 1 && currentStepIndex <= 3) {
+                    engineSwipeToggle.checked = false;
+                    setEngineSwipeEnabled(false);
+                    if (typeof window.showPrepToast === 'function') showPrepToast('The engine stays off during this step.');
+                    return;
+                }
+                // Step 5 (index 4): starting the engine runs the system test;
+                // shutting it off records the test results in the log.
+                if (engineSwipeToggle.checked && typeof currentStepIndex !== 'undefined' && currentStepIndex === 4) {
+                    // Terminals must be reconnected before the engine can start.
+                    if (negativeCapRemoved || positiveCapRemoved) {
+                        engineSwipeToggle.checked = false;
+                        setEngineSwipeEnabled(false);
+                        showSequenceWarning('Reconnect both terminal caps before starting the engine.');
+                        return;
+                    }
+                    const batteryStatus = (window.checkBattery && typeof window.checkBattery === 'function') ? window.checkBattery() : null;
+                    if (batteryStatus && batteryStatus.removed) {
+                        engineSwipeToggle.checked = false;
+                        setEngineSwipeEnabled(false);
+                        showSequenceWarning('Install the battery before starting the engine.');
+                        return;
+                    }
+                    setEngineSwipeEnabled(true);
+                    if (typeof window.showPrepToast === 'function') showPrepToast('Engine started — checking starter operation.');
+                    setTimeout(() => {
+                        if (!engineSwipeEnabled || currentStepIndex !== 4) return;
+                        markInstructionDone(4, 0); // Listen for smooth starter motor operation
+                        try { window.recordSimulationEvent('Engine started successfully — smooth starter motor operation.'); } catch (e) {}
+                        if (typeof window.showPrepToast === 'function') showPrepToast('Starter motor sounds smooth.');
+                    }, 2500);
+                    return;
+                }
+                if (!engineSwipeToggle.checked && typeof currentStepIndex !== 'undefined' && currentStepIndex === 4) {
+                    setEngineSwipeEnabled(false);
+                    const d = (window.stepInstrDone && window.stepInstrDone[4]) || [];
+                    if (d[0] && !d[1]) {
+                        // Starter check done — prompt to record the results in the service log
+                        window.showToolUseCard('Record Test Results?', 'Save the battery test results and today\'s service date to the maintenance log.', () => {
+                            try { markInstructionDone(4, 1); } catch (e) {}
+                            try { window.recordSimulationEvent('Battery test results recorded in the service log successfully.'); } catch (e) {}
+                            if (typeof window.showPrepToast === 'function') showPrepToast('Test results recorded in service log.');
+                        }, 'Record');
+                    }
+                    return;
+                }
+                setEngineSwipeEnabled(engineSwipeToggle.checked);
+                // Step 1 inspection item: ignition OFF state tracks the toggle
+                if (typeof window.syncEngineOffChecklist === 'function') window.syncEngineOffChecklist();
+            });
+        }
+
         // Wire Previous Step button
         document.querySelector('.step-nav-btn.prev').addEventListener('click', () => {
-            if (currentStepIndex > 0) {
-                currentStepIndex--;
-                updateStepUI();
+            // Assessments are one-way — reviewed steps cannot be revisited or redone
+            if (typeof window.showPrepToast === 'function') {
+                window.showPrepToast('You cannot go back during an assessment.');
             }
         });
 
         // Initialize UI on page load
         updateStepUI();
-        window.addEventListener('load', () => {
-            setTimeout(loadSavedAssessmentProgress, 800);
-        });
     </script>
 
     <script>
@@ -2992,7 +3396,8 @@
                 return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             };
 
-            let elapsedSeconds = 0;
+            let elapsedSeconds = window.__practiceElapsedSeconds || 0;
+            window.__practiceElapsedSeconds = elapsedSeconds;
             timerEl.textContent = formatTime(elapsedSeconds);
 
             if (window.__practiceTimerInterval) {
@@ -3001,28 +3406,14 @@
 
             window.__practiceTimerInterval = setInterval(() => {
                 elapsedSeconds += 1;
-                window.__assessmentElapsedSeconds = elapsedSeconds;
+                window.__practiceElapsedSeconds = elapsedSeconds;
                 timerEl.textContent = formatTime(elapsedSeconds);
             }, 1000);
-            window.__assessmentElapsedSeconds = 0;
         }
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', startPracticeTimer, { once: true });
             window.addEventListener('load', startPracticeTimer, { once: true });
-
-            // Log tool selections from the left tools panel
-            window.addEventListener('load', () => {
-                const toolsGrid = document.querySelector('.tools-grid');
-                if (!toolsGrid) return;
-                toolsGrid.addEventListener('click', (e) => {
-                    const card = e.target.closest('.tool-card');
-                    if (!card) return;
-                    const labelEl = card.querySelector('.tool-label');
-                    const label = labelEl ? labelEl.textContent.trim() : 'Tool';
-                    addMovement(`Selected tool: ${label}`);
-                });
-            });
         } else {
             startPracticeTimer();
         }
@@ -3130,7 +3521,7 @@
                 </div>
             </div>
 
-            <div style="display:flex;flex-direction:column;gap:6px;">
+            <div id="batteryCardActions" style="display:flex;flex-direction:column;gap:6px;">
                 <button id="btnCheckBattery" onclick="hoverBatteryAction('check')"
                     style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:none;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:700;transition:all 0.2s;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -3174,36 +3565,163 @@
         style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">
         <div
             style="background:#fff;border-radius:16px;padding:24px;width:400px;max-width:94vw;box-shadow:0 24px 60px rgba(0,0,0,0.35);text-align:center;">
-            <div style="width:64px;height:64px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-            </div>
-            <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Physical Casing Inspection</h3>
-            <p style="font-size:0.85rem;color:#6b7280;line-height:1.5;margin-bottom:20px;">
-                The battery casing has been thoroughly inspected. The casing is completely intact with <strong>no cracks, bulging, or acid leaks</strong>.
-            </p>
-            
-            <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:20px;text-align:left;display:flex;flex-direction:column;gap:10px;">
-                <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
-                    <span style="color:#16a34a;font-weight:bold;">✓</span>
-                    <span>No visible casing cracks or damage</span>
+            <!-- Scanning state: progress bar while the casing is inspected -->
+            <div id="batteryInspectScanning">
+                <div style="width:64px;height:64px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+                        <circle cx="11" cy="11" r="7" />
+                        <line x1="21" y1="21" x2="16.5" y2="16.5" />
+                    </svg>
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
-                    <span style="color:#16a34a;font-weight:bold;">✓</span>
-                    <span>No bulging or swelling of the side walls</span>
+                <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Inspecting Battery…</h3>
+                <p style="font-size:0.85rem;color:#6b7280;line-height:1.5;margin-bottom:20px;">
+                    Checking the casing for cracks, bulging, or acid leaks.
+                </p>
+                <div style="display:flex;justify-content:space-between;font-size:0.72rem;font-weight:800;color:#6b7280;margin-bottom:6px;">
+                    <span>Inspecting…</span><span id="batteryInspectModalPct">0%</span>
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
-                    <span style="color:#16a34a;font-weight:bold;">✓</span>
-                    <span>No electrolyte/acid leaks around terminals or seams</span>
+                <div style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;">
+                    <div id="batteryInspectModalFill" style="height:100%;width:0%;background:#2563eb;border-radius:4px;"></div>
                 </div>
             </div>
 
-            <button onclick="closeBatteryInspectModal(true)"
-                style="width:100%;padding:12px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;transition:background 0.2s;">
-                Confirm Inspection
-            </button>
+            <!-- Result state: always reports no damage found -->
+            <div id="batteryInspectResult" style="display:none;">
+                <div style="width:64px;height:64px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                </div>
+                <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Physical Casing Inspection</h3>
+                <p style="font-size:0.85rem;color:#6b7280;line-height:1.5;margin-bottom:20px;">
+                    The battery casing has been thoroughly inspected. The casing is completely intact with <strong>no cracks, bulging, or acid leaks</strong>.
+                </p>
+
+                <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:20px;text-align:left;display:flex;flex-direction:column;gap:10px;">
+                    <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
+                        <span style="color:#16a34a;font-weight:bold;">✓</span>
+                        <span>No visible casing cracks or damage</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
+                        <span style="color:#16a34a;font-weight:bold;">✓</span>
+                        <span>No bulging or swelling of the side walls</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
+                        <span style="color:#16a34a;font-weight:bold;">✓</span>
+                        <span>No electrolyte/acid leaks around terminals or seams</span>
+                    </div>
+                </div>
+
+                <button onclick="closeBatteryInspectModal(true)"
+                    style="width:100%;padding:12px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;transition:background 0.2s;">
+                    Confirm Inspection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Battery Tester Modal - tester leads connected, runs a voltage/load test -->
+    <div id="batteryTesterModal"
+        style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">
+        <div
+            style="background:#fff;border-radius:16px;padding:24px;width:400px;max-width:94vw;box-shadow:0 24px 60px rgba(0,0,0,0.35);text-align:center;">
+            <!-- Testing state: progress bar while the tester runs -->
+            <div id="batteryTesterScanning">
+                <div style="width:64px;height:64px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                </div>
+                <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Testing Battery…</h3>
+                <p style="font-size:0.85rem;color:#6b7280;line-height:1.5;margin-bottom:20px;">
+                    Tester leads connected — running voltage and load test.
+                </p>
+                <div style="display:flex;justify-content:space-between;font-size:0.72rem;font-weight:800;color:#6b7280;margin-bottom:6px;">
+                    <span>Testing…</span><span id="batteryTesterModalPct">0%</span>
+                </div>
+                <div style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;">
+                    <div id="batteryTesterModalFill" style="height:100%;width:0%;background:#2563eb;border-radius:4px;"></div>
+                </div>
+            </div>
+
+            <!-- Result state: maintenance-free battery always passes -->
+            <div id="batteryTesterResult" style="display:none;">
+                <div style="width:64px;height:64px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                </div>
+                <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin-bottom:14px;">Battery Test Result</h3>
+
+                <!-- Tester device face -->
+                <div style="background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%);border:2px solid #334155;border-radius:18px;padding:16px 18px;margin-bottom:14px;box-shadow:inset 0 2px 8px rgba(0,0,0,0.5);">
+
+                    <!-- Digital voltage readout -->
+                    <div style="background:#450a0a;border:1px solid #7f1d1d;border-radius:8px;padding:8px 10px;margin-bottom:12px;text-align:center;">
+                        <span style="font-family:'Rajdhani',monospace;font-size:2rem;font-weight:700;color:#f87171;letter-spacing:4px;text-shadow:0 0 10px rgba(248,113,113,0.7);">12.6</span>
+                        <span style="font-size:0.8rem;font-weight:700;color:#fca5a5;margin-left:4px;">V</span>
+                    </div>
+
+                    <!-- LED rows -->
+                    <div style="display:flex;flex-direction:column;gap:7px;text-align:left;">
+                        <!-- ALTERNATOR -->
+                        <div style="font-size:0.55rem;color:#64748b;font-weight:700;letter-spacing:1px;">ALTERNATOR</div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="width:12px;height:12px;border-radius:50%;background:#450a0a;border:1px solid #7f1d1d;flex-shrink:0;"></span>
+                            <span style="flex:1;font-size:0.75rem;font-weight:800;color:#475569;">FAULT</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="width:12px;height:12px;border-radius:50%;background:#22c55e;border:1px solid #15803d;flex-shrink:0;box-shadow:0 0 8px rgba(34,197,94,0.8);"></span>
+                            <span style="flex:1;font-size:0.75rem;font-weight:800;color:#e2e8f0;">GOOD</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                        </div>
+
+                        <!-- BATTERY -->
+                        <div style="font-size:0.55rem;color:#64748b;font-weight:700;letter-spacing:1px;margin-top:4px;">BATTERY</div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="width:12px;height:12px;border-radius:50%;background:#22c55e;border:1px solid #15803d;flex-shrink:0;box-shadow:0 0 8px rgba(34,197,94,0.8);"></span>
+                            <span style="flex:1;font-size:0.75rem;font-weight:800;color:#e2e8f0;">FULL</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/><line x1="6" y1="11" x2="6" y2="13"/><line x1="10" y1="11" x2="10" y2="13"/><line x1="14" y1="11" x2="14" y2="13"/></svg>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="width:12px;height:12px;border-radius:50%;background:#431407;border:1px solid #9a3412;flex-shrink:0;"></span>
+                            <span style="flex:1;font-size:0.75rem;font-weight:800;color:#475569;">MIDDLE</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/><line x1="6" y1="11" x2="6" y2="13"/><line x1="10" y1="11" x2="10" y2="13"/></svg>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="width:12px;height:12px;border-radius:50%;background:#450a0a;border:1px solid #7f1d1d;flex-shrink:0;"></span>
+                            <span style="flex:1;font-size:0.75rem;font-weight:800;color:#475569;">LOW</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/><line x1="6" y1="11" x2="6" y2="13"/></svg>
+                        </div>
+
+                        <!-- CHECK BEFORE CHARGE -->
+                        <div style="font-size:0.55rem;color:#64748b;font-weight:700;letter-spacing:1px;margin-top:4px;">CHECK BEFORE CHARGE</div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="width:12px;height:12px;border-radius:50%;background:#22c55e;border:1px solid #15803d;flex-shrink:0;box-shadow:0 0 8px rgba(34,197,94,0.8);"></span>
+                            <span style="flex:1;font-size:0.75rem;font-weight:800;color:#e2e8f0;">OK</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/><polyline points="9 12 11 14 15 10"/></svg>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #334155;padding-top:8px;margin-top:4px;">
+                            <span style="font-size:0.6rem;font-weight:800;color:#94a3b8;letter-spacing:1px;">BATTERY TESTER</span>
+                            <span style="font-size:0.6rem;font-weight:800;color:#94a3b8;">12V</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="font-size:0.72rem;color:#6b7280;line-height:1.5;margin-bottom:14px;">
+                    <strong>GOOD / FULL / OK</strong> — battery healthy.<br>
+                    FAULT lit → replace battery · MIDDLE / LOW lit → charge battery.
+                </p>
+
+                <button onclick="closeBatteryTesterModal(true)"
+                    style="width:100%;padding:12px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;transition:background 0.2s;">
+                    Finish Test
+                </button>
+            </div>
         </div>
     </div>
 
@@ -3676,7 +4194,7 @@
         // Require inspection completion helper
         function requireInspectionOrWarn() {
             if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
-                showSequenceWarning('Please complete the inspection checklist and proceed to the next step before performing this action.');
+                showSequenceWarning('Please complete the inspection and proceed to the next step before performing this action.');
                 return false;
             }
             return true;
@@ -3762,53 +4280,68 @@
         let lastBatteryCardX = 0, lastBatteryCardY = 0;
         let batteryInfo = null;
 
-        // Show battery card on hover only (no click locking)
-        // Only appears when both caps are removed first
-        window.onBatteryHover = function (info, screenX, screenY) {
-            if (!requireInspectionOrWarn()) return;
-            // Check if both caps are removed - if not, return silently (no warning on hover)
-            if (!areBothCapsRemoved()) {
-                return;
-            }
-
+        // Populate and show the battery card at the given screen point
+        function showBatteryCardAt(info, screenX, screenY) {
+            // Steps 1, 2 & 4 (inspect / clean terminals / secure mount) only
+            // offer the check action — removal is not part of those steps.
+            const checkOnly = (typeof currentStepIndex !== 'undefined'
+                && (currentStepIndex === 0 || currentStepIndex === 1 || currentStepIndex === 3));
             batteryInfo = info;
-
-            // Update content
             document.getElementById('batteryTitle').textContent = 'Battery';
             document.getElementById('batteryStatus').textContent = info.removed ? 'Removed' : 'In Position';
-
-            // Show/hide appropriate buttons
-            document.getElementById('btnRemoveBattery').style.display = info.removed ? 'none' : 'flex';
-            document.getElementById('btnReplaceBattery').style.display = info.removed ? 'flex' : 'none';
-
-            // Position and show - further away from battery (120px instead of 80px)
+            document.getElementById('btnCheckBattery').style.display = 'flex';
+            document.getElementById('btnRemoveBattery').style.display = (!checkOnly && !info.removed) ? 'flex' : 'none';
+            document.getElementById('btnReplaceBattery').style.display = (!checkOnly && info.removed) ? 'flex' : 'none';
             batteryHoverCard.style.display = 'block';
             batteryHoverCard.style.opacity = '1';
             lastBatteryCardX = screenX - 110; // centered horizontally
-            lastBatteryCardY = screenY - 120; // further above the cursor
+            lastBatteryCardY = screenY - 90;  // just above the cursor
             batteryHoverCard.style.left = lastBatteryCardX + 'px';
             batteryHoverCard.style.top = lastBatteryCardY + 'px';
+        }
+
+        // Show battery card on hover
+        // Steps 1 & 4 (inspection / secure mount) show a check-only card —
+        // other steps require both caps removed first.
+        window.onBatteryHover = function (info, screenX, screenY) {
+            if (isBatteryCardLocked) return; // a locked card stays put
+            const inspectMode = (typeof currentStepIndex !== 'undefined'
+                && (currentStepIndex === 0 || currentStepIndex === 3));
+            if (!inspectMode) {
+                if (!requireInspectionOrWarn()) return;
+                // Check if both caps are removed - if not, return silently (no warning on hover)
+                if (!areBothCapsRemoved()) {
+                    return;
+                }
+            }
+            showBatteryCardAt(info, screenX, screenY);
         };
 
-        // Hide battery card on hover end
+        // Hide battery card on hover end (unless locked by a click)
         window.onBatteryHoverEnd = function () {
+            if (isBatteryCardLocked) return;
             batteryHoverCard.style.opacity = '0';
             setTimeout(() => {
-                if (batteryHoverCard.style.opacity === '0') {
+                if (!isBatteryCardLocked && batteryHoverCard.style.opacity === '0') {
                     batteryHoverCard.style.display = 'none';
                 }
             }, 200);
         };
 
-        // Battery click - just keeps card visible while hovering, no lock
+        // Battery click - locks the card at the cursor so the action buttons
+        // stay reachable (same pattern as the terminal cap card)
         window.onBatteryClicked = function (info, screenX, screenY) {
-            if (!requireInspectionOrWarn()) return;
-            if (!areBothCapsRemoved()) {
-                showSequenceWarning('Remove both caps first!');
-                return;
+            const inspectMode = (typeof currentStepIndex !== 'undefined'
+                && (currentStepIndex === 0 || currentStepIndex === 3));
+            if (!inspectMode) {
+                if (!requireInspectionOrWarn()) return;
+                if (!areBothCapsRemoved()) {
+                    showSequenceWarning('Remove both caps first!');
+                    return;
+                }
             }
-            // No locking - card stays positioned where it was on hover
-            console.log('Battery clicked:', info);
+            showBatteryCardAt(info, screenX, screenY);
+            isBatteryCardLocked = true;
         };
 
         // Unlock and hide battery card
@@ -3822,9 +4355,20 @@
             }, 200);
         }
 
+
+        // Unlock the battery card when clicking anywhere outside it
+        document.addEventListener('click', function (e) {
+            if (isBatteryCardLocked && !batteryHoverCard.contains(e.target)) {
+                unlockAndHideBatteryCard();
+            }
+        });
+
         // Handle battery actions from hover card
         function hoverBatteryAction(action) {
-            if (!requireInspectionOrWarn()) return;
+            // The Step 1 casing inspection is allowed before the inspection
+            // list is finished — it is what verifies the inspection item.
+            const stepZeroCheck = (action === 'check' && typeof currentStepIndex !== 'undefined' && currentStepIndex === 0);
+            if (!stepZeroCheck && !requireInspectionOrWarn()) return;
             if (!batteryInfo) return;
 
             // Lock position when action is clicked
@@ -3832,10 +4376,30 @@
 
             switch (action) {
                 case 'check':
-                    // If we're on Step 2 (index 1) this action should open the cleaning modal
-                    if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 1) {
+                    if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
+                        unlockAndHideBatteryCard();
+                        openBatteryInspectModal();
+                    } else if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 1) {
+                        unlockAndHideBatteryCard();
                         openBatteryCheckModal();
+                    } else if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 2) {
+                        unlockAndHideBatteryCard();
+                        // Step 3 (index 2): maintenance-free battery — test with
+                        // the battery tester instead of checking electrolyte
+                        openBatteryTesterModal();
+                    } else if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 3) {
+                        unlockAndHideBatteryCard();
+                        // Step 4 (index 3): visual mount inspection verifies the check items
+                        if (typeof window.showToolUseCard === 'function') {
+                            window.showToolUseCard('Inspect Battery Mount?', 'Check the hold-down bracket and bracket bolts for tightness, corrosion, and rust.', () => {
+                                try { markInstructionDone(3, 0); } catch (e) {}
+                                try { markInstructionDone(3, 1); } catch (e) {}
+                                try { window.recordSimulationEvent('Battery mount inspected successfully — bracket tight, bolts sound.'); } catch (e) {}
+                                if (typeof window.showPrepToast === 'function') showPrepToast('Mount and bolts inspected.');
+                            });
+                        }
                     } else {
+                        unlockAndHideBatteryCard();
                         // Open the electrolyte checker modal for other steps
                         openBatteryElectrolyteModal('battery_' + Date.now());
                     }
@@ -3861,10 +4425,6 @@
                     if (currentStepIndex === 1 && window.batteryNeedsReplacement) {
                         try { markInstructionDone(1, 2); } catch (e) {}
                     }
-
-                    // Movement log
-                    addMovement('Battery removed');
-                    try { updateStepUI(); } catch (e) { }
                     break;
 
                 case 'replace':
@@ -3882,10 +4442,6 @@
                     // Remove from container
                     removedItems.delete('battery');
                     updateRemovedItemsContainer();
-
-                    // Movement log
-                    addMovement('Battery replaced');
-                    try { updateStepUI(); } catch (e) { }
                     break;
             }
         }
@@ -3896,7 +4452,7 @@
         // Track cap removal state for sequential access
         let negativeCapRemoved = false;
         let positiveCapRemoved = false;
-        window.batteryNeedsReplacement = true;
+        window.batteryNeedsReplacement = false;
 
         // Check if both caps are removed
         function areBothCapsRemoved() {
@@ -3945,9 +4501,6 @@
                     removedItems.set(hoverCapIndex, capInfo);
                     updateRemovedItemsContainer();
 
-                    // Log movement
-                    addMovement(`Cap removed (${capInfo.type === 'positive' ? '+' : '-'})`);
-
                     // If both caps removed, mark the appropriate instruction for the active step
                     try {
                         if (negativeCapRemoved && positiveCapRemoved) {
@@ -3956,12 +4509,13 @@
                             // For Check Electrolyte Level (step 2 index=2) mark "Remove battery caps" (instr 0)
                             if (currentStepIndex === 2) markInstructionDone(2, 0);
                         }
-                        // Removing caps clears final reconnect instruction (index 4) for the current step
+                        // Removing caps clears the reconnect instruction (index 4)
+                        // on the terminal-work steps only (steps 2 & 3 / indices 1-2)
                         try {
-                            window.stepInstrDone = window.stepInstrDone || {};
-                            window.stepInstrDone[currentStepIndex] = window.stepInstrDone[currentStepIndex] || [];
-                            window.stepInstrDone[currentStepIndex][4] = false;
-                            if (currentStepIndex === currentStepIndex) {
+                            if (currentStepIndex === 1 || currentStepIndex === 2) {
+                                window.stepInstrDone = window.stepInstrDone || {};
+                                window.stepInstrDone[currentStepIndex] = window.stepInstrDone[currentStepIndex] || [];
+                                window.stepInstrDone[currentStepIndex][4] = false;
                                 const instrList = document.getElementById('instrList');
                                 if (instrList && instrList.children[4]) instrList.children[4].classList.remove('done');
                             }
@@ -3970,19 +4524,11 @@
 
                     // Lock position after successful removal
                     isCardLocked = true;
-                    try { updateStepUI(); } catch (e) { }
                     break;
 
                 case 'replace':
-                    // Enforce replacement order: battery must be positioned first, then positive, then negative
-                    if (capInfo.type === 'positive') {
-                        // Positive replace requires battery to be installed/positioned
-                        const bStatus = (window.checkBattery && typeof window.checkBattery === 'function') ? window.checkBattery() : null;
-                        if (bStatus && bStatus.removed) {
-                            showSequenceWarning('Position the battery first before replacing the positive (+) cap.');
-                            return;
-                        }
-                    } else if (capInfo.type === 'negative') {
+                    // Enforce replacement order: positive, then negative
+                    if (capInfo.type === 'negative') {
                         // Negative replace requires positive cap to already be on
                         if (positiveCapRemoved) {
                             showSequenceWarning('Replace the positive (+) cap before replacing the negative (-) cap.');
@@ -4003,23 +4549,18 @@
                     removedItems.delete(hoverCapIndex);
                     updateRemovedItemsContainer();
 
-                    // Log movement
-                    addMovement(`Cap replaced (${capInfo.type === 'positive' ? '+' : '-'})`);
-
                     // Keep instruction 2 (both caps removed) marked once checked
                     // It should remain checked until the overall step completes.
 
-                    // After replacing a cap, check whether both caps are now reattached and battery positioned -> mark instruction 5
+                    // After replacing a cap, check whether both caps are now reattached -> mark instruction 5
                     try {
-                        const batteryInPosition = !removedItems.has('battery');
-                        if (!negativeCapRemoved && !positiveCapRemoved && batteryInPosition) {
-                            markInstructionDone(currentStepIndex, 4);
+                        if (!negativeCapRemoved && !positiveCapRemoved) {
+                            if (currentStepIndex === 1 || currentStepIndex === 2) markInstructionDone(currentStepIndex, 4);
                         }
                     } catch (err) { console.warn('Failed to update instruction 5 after cap replace', err); }
 
                     // Lock position after successful replace
                     isCardLocked = true;
-                    try { updateStepUI(); } catch (e) { }
                     break;
             }
         }
@@ -4030,7 +4571,7 @@
                 if (typeof window.recordSimulationEvent === 'function') {
                     window.recordSimulationEvent(message);
                 }
-            } catch (e) { /* ignore */ }
+            } catch (e) { /* ignore tracker errors */ }
             const warningEl = document.createElement('div');
             warningEl.style.cssText = `
                 position: fixed;
@@ -4054,29 +4595,6 @@
             setTimeout(() => {
                 warningEl.remove();
             }, 2000);
-        }
-
-        // Movement history helper
-        function addMovement(text) {
-            try {
-                const list = document.getElementById('historyList');
-                if (!list) return;
-                const now = new Date();
-                const hh = String(now.getHours()).padStart(2, '0');
-                const mm = String(now.getMinutes()).padStart(2, '0');
-                const ss = String(now.getSeconds()).padStart(2, '0');
-                const ts = `${hh}:${mm}:${ss}`;
-
-                const li = document.createElement('li');
-                li.innerHTML = `<span class="history-text">${text}</span><span class="history-timestamp">${ts}</span>`;
-
-                // Prepend newest entries
-                if (list.firstChild) list.insertBefore(li, list.firstChild);
-                else list.appendChild(li);
-
-                // Trim to last 100 entries
-                while (list.children.length > 100) list.removeChild(list.lastChild);
-            } catch (e) { console.warn('addMovement failed', e); }
         }
 
         // Add animation style
@@ -4125,8 +4643,6 @@
                     `;
                 }).join('');
             }
-            // Re-evaluate step UI after the removed-items list updates (ensures Next button state updates)
-            try { updateStepUI(); } catch (e) { }
         }
 
         // Helper to mark an instruction done for a specific step and update UI
@@ -4182,16 +4698,12 @@
                 updateRemovedItemsContainer();
                 // Keep instruction 2 (both caps removed) marked once checked
                 // It should remain checked until the overall step completes.
-                // After manual replace, if both caps on and battery positioned, mark instruction 5
+                // After manual replace, if both caps on, mark instruction 5
                 try {
-                    const batteryInPosition = !removedItems.has('battery');
-                    if (!negativeCapRemoved && !positiveCapRemoved && batteryInPosition) {
-                        markInstructionDone(currentStepIndex, 4);
+                    if (!negativeCapRemoved && !positiveCapRemoved) {
+                        if (currentStepIndex === 1 || currentStepIndex === 2) markInstructionDone(currentStepIndex, 4);
                     }
                 } catch (err) { console.warn('Failed to update instruction 5 after battery replace', err); }
-                // Movement log
-                addMovement('Replaced battery from storage');
-                try { updateStepUI(); } catch (e) { }
                 return;
             }
 
@@ -4216,25 +4728,14 @@
                 // It should remain checked until the overall step completes.
 
                 try {
-                    const batteryInPosition = !removedItems.has('battery');
-                    if (!negativeCapRemoved && !positiveCapRemoved && batteryInPosition) {
-                        markInstructionDone(currentStepIndex, 4);
+                    if (!negativeCapRemoved && !positiveCapRemoved) {
+                        if (currentStepIndex === 1 || currentStepIndex === 2) markInstructionDone(currentStepIndex, 4);
                     }
                 } catch (err) { console.warn('Failed to update instruction 5 after negative replace (container)', err); }
-                // Movement log
-                addMovement('Replaced cap ( - ) from storage');
-                try { updateStepUI(); } catch (e) { }
                 return;
             }
 
             if (capInfo.type === 'positive') {
-                // Positive replacement requires battery to be positioned first
-                const bStatus = (window.checkBattery && typeof window.checkBattery === 'function') ? window.checkBattery() : null;
-                if (bStatus && bStatus.removed) {
-                    showSequenceWarning('Position the battery first before replacing the positive (+) cap.');
-                    return;
-                }
-
                 // Replace positive
                 window.toggleBatteryCap(capIndex);
                 removedItems.delete(capIndex);
@@ -4243,16 +4744,12 @@
                 // Keep instruction 2 (both caps removed) marked once checked
                 // It should remain checked until the overall step completes.
 
-                // After replacing positive, check if both caps are now on and battery positioned -> mark instruction 5
+                // After replacing positive, check if both caps are now on -> mark instruction 5
                 try {
-                    const batteryInPosition = !removedItems.has('battery');
-                    if (!negativeCapRemoved && !positiveCapRemoved && batteryInPosition) {
-                        markInstructionDone(currentStepIndex, 4);
+                    if (!negativeCapRemoved && !positiveCapRemoved) {
+                        if (currentStepIndex === 1 || currentStepIndex === 2) markInstructionDone(currentStepIndex, 4);
                     }
                 } catch (err) { console.warn('Failed to update instruction 5 after positive replace', err); }
-                // Movement log
-                addMovement('Replaced cap ( + ) from storage');
-                try { updateStepUI(); } catch (e) { }
                 return;
             }
         }
@@ -4263,10 +4760,103 @@
             currentCapType = null;
         }
 
+        // Battery Casing Inspection Modal Functions
+        window.openBatteryInspectModal = function () {
+            const modal = document.getElementById('batteryInspectModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+
+            // Reset to the scanning state, animate the progress bar,
+            // then reveal the (always clean) inspection result.
+            const scanning = document.getElementById('batteryInspectScanning');
+            const result = document.getElementById('batteryInspectResult');
+            const fill = document.getElementById('batteryInspectModalFill');
+            const pct = document.getElementById('batteryInspectModalPct');
+            if (scanning) scanning.style.display = 'block';
+            if (result) result.style.display = 'none';
+            if (fill) fill.style.width = '0%';
+            if (pct) pct.textContent = '0%';
+
+            const start = performance.now();
+            const DURATION = 2000;
+            (function tick(now) {
+                if (modal.style.display === 'none') return; // closed mid-scan
+                const p = Math.min(1, (now - start) / DURATION);
+                if (fill) fill.style.width = Math.round(p * 100) + '%';
+                if (pct) pct.textContent = Math.round(p * 100) + '%';
+                if (p < 1) { requestAnimationFrame(tick); return; }
+                if (scanning) scanning.style.display = 'none';
+                if (result) result.style.display = 'block';
+            })(start);
+        };
+
+        window.closeBatteryInspectModal = function (confirm = false) {
+            const modal = document.getElementById('batteryInspectModal');
+            if (modal) modal.style.display = 'none';
+            isBatteryCardLocked = false;
+            
+            if (confirm) {
+                // Casing inspection confirmed — verify the inspection item
+                if (typeof window.setInspectChecked === 'function') {
+                    window.setInspectChecked(1, true);
+                }
+                try { window.recordSimulationEvent('Battery casing inspected successfully — no cracks, bulging, or leaks found.'); } catch (e) {}
+                if (typeof window.showPrepToast === 'function') showPrepToast('Casing inspection complete.');
+            }
+        };
+
+        // Battery Tester Modal Functions (Step 3 — maintenance-free battery)
+        window.openBatteryTesterModal = function () {
+            const modal = document.getElementById('batteryTesterModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+
+            // Reset to the testing state, animate the progress bar,
+            // then reveal the test result.
+            const scanning = document.getElementById('batteryTesterScanning');
+            const result = document.getElementById('batteryTesterResult');
+            const fill = document.getElementById('batteryTesterModalFill');
+            const pct = document.getElementById('batteryTesterModalPct');
+            if (scanning) scanning.style.display = 'block';
+            if (result) result.style.display = 'none';
+            if (fill) fill.style.width = '0%';
+            if (pct) pct.textContent = '0%';
+
+            const start = performance.now();
+            const DURATION = 2000;
+            (function tick(now) {
+                if (modal.style.display === 'none') return; // closed mid-test
+                const p = Math.min(1, (now - start) / DURATION);
+                if (fill) fill.style.width = Math.round(p * 100) + '%';
+                if (pct) pct.textContent = Math.round(p * 100) + '%';
+                if (p < 1) { requestAnimationFrame(tick); return; }
+                if (scanning) scanning.style.display = 'none';
+                if (result) result.style.display = 'block';
+            })(start);
+        };
+
+        window.closeBatteryTesterModal = function (confirm = false) {
+            const modal = document.getElementById('batteryTesterModal');
+            if (modal) modal.style.display = 'none';
+
+            if (confirm) {
+                // Test finished — verify the connect / run / verify instructions
+                try { markInstructionDone(2, 1); } catch (e) {}
+                try { markInstructionDone(2, 2); } catch (e) {}
+                try { markInstructionDone(2, 3); } catch (e) {}
+                try { window.recordSimulationEvent('Battery tested successfully — 12.6V, CCA within spec, health GOOD.'); } catch (e) {}
+                if (typeof window.showPrepToast === 'function') showPrepToast('Battery passed the test.');
+            }
+        };
+
         // Battery Check Modal Functions
         function openBatteryCheckModal() {
             const modal = document.getElementById('batteryCheckModal');
             modal.style.display = 'block';
+            // Cleaning flow only — Throw Away is only relevant when the
+            // battery is flagged for replacement.
+            const throwBtn = document.getElementById('btnThrowBattery');
+            if (throwBtn) throwBtn.style.display = window.batteryNeedsReplacement ? 'flex' : 'none';
             // Clear previous canvas if any
             const viewer = document.getElementById('battery3DViewer');
             const oldCanvas = viewer.querySelector('canvas');
@@ -4318,8 +4908,6 @@
                     setTimeout(() => {
                         closeBatteryCheckModal();
                     }, 1500);
-                    // Movement log
-                    addMovement('Cleaned battery terminals');
                     break;
 
                 case 'throw':
@@ -4358,6 +4946,16 @@
         // Close battery check modal on outside click
         document.getElementById('batteryCheckModal').addEventListener('click', function (e) {
             if (e.target === this) closeBatteryCheckModal();
+        });
+
+        // Close battery inspect modal on outside click
+        document.getElementById('batteryInspectModal').addEventListener('click', function (e) {
+            if (e.target === this) closeBatteryInspectModal(false);
+        });
+
+        // Close battery tester modal on outside click
+        document.getElementById('batteryTesterModal').addEventListener('click', function (e) {
+            if (e.target === this) closeBatteryTesterModal(false);
         });
 
         // Battery Electrolyte Check Modal Functions
@@ -4478,7 +5076,6 @@
                         updateElectrolyteDisplay(currentBatteryElectrolyteData);
                     }
                     showSequenceWarning('Electrolyte refilled! All cells at 100%');
-                    addMovement('Electrolyte refilled');
                     // Mark electrolyte-related instructions (step index 2 -> instr 1,2,3)
                     try { markInstructionDone(2, 1); markInstructionDone(2, 2); markInstructionDone(2, 3); } catch (e) { }
                     break;
@@ -4490,14 +5087,12 @@
                     removedItems.set('battery', { type: 'battery', name: 'Battery', removed: true });
                     updateRemovedItemsContainer();
                     showSequenceWarning('Battery removed for replacement!');
-                    addMovement('Battery removed for replacement');
                     break;
 
                 case 'accept':
                     // Just close modal
                     closeBatteryElectrolyteModal();
                     showSequenceWarning('Battery accepted and installed!');
-                    addMovement('Battery accepted');
                     // Mark electrolyte-related instructions (step index 2 -> instr 1,2,3)
                     try { markInstructionDone(2, 1); markInstructionDone(2, 2); markInstructionDone(2, 3); } catch (e) { }
                     break;
@@ -4712,7 +5307,6 @@
                 }
 
                 showSequenceWarning('Battery installed successfully!');
-                addMovement('Installed battery (tool)');
             };
 
             // Cancel battery tool
@@ -4722,6 +5316,134 @@
             };
         })();
     </script>
+
+    <script>
+        // ── ACTION-VERIFIED HELPERS ──
+        // Same pattern as practicearea_spark.html / practicearea_fuel.html:
+        // instruction items get .done from real sim actions instead of manual
+        // checkboxes.
+
+        // Marks a Step 1 inspection item verified (li.done + persisted state).
+        function setInspectChecked(index, checked) {
+            const li = document.querySelector(`#inspectionList li[data-index="${index}"]`);
+            if (li) li.classList.toggle('done', !!checked);
+            window.stepInstrDone = window.stepInstrDone || {};
+            window.stepInstrDone[0] = window.stepInstrDone[0] || [];
+            window.stepInstrDone[0][index] = !!checked;
+        }
+        window.setInspectChecked = setInspectChecked;
+
+        function showPrepToast(message) {
+            const t = document.createElement('div');
+            t.textContent = message;
+            t.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#166534;color:#fff;padding:8px 14px;border-radius:10px;z-index:100050;font-weight:700;font-family:Nunito,sans-serif;';
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
+        window.showPrepToast = showPrepToast;
+
+        // Shows a small Use/Cancel option card when a tool or action is clicked
+        function showToolUseCard(title, desc, onUse, confirmLabel = 'Confirm', cancelLabel = 'Cancel') {
+            const existing = document.getElementById('toolUseCard');
+            if (existing) existing.remove();
+
+            const card = document.createElement('div');
+            card.id = 'toolUseCard';
+            card.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100000;background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.4);font-family:\'Nunito\',sans-serif;min-width:280px;text-align:center;';
+            card.innerHTML = `
+                <div style="margin-bottom:16px;">
+                    <div style="width:48px;height:48px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;color:#1a1a2e;margin:0;">${title}</h3>
+                    <p style="font-size:0.8rem;color:#6b7280;margin:8px 0 0;">${desc}</p>
+                </div>
+                <div style="display:flex;gap:12px;">
+                    <button id="toolUseConfirm" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border:none;border-radius:10px;background:#16a34a;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        ${confirmLabel}
+                    </button>
+                    <button id="toolUseCancel" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border:2px solid #e5e7eb;border-radius:10px;background:#fff;color:#374151;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                        ${cancelLabel}
+                    </button>
+                </div>`;
+            document.body.appendChild(card);
+            document.getElementById('toolUseConfirm').addEventListener('click', () => {
+                card.remove();
+                onUse();
+            });
+            document.getElementById('toolUseCancel').addEventListener('click', () => card.remove());
+        }
+        window.showToolUseCard = showToolUseCard;
+
+        // Item 0 follows the live engine state: verified while the ignition is
+        // OFF. Only synced on Step 1 — later steps start the engine on purpose
+        // and a completed inspection item must not un-verify.
+        function syncEngineOffChecklist() {
+            if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 0) return;
+            const off = (typeof engineSwipeEnabled === 'undefined') ? true : !engineSwipeEnabled;
+            setInspectChecked(0, off);
+        }
+        window.syncEngineOffChecklist = syncEngineOffChecklist;
+
+        // Engine starts ON when the site opens — including reloads landing on
+        // Step 1 — so the student must switch it OFF to verify the ignition
+        // item. updateStepUI forces it back off for steps 2–4; Step 5 is optional.
+        window.addEventListener('load', () => {
+            setEngineSwipeEnabled(true);
+            syncEngineOffChecklist();
+        });
+
+        // ── Socket wrench: tightens the hold-down bracket on Step 4 (index 3)
+        (function wireSocketWrench() {
+            const el = document.getElementById('socket-model');
+            if (!el) return;
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (typeof currentStepIndex === 'undefined' || currentStepIndex !== 3) {
+                    showSequenceWarning('The socket wrench is used to tighten the hold-down bracket during the Secure Battery Mount step.');
+                    return;
+                }
+                const done = (window.stepInstrDone && window.stepInstrDone[3]) || [];
+                if (done[2]) {
+                    showPrepToast('Bracket already tightened evenly.');
+                    return;
+                }
+                showToolUseCard('Tighten Hold-Down Bracket?', 'Tighten the bracket bolts evenly — snug, without over-tightening the battery case.', () => {
+                    try { markInstructionDone(3, 2); } catch (err) {}
+                    try { window.recordSimulationEvent('Hold-down bracket tightened successfully — even pressure, not over-tightened.'); } catch (err) {}
+                    showPrepToast('Hold-down bracket tightened evenly.');
+                });
+            });
+        })();
+
+        // ── Battery tester: runs the voltage/load test on Step 3 (index 2)
+        (function wireBatteryTester() {
+            const el = document.getElementById('tester-model');
+            if (!el) return;
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (typeof currentStepIndex === 'undefined' || currentStepIndex !== 2) {
+                    showSequenceWarning('The battery tester is used during the Test Battery Health step.');
+                    return;
+                }
+                const done = (window.stepInstrDone && window.stepInstrDone[2]) || [];
+                if (done[3]) {
+                    showPrepToast('Battery already tested — it passed.');
+                    return;
+                }
+                if (!areBothCapsRemoved()) {
+                    showSequenceWarning('Remove the terminal caps first so the tester leads can reach the battery posts.');
+                    return;
+                }
+                showToolUseCard('Test the Battery?', 'Connect the tester leads — red to positive (+), black to negative (−) — then run the voltage and load test.', () => {
+                    openBatteryTesterModal();
+                }, 'Connect & Test');
+            });
+        })();
+    </script>
 </body>
 
 </html>
+

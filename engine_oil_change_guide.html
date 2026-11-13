@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engine Oil Change — Module Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #5b6170;
+            color: #1a1a2e;
+            padding: 32px 16px;
+        }
+
+        .page {
+            width: 210mm;
+            max-width: 100%;
+            margin: 0 auto 24px;
+            background: #fff;
+            padding: 22mm 20mm;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+        }
+
+        /* Header */
+        .doc-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 18px;
+            border-bottom: 3px solid #2563eb;
+        }
+        .doc-logo {
+            width: 46px; height: 46px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-family: 'Rajdhani', sans-serif;
+            font-size: 1.35rem; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .doc-brand { font-size: 0.72rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #2563eb; }
+        .doc-title { font-family: 'Rajdhani', sans-serif; font-size: 1.9rem; font-weight: 700; color: #12122b; line-height: 1.1; }
+        .doc-sub { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+        .doc-badge {
+            margin-left: auto; text-align: right; flex-shrink: 0;
+            font-size: 0.7rem; color: #6b7280; line-height: 1.5;
+        }
+        .doc-badge strong { display: block; color: #12122b; font-size: 0.78rem; }
+
+        /* Sections */
+        .section { margin-top: 26px; }
+        .section-title {
+            display: flex; align-items: center; gap: 10px;
+            font-family: 'Rajdhani', sans-serif; font-size: 1.15rem; font-weight: 700;
+            color: #1d4ed8; margin-bottom: 10px;
+        }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+        .section-num {
+            width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: #fff; font-size: 0.78rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .lead { font-size: 0.85rem; color: #374151; line-height: 1.6; margin-bottom: 10px; }
+
+        /* Step cards */
+        .step {
+            border: 1px solid #e5e7eb; border-radius: 12px;
+            padding: 14px 16px; margin-bottom: 10px;
+            page-break-inside: avoid;
+        }
+        .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .step-num {
+            width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+            background: #eff6ff; border: 1.5px solid #bfdbfe;
+            color: #1d4ed8; font-size: 0.78rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .step-name { font-size: 0.92rem; font-weight: 800; color: #12122b; }
+        .step-meta { margin-left: auto; display: flex; gap: 6px; flex-shrink: 0; }
+        .chip {
+            font-size: 0.62rem; font-weight: 800; padding: 3px 9px; border-radius: 20px;
+            background: #f3f4f6; color: #6b7280;
+        }
+        .chip.diff-easy { background: #ecfdf5; color: #16a34a; }
+        .chip.diff-medium { background: #fffbeb; color: #d97706; }
+        .step-desc { font-size: 0.78rem; color: #6b7280; margin: 2px 0 8px 36px; }
+        .step-list { margin-left: 36px; list-style: none; }
+        .step-list li {
+            position: relative; font-size: 0.8rem; color: #374151;
+            line-height: 1.55; padding-left: 18px; margin-bottom: 3px;
+        }
+        .step-list li::before {
+            content: counter(list-item); position: absolute; left: 0;
+            font-size: 0.66rem; font-weight: 800; color: #2563eb;
+        }
+        .safety {
+            display: flex; align-items: flex-start; gap: 8px;
+            margin: 9px 0 0 36px; padding: 8px 12px;
+            background: #fff7ed; border: 1px solid #fed7aa; border-radius: 9px;
+            font-size: 0.74rem; color: #9a3412; line-height: 1.45;
+        }
+        .safety svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+        .safety strong { font-weight: 800; }
+
+        /* Tools grid */
+        .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin-left: 4px; }
+        .tool {
+            display: flex; align-items: center; gap: 9px;
+            font-size: 0.82rem; color: #374151; font-weight: 600;
+        }
+        .tool::before {
+            content: ''; width: 8px; height: 8px; border-radius: 2px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); flex-shrink: 0;
+        }
+
+        /* Quiz */
+        .quiz-item {
+            display: flex; gap: 10px; align-items: flex-start;
+            padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 9px;
+            margin-bottom: 7px; font-size: 0.82rem; color: #374151;
+        }
+        .q-num {
+            width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+            background: #eef2ff; color: #4f46e5; font-size: 0.72rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Takeaways */
+        .takeaway {
+            display: flex; align-items: flex-start; gap: 10px;
+            font-size: 0.84rem; color: #374151; margin-bottom: 7px; font-weight: 600;
+        }
+        .takeaway svg { width: 17px; height: 17px; color: #16a34a; flex-shrink: 0; margin-top: 1px; }
+
+        /* Footer */
+        .doc-footer {
+            margin-top: 30px; padding-top: 14px;
+            border-top: 1px solid #e5e7eb;
+            display: flex; justify-content: space-between;
+            font-size: 0.68rem; color: #9ca3af;
+        }
+
+        .print-hint {
+            position: fixed; bottom: 18px; right: 18px;
+            background: #12122b; color: #fff; font-size: 0.75rem; font-weight: 700;
+            padding: 10px 16px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .page { width: auto; margin: 0; box-shadow: none; padding: 0; }
+            .print-hint { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <!-- HEADER -->
+    <div class="doc-header">
+        <div class="doc-logo">M</div>
+        <div>
+            <div class="doc-brand">MotoMaster Module Guide</div>
+            <div class="doc-title">Engine Oil Change</div>
+            <div class="doc-sub">Complete service procedure — preparation to disposal</div>
+        </div>
+        <div class="doc-badge">
+            <strong>18 Lessons</strong>
+            ~75 min total · Easy–Medium
+        </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="section">
+        <div class="section-title"><span class="section-num">1</span>Overview</div>
+        <p class="lead">
+            This guide covers the complete engine oil change process from start to finish —
+            the same procedure taught in the Engine Oil Change learning module, practice
+            simulation, and assessment simulation.
+        </p>
+        <p class="lead"><strong>What you will learn:</strong></p>
+        <ul class="step-list" style="margin-left:20px;">
+            <li>Why regular oil changes are essential for engine health.</li>
+            <li>The tools and materials required for a safe oil change.</li>
+            <li>The 14-step procedure from preparation to disposal.</li>
+        </ul>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="section">
+        <div class="section-title"><span class="section-num">2</span>Tools &amp; Materials</div>
+        <p class="lead">Gather all necessary tools and materials before starting.</p>
+        <div class="tools">
+            <div class="tool">Oil drain pan (holds 4–5 liters)</div>
+            <div class="tool">Wrench set — 14mm / 17mm</div>
+            <div class="tool">New oil filter</div>
+            <div class="tool">Engine oil — correct grade per manual</div>
+            <div class="tool">Funnel</div>
+            <div class="tool">Gloves and clean rags</div>
+        </div>
+        <div class="safety" style="margin-left:4px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span><strong>Safety Reminder:</strong> Always wear gloves when handling engine oil to protect your skin.</span>
+        </div>
+    </div>
+
+    <!-- PROCEDURE -->
+    <div class="section">
+        <div class="section-title"><span class="section-num">3</span>Procedure — 14 Steps</div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">1</span><span class="step-name">Prepare the Vehicle</span>
+                <span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Park on a flat surface, engage parking brake, turn off engine and allow to cool.</div>
+            <ol class="step-list">
+                <li>Park on a flat, level surface and engage parking brake.</li>
+                <li>Turn off engine and allow to cool 10–15 minutes.</li>
+                <li>Open hood and secure with support rod.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Never work on a hot engine</strong> — allow sufficient cooling time.</span></div>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">2</span><span class="step-name">Locate the Drain Plug</span>
+                <span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Find the oil drain plug at the bottom of the engine oil pan.</div>
+            <ol class="step-list">
+                <li>Access the underside of the vehicle using jack stands.</li>
+                <li>Find the oil pan — flat metal pan at the engine bottom.</li>
+                <li>Identify the drain plug bolt at the lowest point.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Never work under a vehicle</strong> supported only by a floor jack.</span></div>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">3</span><span class="step-name">Position the Oil Pan</span>
+                <span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Place the drain pan correctly to catch all old oil.</div>
+            <ol class="step-list">
+                <li>Place drain pan directly beneath the drain plug.</li>
+                <li>Ensure pan can hold 4–5 liters.</li>
+                <li>Position slightly forward — oil may shoot at an angle.</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">4</span><span class="step-name">Remove the Drain Plug</span>
+                <span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Use the correct wrench to remove the drain plug and begin draining.</div>
+            <ol class="step-list">
+                <li>Select correct wrench size (14mm or 17mm).</li>
+                <li>Turn counterclockwise to loosen.</li>
+                <li>Remove fully by hand — keep clear of oil flow.</li>
+                <li>Set plug aside in a safe, clean location.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Warm oil can splash</strong> — wear gloves and keep hands clear.</span></div>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">5</span><span class="step-name">Drain the Old Oil</span>
+                <span class="step-meta"><span class="chip">10 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Allow old oil to fully drain into the pan before filter removal.</div>
+            <ol class="step-list">
+                <li>Let oil drain completely — 5 to 10 minutes.</li>
+                <li>Wait until only a slow drip remains.</li>
+                <li>Inspect drain plug washer — replace if worn.</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">6</span><span class="step-name">Remove the Old Oil Filter</span>
+                <span class="step-meta"><span class="chip">7 min</span><span class="chip diff-medium">Medium</span></span></div>
+            <div class="step-desc">Remove the old filter while oil is still draining.</div>
+            <ol class="step-list">
+                <li>Locate oil filter on side of engine block.</li>
+                <li>Use oil filter wrench to loosen counterclockwise.</li>
+                <li>Remove by hand — tilt to avoid spilling.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Old filter contains residual oil</strong> — handle carefully.</span></div>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">7</span><span class="step-name">Prepare the New Filter</span>
+                <span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Apply new oil to the gasket of the new filter to ensure a proper seal.</div>
+            <ol class="step-list">
+                <li>Unpack the new oil filter.</li>
+                <li>Apply a thin film of new oil to the rubber gasket ring.</li>
+                <li>This ensures proper seal and prevents leaks.</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">8</span><span class="step-name">Install the New Filter</span>
+                <span class="step-meta"><span class="chip">5 min</span><span class="chip diff-medium">Medium</span></span></div>
+            <div class="step-desc">Thread and hand-tighten the new oil filter into place.</div>
+            <ol class="step-list">
+                <li>Thread new filter clockwise by hand.</li>
+                <li>Tighten ¾ turn after gasket contacts engine.</li>
+                <li>Hand tight only — do not use a wrench.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Overtightening damages the gasket</strong> and causes leaks.</span></div>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">9</span><span class="step-name">Reinstall the Drain Plug</span>
+                <span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Clean and reinstall the drain plug securely before adding new oil.</div>
+            <ol class="step-list">
+                <li>Wipe drain plug and area clean.</li>
+                <li>Install new washer if old one is worn.</li>
+                <li>Thread plug clockwise by hand, then snug with wrench.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>A loose drain plug</strong> causes immediate oil leak on start.</span></div>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">10</span><span class="step-name">Locate the Filler Cap</span>
+                <span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Find the oil filler cap on top of the engine.</div>
+            <ol class="step-list">
+                <li>Look on top of engine for cap with oil can symbol.</li>
+                <li>Twist counterclockwise to remove.</li>
+                <li>Place cap in a clean area.</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">11</span><span class="step-name">Pour in New Oil</span>
+                <span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Refill the engine with the correct amount and type of new oil.</div>
+            <ol class="step-list">
+                <li>Place funnel into filler opening.</li>
+                <li>Pour specified amount of oil slowly.</li>
+                <li>Check vehicle manual for correct quantity.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Do not overfill</strong> — causes pressure build-up and seal damage.</span></div>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">12</span><span class="step-name">Check Oil Level</span>
+                <span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Use the dipstick to verify oil level is correct.</div>
+            <ol class="step-list">
+                <li>Pull dipstick out and wipe clean.</li>
+                <li>Reinsert fully, then pull out again.</li>
+                <li>Level should be between MIN and MAX marks.</li>
+                <li>Add more in small amounts if needed.</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">13</span><span class="step-name">Replace the Filler Cap</span>
+                <span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Securely replace the oil filler cap to prevent leaks.</div>
+            <ol class="step-list">
+                <li>Place filler cap back onto the opening.</li>
+                <li>Twist clockwise until secure.</li>
+                <li>Wipe any spilled oil off the engine.</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <div class="step-head"><span class="step-num">14</span><span class="step-name">Start Engine &amp; Verify</span>
+                <span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Start the engine, check for leaks, and verify oil pressure.</div>
+            <ol class="step-list">
+                <li>Start engine and run for 1–2 minutes.</li>
+                <li>Check oil pressure light — should turn off in seconds.</li>
+                <li>Inspect drain plug and filter for leaks.</li>
+                <li>Turn off, wait 5 min, recheck dipstick level.</li>
+                <li>Dispose old oil at approved recycling center.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Never pour old oil down the drain</strong> — it is hazardous waste.</span></div>
+        </div>
+    </div>
+
+    <!-- KNOWLEDGE CHECK -->
+    <div class="section">
+        <div class="section-title"><span class="section-num">4</span>Knowledge Check</div>
+        <div class="quiz-item"><span class="q-num">Q1</span>What should you place under the drain plug before removing it?</div>
+        <div class="quiz-item"><span class="q-num">Q2</span>Why apply oil to the new filter gasket?</div>
+        <div class="quiz-item"><span class="q-num">Q3</span>What tool checks if the oil level is correct?</div>
+        <div class="quiz-item"><span class="q-num">Q4</span>What happens if you overfill?</div>
+        <div class="quiz-item"><span class="q-num">Q5</span>How should you dispose of old engine oil?</div>
+    </div>
+
+    <!-- TAKEAWAYS -->
+    <div class="section">
+        <div class="section-title"><span class="section-num">5</span>Key Takeaways</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Always ensure the engine is cool before starting.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Replace the oil filter every time.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Use the correct oil grade from the vehicle manual.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Check oil level with the dipstick — between MIN and MAX.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Dispose of old oil responsibly at a recycling center.</div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="doc-footer">
+        <span>MotoMaster — Automotive Repair Simulation</span>
+        <span>Engine Oil Change Module Guide</span>
+    </div>
+</div>
+
+<div class="print-hint">Ctrl + P → Save as PDF</div>
+
+</body>
+</html>

@@ -3,11 +3,11 @@
  */
 (function () {
     const MODULES = [
-        { key: 'mod_progress_enginemodule', href: 'enginemodule.html', title: 'Engine Oil Change' },
+        { key: 'mod_progress_batterymodule', href: 'batterymodule.html', title: 'Battery Maintenance' },
         { key: 'mod_progress_brakemodule', href: 'brakemodule.html', title: 'Brake Pad Replacement' },
         { key: 'mod_progress_airmodule', href: 'airmodule.html', title: 'Air Filter Replacement' },
         { key: 'mod_progress_fuelmodule', href: 'fuelmodule.html', title: 'Fuel Filter Replacement' },
-        { key: 'mod_progress_batterymodule', href: 'batterymodule.html', title: 'Battery Maintenance' },
+        { key: 'mod_progress_enginemodule', href: 'enginemodule.html', title: 'Engine Oil Change' },
         { key: 'mod_progress_sparkmodule', href: 'sparkmodule.html', title: 'Spark Plug Replacement' }
     ];
 

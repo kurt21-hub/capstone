@@ -8,6 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
         rel="stylesheet" />
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 <style>
     *,
@@ -1244,7 +1245,7 @@
             </button>
             <div class="nav-user-wrap">
                 <div class="nav-user">
-                    <div class="nav-avatar"><img src="images/unknown-avatar.svg" alt="Unknown user"></div>
+                    <div class="nav-avatar"><img src="images/userprofile.jpg" alt="User"></div>
                     <div>
                         <div class="nav-user-name" id="studentFullName"></div>
                         <div class="nav-user-role">Student</div>
@@ -1354,35 +1355,37 @@
             <!-- ASSESSMENT CARDS GRID -->
             <div class="sim-grid">
 
-                <!-- Engine Oil Change — Completed -->
-                <div class="sim-card review-card" data-title="Engine Oil Change Assessment" data-score="92%">
+                <!-- Battery Maintenance — Unlocked (score loaded from database) -->
+                <div class="sim-card" data-title="Battery Maintenance Assessment" data-state="not-started">
                     <div class="sim-card-img-wrap">
-                        <img class="sim-card-img" src="images/enginee.png" alt="Engine Oil Change">
-                        <div class="sim-card-badge completed">
+                        <img class="sim-card-img" src="images/batteryy.png" alt="Battery Maintenance">
+                        <div class="sim-card-badge unlocked">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="20 6 9 17 4 12" />
                             </svg>
-                            Completed
+                            Unlocked
                         </div>
                         <div class="sim-card-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="3" />
-                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+                                <rect x="1" y="6" width="18" height="12" rx="2" />
+                                <line x1="23" y1="13" x2="23" y2="11" />
                             </svg>
                         </div>
                     </div>
                     <div class="sim-card-body">
-                        <div class="sim-card-title">Engine Oil Change Assessment</div>
-                        <div class="sim-card-desc">Test your knowledge about the engine oil change procedure.</div>
-                        <div class="sim-card-meta">
-                            <span class="sim-card-score">Score: 92%</span>
-                            <span>Completed: Aug 17, 2026</span>
-                        </div>
-                        <button type="button" class="sim-btn outline review-assessment-btn">Review Assessment <svg
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <div class="sim-card-title">Battery Maintenance Assessment</div>
+                        <div class="sim-card-desc">Test your knowledge about battery inspection, cleaning, and
+                            maintenance procedures.</div>
+                        <button type="button" class="sim-btn start" data-action="start-assessment">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="5 3 19 12 5 21 5 3" />
+                            </svg>
+                            Start Assessment
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <line x1="5" y1="12" x2="19" y2="12" />
                                 <polyline points="12 5 19 12 12 19" />
-                            </svg></button>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -1486,37 +1489,35 @@
                     </div>
                 </div>
 
-                <!-- Battery Maintenance — Unlocked (score loaded from database) -->
-                <div class="sim-card" data-title="Battery Maintenance Assessment" data-state="not-started">
+                <!-- Engine Oil Change — Completed -->
+                <div class="sim-card review-card" data-title="Engine Oil Change Assessment" data-score="92%">
                     <div class="sim-card-img-wrap">
-                        <img class="sim-card-img" src="images/batteryy.png" alt="Battery Maintenance">
-                        <div class="sim-card-badge unlocked">
+                        <img class="sim-card-img" src="images/enginee.png" alt="Engine Oil Change">
+                        <div class="sim-card-badge completed">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="20 6 9 17 4 12" />
                             </svg>
-                            Unlocked
+                            Completed
                         </div>
                         <div class="sim-card-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="1" y="6" width="18" height="12" rx="2" />
-                                <line x1="23" y1="13" x2="23" y2="11" />
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
                             </svg>
                         </div>
                     </div>
                     <div class="sim-card-body">
-                        <div class="sim-card-title">Battery Maintenance Assessment</div>
-                        <div class="sim-card-desc">Test your knowledge about battery inspection, cleaning, and
-                            maintenance procedures.</div>
-                        <button type="button" class="sim-btn start" data-action="start-assessment">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polygon points="5 3 19 12 5 21 5 3" />
-                            </svg>
-                            Start Assessment
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <div class="sim-card-title">Engine Oil Change Assessment</div>
+                        <div class="sim-card-desc">Test your knowledge about the engine oil change procedure.</div>
+                        <div class="sim-card-meta">
+                            <span class="sim-card-score">Score: 92%</span>
+                            <span>Completed: Aug 17, 2026</span>
+                        </div>
+                        <button type="button" class="sim-btn outline review-assessment-btn">Review Assessment <svg
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <line x1="5" y1="12" x2="19" y2="12" />
                                 <polyline points="12 5 19 12 12 19" />
-                            </svg>
-                        </button>
+                            </svg></button>
                     </div>
                 </div>
 
@@ -1726,7 +1727,7 @@
             </div>
 
             <div class="review-message" id="reviewMessage">
-                You finished the assessment, but each step needs review before attempting it again.
+                You finished the assessment — review each step below.
             </div>
 
             <div class="review-section">
@@ -1736,7 +1737,6 @@
                         <div class="review-section-hint">All steps are expanded so you can review every correct and
                             incorrect action</div>
                     </div>
-                    <button type="button" class="review-action-btn" id="attemptAgainBtn">Attempt Again</button>
                 </div>
 
                 <div id="reviewStepsContainer">
@@ -1946,7 +1946,6 @@
         const reviewMessage = document.getElementById('reviewMessage');
         const reviewStepsContainer = document.getElementById('reviewStepsContainer');
         const closeReviewBtn = document.getElementById('closeReviewBtn');
-        const attemptAgainBtn = document.getElementById('attemptAgainBtn');
 
         const defaultReviewStepsHTML = reviewStepsContainer ? reviewStepsContainer.innerHTML : '';
         let activeAssessmentTitle = null;
@@ -1979,8 +1978,8 @@
         function getFeedbackText(score) {
             if (score >= 90) return 'Strong work. You completed the assessment accurately and followed the sequence well.';
             if (score >= 75) return 'Good job. Your sequence is mostly correct, with a few details to tighten up.';
-            if (score >= 60) return 'You finished the assessment, but several steps need review before attempting it again.';
-            return 'You completed the assessment, but the procedure needs more practice. Review the mistakes below and try again.';
+            if (score >= 60) return 'You finished the assessment — review each step below.';
+            return 'You completed the assessment, but the procedure needs more practice. Review the mistakes below.';
         }
 
         function calcStepScore(step) {
@@ -2060,7 +2059,7 @@
                 if (reviewStepsValue) reviewStepsValue.textContent = '5/5';
                 if (reviewPerformanceValue) reviewPerformanceValue.textContent = 'Needs Work';
                 if (reviewMessage) {
-                    reviewMessage.textContent = 'You finished the assessment, but each step needs review before attempting it again.';
+                    reviewMessage.textContent = 'You finished the assessment — review each step below.';
                 }
                 if (reviewStepsContainer) reviewStepsContainer.innerHTML = defaultReviewStepsHTML;
             }
@@ -2110,8 +2109,47 @@
                 e.stopPropagation();
                 const card = btn.closest('.sim-card');
                 const title = card ? card.dataset.title : 'Battery Maintenance Assessment';
-                window.location.href = 'assessmentarea.html?title=' + encodeURIComponent(title);
+                showAssessmentWarning(getAssessmentAreaHref(title));
             };
+        }
+
+        function getAssessmentAreaHref(title) {
+            if (title === 'Engine Oil Change Assessment') return 'assessmentarea_engine.html';
+            if (title === 'Brake Pad Replacement Assessment') return 'assessmentarea_brake.html';
+            if (title === 'Air Filter Replacement Assessment') return 'assessmentarea_air.html';
+            if (title === 'Spark Plug Replacement Assessment') return 'assessmentarea_spark.html';
+            if (title === 'Fuel Filter Replacement Assessment') return 'assessmentarea_fuel.html';
+            return 'assessmentarea.html?title=' + encodeURIComponent(title);
+        }
+
+        // Warning shown before starting any assessment —
+        // progress auto-saves, so refreshing/reloading must be avoided
+        function showAssessmentWarning(targetHref) {
+            let existing = document.getElementById('assessWarnOverlay');
+            if (existing) existing.remove();
+            const overlay = document.createElement('div');
+            overlay.id = 'assessWarnOverlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;z-index:100000;';
+            overlay.innerHTML = `
+                <div style="background:#fff;border-radius:16px;padding:28px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.4);font-family:'Nunito',sans-serif;text-align:center;">
+                    <div style="width:52px;height:52px;border-radius:50%;background:#fef3c7;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin:0 0 8px;">Before You Begin</h3>
+                    <p style="font-size:0.85rem;color:#4b5563;margin:0 0 6px;">Please avoid <strong>refreshing or reloading</strong> this tab during the assessment — your progress is <strong>saved automatically</strong>.</p>
+                    <p style="font-size:0.9rem;font-weight:800;color:#16a34a;margin:0 0 18px;">Good luck!</p>
+                    <div style="display:flex;gap:10px;">
+                        <button id="assessWarnCancel" style="flex:1;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;background:#fff;color:#374151;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;">Cancel</button>
+                        <button id="assessWarnGo" style="flex:1;padding:12px;border:none;border-radius:10px;background:#2563eb;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;">Start Assessment</button>
+                    </div>
+                </div>`;
+            overlay.querySelector('#assessWarnCancel').addEventListener('click', () => overlay.remove());
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+            overlay.querySelector('#assessWarnGo').addEventListener('click', () => {
+                overlay.remove();
+                window.location.href = targetHref;
+            });
+            document.body.appendChild(overlay);
         }
 
         document.addEventListener('click', (event) => {
@@ -2129,38 +2167,10 @@
             event.stopPropagation();
             const card = startBtn.closest('.sim-card');
             const title = card ? card.dataset.title : 'Battery Maintenance Assessment';
-            window.location.href = 'assessmentarea.html?title=' + encodeURIComponent(title);
+            showAssessmentWarning(getAssessmentAreaHref(title));
         }, true);
 
         closeReviewBtn.addEventListener('click', closeReviewModal);
-        attemptAgainBtn.addEventListener('click', async () => {
-            const title = activeAssessmentTitle;
-            if (!title) return;
-
-            const student = getStudentInfo();
-            if (student) {
-                try {
-                    const res = await fetch('reset_assessment.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            title: title
-                        })
-                    });
-                    const data = await res.json();
-                    if (!data.success) {
-                        console.warn('Reset failed:', data.message);
-                    }
-                } catch (err) {
-                    console.warn('Reset request failed', err);
-                }
-            }
-
-            delete assessmentRecordsByTitle[title];
-
-            closeReviewModal();
-            window.location.href = 'assessmentarea.html?title=' + encodeURIComponent(title);
-        });
 
         reviewModal.addEventListener('click', (event) => {
             if (event.target === reviewModal) {
@@ -2359,7 +2369,7 @@
             // Add Start Button
             let btn = card.querySelector('.sim-btn');
             if (btn) {
-                if (btn.tagName === 'A' || btn.classList.contains('locked-action-btn')) {
+                if (!btn.matches('[data-action="start-assessment"]')) {
                     btn.outerHTML = `
                         <button type="button" class="sim-btn start" data-action="start-assessment">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2709,6 +2719,7 @@
         });
     </script>
     <script src="js/notifications.js"></script>
+    <script src="js/user-avatar.js"></script>
 </body>
 
 

@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <script src="js/teacher-notif-badge.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MotoMaster – Reports</title>
@@ -1076,8 +1077,8 @@
                                 class="fa-solid fa-file-invoice"></i></div>
                         <div class="kpi-title">Reports Generated</div>
                     </div>
-                    <div class="kpi-value">24</div>
-                    <div class="kpi-foot"><span>This semester</span><span style="color:var(--accent)">6 this
+                    <div class="kpi-value" id="kpiReports">0</div>
+                    <div class="kpi-foot"><span>This semester</span><span style="color:var(--accent)" id="kpiReportsFoot">0 this
                             month</span></div>
                 </div>
                 <div class="kpi-card">
@@ -1086,9 +1087,9 @@
                                 class="fa-solid fa-download"></i></div>
                         <div class="kpi-title">Downloads</div>
                     </div>
-                    <div class="kpi-value">48</div>
-                    <div class="kpi-foot"><span>PDF &amp; CSV exports</span><span style="color:var(--green)">Avg. 2 per
-                            report</span></div>
+                    <div class="kpi-value" id="kpiDownloads">0</div>
+                    <div class="kpi-foot"><span>PDF &amp; CSV exports</span><span style="color:var(--green)" id="kpiDownloadsFoot">No
+                            downloads yet</span></div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-header">
@@ -1096,8 +1097,8 @@
                         </div>
                         <div class="kpi-title">Students Covered</div>
                     </div>
-                    <div class="kpi-value">87</div>
-                    <div class="kpi-foot"><span>In latest report</span><span style="color:var(--orange)">All
+                    <div class="kpi-value" id="kpiStudents">—</div>
+                    <div class="kpi-foot"><span>In your class</span><span style="color:var(--orange)">All
                             enrolled</span></div>
                 </div>
                 <div class="kpi-card">
@@ -1106,9 +1107,8 @@
                                 class="fa-solid fa-calendar-check"></i></div>
                         <div class="kpi-title">Last Generated</div>
                     </div>
-                    <div class="kpi-value" style="font-size:1.1rem;padding-top:6px">May 26</div>
-                    <div class="kpi-foot"><span>Class Progress Report</span><span style="color:var(--purple)">2 days
-                            ago</span></div>
+                    <div class="kpi-value" id="kpiLastGen" style="font-size:1.1rem;padding-top:6px">—</div>
+                    <div class="kpi-foot"><span id="kpiLastGenFoot">No reports yet</span></div>
                 </div>
             </div>
 
@@ -1116,13 +1116,13 @@
             <div class="action-bar">
                 <div class="filter-tabs">
                     <button class="filter-tab active" onclick="setFilter('all',this)">All <span
-                            style="font-size:0.6rem;opacity:0.7">(24)</span></button>
+                            style="font-size:0.6rem;opacity:0.7">(0)</span></button>
                     <button class="filter-tab" onclick="setFilter('class',this)">Class <span
-                            style="font-size:0.6rem;opacity:0.7">(8)</span></button>
+                            style="font-size:0.6rem;opacity:0.7">(0)</span></button>
                     <button class="filter-tab" onclick="setFilter('student',this)">Student <span
-                            style="font-size:0.6rem;opacity:0.7">(10)</span></button>
+                            style="font-size:0.6rem;opacity:0.7">(0)</span></button>
                     <button class="filter-tab" onclick="setFilter('assessment',this)">Assessment <span
-                            style="font-size:0.6rem;opacity:0.7">(6)</span></button>
+                            style="font-size:0.6rem;opacity:0.7">(0)</span></button>
                 </div>
                 <div style="margin-left:auto;display:flex;gap:8px">
                     <select class="form-control" id="modFilter"
@@ -1212,7 +1212,7 @@
                         <div class="panel-top">
                             <div>
                                 <div class="panel-title">Report History</div>
-                                <div class="panel-subtitle" id="repCount">Showing 8 recent reports</div>
+                                <div class="panel-subtitle" id="repCount">No reports generated yet</div>
                             </div>
                         </div>
                         <table class="rep-table">
@@ -1252,17 +1252,17 @@
                         <div class="side-item">
                             <div class="side-dot" style="background:#2563eb"></div>
                             <div class="side-label">Class Reports</div>
-                            <div class="side-val" style="color:#2563eb">8</div>
+                            <div class="side-val" style="color:#2563eb">0</div>
                         </div>
                         <div class="side-item">
                             <div class="side-dot" style="background:#16a34a"></div>
                             <div class="side-label">Student Reports</div>
-                            <div class="side-val" style="color:#16a34a">10</div>
+                            <div class="side-val" style="color:#16a34a">0</div>
                         </div>
                         <div class="side-item">
                             <div class="side-dot" style="background:#d97706"></div>
                             <div class="side-label">Assessment Reports</div>
-                            <div class="side-val" style="color:#d97706">6</div>
+                            <div class="side-val" style="color:#d97706">0</div>
                         </div>
                     </div>
 
@@ -1274,44 +1274,10 @@
                                 <div class="panel-subtitle">Report generation log</div>
                             </div>
                         </div>
-                        <div class="side-item" style="gap:8px;padding:10px 14px"><i class="fa-solid fa-file-pdf"
-                                style="color:#dc2626;font-size:12px;flex-shrink:0"></i>
-                            <div style="flex:1">
-                                <div style="font-size:0.72rem;font-weight:700">Class Progress Report</div>
-                                <div style="font-size:0.6rem;font-weight:600;color:var(--text-secondary)">Generated •
-                                    May 26</div>
-                            </div>
-                        </div>
-                        <div class="side-item" style="gap:8px;padding:10px 14px"><i class="fa-solid fa-file-csv"
-                                style="color:#16a34a;font-size:12px;flex-shrink:0"></i>
-                            <div style="flex:1">
-                                <div style="font-size:0.72rem;font-weight:700">Student Progress Report</div>
-                                <div style="font-size:0.6rem;font-weight:600;color:var(--text-secondary)">Downloaded •
-                                    May 24</div>
-                            </div>
-                        </div>
-                        <div class="side-item" style="gap:8px;padding:10px 14px"><i class="fa-solid fa-file-pdf"
-                                style="color:#dc2626;font-size:12px;flex-shrink:0"></i>
-                            <div style="flex:1">
-                                <div style="font-size:0.72rem;font-weight:700">Assessment Results</div>
-                                <div style="font-size:0.6rem;font-weight:600;color:var(--text-secondary)">Generated •
-                                    May 22</div>
-                            </div>
-                        </div>
-                        <div class="side-item" style="gap:8px;padding:10px 14px"><i class="fa-solid fa-file-pdf"
-                                style="color:#dc2626;font-size:12px;flex-shrink:0"></i>
-                            <div style="flex:1">
-                                <div style="font-size:0.72rem;font-weight:700">At-Risk Student Report</div>
-                                <div style="font-size:0.6rem;font-weight:600;color:var(--text-secondary)">Generated •
-                                    May 20</div>
-                            </div>
-                        </div>
-                        <div class="side-item" style="gap:8px;padding:10px 14px"><i class="fa-solid fa-file-csv"
-                                style="color:#16a34a;font-size:12px;flex-shrink:0"></i>
-                            <div style="flex:1">
-                                <div style="font-size:0.72rem;font-weight:700">Module 2 Class Report</div>
-                                <div style="font-size:0.6rem;font-weight:600;color:var(--text-secondary)">Downloaded •
-                                    Apr 28</div>
+                        <div id="activityList">
+                            <div class="side-item" style="gap:8px;padding:14px;color:var(--text-secondary)">
+                                <div style="flex:1;font-size:0.72rem;font-weight:600">No activity yet — generated and
+                                    downloaded reports will appear here.</div>
                             </div>
                         </div>
                     </div>
@@ -1380,7 +1346,7 @@
                 </div>
                 <div class="nm-grid-3">
                     <div class="form-group"><label class="form-label">Period</label>
-                        <select class="form-control">
+                        <select class="form-control" id="genPeriod">
                             <option selected>This Month</option>
                             <option>Last Month</option>
                             <option>This Quarter</option>
@@ -1389,7 +1355,7 @@
                         </select>
                     </div>
                     <div class="form-group"><label class="form-label">Student Filter</label>
-                        <select class="form-control">
+                        <select class="form-control" id="genFilter">
                             <option selected>All Students</option>
                             <option>On Track Only</option>
                             <option>At Risk Only</option>
@@ -1453,15 +1419,23 @@
             <div
                 style="padding:14px 22px;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:8px">
                 <button class="btn-outline" onclick="closePreviewModal()">Close</button>
-                <button class="btn-green" onclick="closePreviewModal();alert('Report downloaded. (UI demo)')"><i
+                <button class="btn-outline" onclick="downloadPreviewReport('csv')"><i
+                        class="fa-solid fa-file-csv"></i> Download CSV</button>
+                <button class="btn-green" onclick="downloadPreviewReport('pdf')"><i
                         class="fa-solid fa-download"></i> Download PDF</button>
             </div>
         </div>
     </div>
 
     <script src="teacher-profile.js"></script>
+    <script src="teacher-live-refresh.js"></script>
     <script>
-        let reportData = [];
+        window.TEACHER_REFRESH_FN = 'fetchReportsData';
+
+        let reportData = [];        // reports the teacher actually generated — starts empty
+        let templateReports = [];   // computed aggregates used to fill the Generate modal
+        let downloadCount = 0;
+        let activityLog = [];
         let studentsList = [];
         let allLogs = {};
 
@@ -1640,7 +1614,7 @@
             const inactiveDaysCount = studentsList.filter(s => s.status === 'inactive').length;
             const criticalCount = studentsList.filter(s => s.score > 0 && s.score < 50).length;
 
-            reportData = [
+            templateReports = [
                 {
                     id: 1,
                     title: 'Class Progress Report — May 2025',
@@ -1757,6 +1731,17 @@
             if (!tableBody) return;
             tableBody.innerHTML = '';
 
+            if (!reportData.length) {
+                tableBody.innerHTML = `
+                    <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-secondary)">
+                        <i class="fa-solid fa-file-circle-plus" style="font-size:1.5rem;margin-bottom:8px;display:block"></i>
+                        <div style="font-weight:800;font-size:0.84rem">No reports generated yet</div>
+                        <div style="font-size:0.7rem;font-weight:600;margin-top:4px">Use a template above or the Generate Report button to create your first export.</div>
+                    </td></tr>`;
+                document.getElementById('repCount').textContent = 'No reports generated yet';
+                return;
+            }
+
             let vis = 0;
             reportData.forEach(r => {
                 const show = currentFilter === 'all' || r.type === currentFilter;
@@ -1780,9 +1765,11 @@
                         typeBadgeClass = 'badge-orange';
                     }
 
-                    const subtitle = r.type === 'class' ? `${r.stats.students} students &bull; Class Overview` : 
-                                     r.type === 'student' ? `${r.stats.students} students &bull; Student breakdown` :
-                                     `${r.stats.submissions} submissions &bull; Assessment stats`;
+                    const studCount = r.stats.students !== undefined ? r.stats.students : studentsList.length;
+                    const submCount = r.stats.submissions !== undefined ? r.stats.submissions : 0;
+                    const subtitle = r.type === 'class' ? `${studCount} students &bull; Class Overview` :
+                                     r.type === 'student' ? `${studCount} students &bull; Student breakdown` :
+                                     `${submCount} submissions &bull; Assessment stats`;
 
                     const tr = document.createElement('tr');
                     tr.dataset.type = r.type;
@@ -1799,10 +1786,10 @@
                             </div>
                         </td>
                         <td><span class="badge ${typeBadgeClass}">${r.type.charAt(0).toUpperCase() + r.type.slice(1)}</span></td>
-                        <td class="muted">${r.id >= 5 ? 'Module ' + (r.id === 5 || r.id === 8 ? '1' : '2') : 'All'}</td>
-                        <td class="muted">${r.id >= 5 ? 'Last Month' : 'This Semester'}</td>
-                        <td><span class="badge ${r.type === 'student' ? 'badge-blue' : 'badge-green'}">${r.type === 'student' ? 'CSV' : 'PDF'}</span></td>
-                        <td class="muted">${r.id >= 5 ? 'Apr 30, 2026' : 'May 26, 2026'}</td>
+                        <td class="muted">${r.module || (r.id >= 5 ? 'Module ' + (r.id === 5 || r.id === 8 ? '1' : '2') : 'All')}</td>
+                        <td class="muted">${r.period || (r.id >= 5 ? 'Last Month' : 'This Semester')}</td>
+                        <td><span class="badge ${r.type === 'student' ? 'badge-blue' : 'badge-green'}">${r.format || (r.type === 'student' ? 'CSV' : 'PDF')}</span></td>
+                        <td class="muted">${r.date || (r.id >= 5 ? 'Apr 30, 2026' : 'May 26, 2026')}</td>
                         <td>
                             <div class="td-actions">
                                 <button class="icon-btn" onclick="openPreviewModal(${r.id})" title="Preview"><i class="fa-solid fa-eye"></i></button>
@@ -1822,6 +1809,25 @@
             const classCount = reportData.filter(r => r.type === 'class').length;
             const studentCount = reportData.filter(r => r.type === 'student').length;
             const assessCount = reportData.filter(r => r.type === 'assessment').length;
+
+            const now = new Date();
+            const thisMonth = reportData.filter(r =>
+                r.createdAt && r.createdAt.getMonth() === now.getMonth() && r.createdAt.getFullYear() === now.getFullYear()
+            ).length;
+            const kpiReports = document.getElementById('kpiReports');
+            if (kpiReports) kpiReports.textContent = reportData.length;
+            const kpiReportsFoot = document.getElementById('kpiReportsFoot');
+            if (kpiReportsFoot) kpiReportsFoot.textContent = thisMonth + ' this month';
+            const kpiDownloads = document.getElementById('kpiDownloads');
+            if (kpiDownloads) kpiDownloads.textContent = downloadCount;
+            const kpiDownloadsFoot = document.getElementById('kpiDownloadsFoot');
+            if (kpiDownloadsFoot) kpiDownloadsFoot.textContent = downloadCount ? 'This session' : 'No downloads yet';
+            const kpiStudents = document.getElementById('kpiStudents');
+            if (kpiStudents) kpiStudents.textContent = studentsList.length;
+            const kpiLastGen = document.getElementById('kpiLastGen');
+            const kpiLastGenFoot = document.getElementById('kpiLastGenFoot');
+            if (kpiLastGen) kpiLastGen.textContent = reportData.length ? (reportData[0].date || '—') : '—';
+            if (kpiLastGenFoot) kpiLastGenFoot.textContent = reportData.length ? reportData[0].title.split(' — ')[0] : 'No reports yet';
 
             const sideItems = document.querySelectorAll('.panel .side-item');
             if (sideItems.length >= 3) {
@@ -1853,18 +1859,230 @@
             document.body.style.overflow = 'hidden';
         }
         function closeGenerateModal() { document.getElementById('generateModal').classList.remove('open'); document.body.style.overflow = ''; }
+        // ── Export helpers ──────────────────────────────────────────────
+        function escHtml(v) {
+            return String(v == null ? '' : v)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+        function csvEscape(v) {
+            const s = String(v == null ? '' : v);
+            return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        }
+        function downloadCSVFile(filename, csvText) {
+            const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        function reportToCSV(r) {
+            const typeLabel = r.type.charAt(0).toUpperCase() + r.type.slice(1);
+            const lines = [
+                csvEscape(r.title + ' — MotoMaster Teacher Portal'),
+                csvEscape('Type: ' + typeLabel + ' Report'),
+                csvEscape('Generated: ' + new Date().toLocaleString()),
+                '',
+                'SUMMARY STATISTICS',
+                'Metric,Value'
+            ];
+            Object.entries(r.stats).forEach(([k, v]) => {
+                lines.push(csvEscape(k.replace(/([A-Z])/g, ' $1').trim()) + ',' + csvEscape(v));
+            });
+            lines.push('', 'DETAILED BREAKDOWN', 'Item,Value');
+            r.rows.forEach(row => lines.push(csvEscape(row.label) + ',' + csvEscape(row.val)));
+            return lines.join('\r\n');
+        }
+        function reportFileName(r, ext) {
+            return r.title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') + '.' + ext;
+        }
+        function exportReportPDF(r) {
+            const typeLabel = r.type.charAt(0).toUpperCase() + r.type.slice(1);
+            const statsHtml = Object.entries(r.stats).map(([k, v]) =>
+                `<div class="stat"><b>${escHtml(v)}</b><span>${escHtml(k.replace(/([A-Z])/g, ' $1'))}</span></div>`
+            ).join('');
+            const rowsHtml = r.rows.map(row =>
+                `<tr><td>${escHtml(row.label)}</td><td>${escHtml(row.val)}</td></tr>`
+            ).join('');
+            const w = window.open('', '_blank');
+            if (!w) { alert('Pop-up blocked — please allow pop-ups to export the PDF report.'); return; }
+            w.document.write(`<!DOCTYPE html><html><head>
+    <script src="js/teacher-notif-badge.js"></script><meta charset="utf-8"><title>${escHtml(r.title)}</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;color:#1f2937;margin:36px;font-size:13px}
+h1{font-size:20px;margin:0 0 4px}
+.meta{font-size:12px;color:#6b7280;margin-bottom:14px}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:11px;font-weight:700}
+h2{font-size:13px;margin:22px 0 8px;color:#374151;text-transform:uppercase;letter-spacing:.4px}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;text-align:center;min-width:90px}
+.stat b{display:block;font-size:18px;color:#2563eb}
+.stat span{font-size:10px;color:#6b7280;text-transform:uppercase}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #e5e7eb;padding:7px 10px;text-align:left}
+th{background:#f8fafc;font-size:11px;text-transform:uppercase;color:#6b7280}
+.foot{margin-top:26px;font-size:11px;color:#9ca3af}
+</style></head><body>
+<h1>${escHtml(r.title)}</h1>
+<div class="meta">MotoMaster &bull; Teacher Portal &bull; Generated: ${escHtml(new Date().toLocaleString())}</div>
+<span class="badge">${escHtml(typeLabel)} Report</span>
+<h2>Summary Statistics</h2>
+<div class="stats">${statsHtml}</div>
+<h2>Detailed Breakdown</h2>
+<table><tr><th>Item</th><th>Value</th></tr>${rowsHtml}</table>
+<div class="foot">This report was generated by MotoMaster for the Automotive Technology Department. Data reflects enrolled students as of the report period.</div>
+</body></html>`);
+            w.document.close();
+            w.focus();
+            setTimeout(() => { w.print(); }, 250);
+        }
+        function exportReport(r, format) {
+            const fmt = (format || r.format || 'PDF').toLowerCase();
+            if (fmt === 'csv') {
+                downloadCSVFile(reportFileName(r, 'csv'), reportToCSV(r));
+            } else if (fmt === 'both') {
+                downloadCSVFile(reportFileName(r, 'csv'), reportToCSV(r));
+                exportReportPDF(r);
+            } else {
+                exportReportPDF(r);
+            }
+            downloadCount++;
+            logActivity(r, 'Downloaded');
+            updateReportTypesCount();
+        }
+        function logActivity(r, action) {
+            activityLog.unshift({
+                isPdf: (r.format || 'PDF').toUpperCase() !== 'CSV',
+                title: r.title,
+                action: action,
+                when: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            });
+            renderActivity();
+        }
+        function renderActivity() {
+            const el = document.getElementById('activityList');
+            if (!el) return;
+            if (!activityLog.length) {
+                el.innerHTML = `<div class="side-item" style="gap:8px;padding:14px;color:var(--text-secondary)">
+                    <div style="flex:1;font-size:0.72rem;font-weight:600">No activity yet — generated and downloaded reports will appear here.</div></div>`;
+                return;
+            }
+            el.innerHTML = activityLog.slice(0, 6).map(a => `
+                <div class="side-item" style="gap:8px;padding:10px 14px">
+                    <i class="fa-solid ${a.isPdf ? 'fa-file-pdf' : 'fa-file-csv'}" style="color:${a.isPdf ? '#dc2626' : '#16a34a'};font-size:12px;flex-shrink:0"></i>
+                    <div style="flex:1">
+                        <div style="font-size:0.72rem;font-weight:700">${a.title}</div>
+                        <div style="font-size:0.6rem;font-weight:600;color:var(--text-secondary)">${a.action} &bull; ${a.when}</div>
+                    </div>
+                </div>`).join('');
+        }
+
+        // ── Build a report object from the Generate modal config ───────
+        function buildReportFromConfig() {
+            const genType = document.getElementById('genType').value;
+            const genModule = document.getElementById('genModule').value;
+            const genPeriod = document.getElementById('genPeriod').value;
+            const genFilter = document.getElementById('genFilter').value;
+            const genFormat = document.getElementById('genFormat').value;
+            const typeLabel = document.getElementById('genType').selectedOptions[0].textContent;
+
+            // Reuse the computed aggregates of the matching built-in report.
+            const templateIds = {
+                'class-progress': 1,
+                'student-progress': 2,
+                'assessment-results': 3,
+                'at-risk': 4
+            };
+
+            let stats = {};
+            let rows = [];
+            let rType = 'class';
+
+            if (templateIds[genType]) {
+                const tpl = templateReports.find(x => x.id === templateIds[genType]);
+                if (tpl) { stats = Object.assign({}, tpl.stats); rows = tpl.rows.map(r => ({ ...r })); rType = tpl.type; }
+            } else if (genType === 'module-completion') {
+                rType = 'class';
+                const assessments = allLogs.assessments || [];
+                rows = modules.map(modName => {
+                    let completedCount = 0;
+                    studentsList.forEach(s => {
+                        const mp = s.moduleProgress ? s.moduleProgress.find(m => m.n === modName) : null;
+                        if (mp && mp.p === 100) completedCount++;
+                    });
+                    const pct = studentsList.length > 0 ? Math.round((completedCount / studentsList.length) * 100) : 0;
+                    return { label: modName + ' — Completion', val: completedCount + ' / ' + studentsList.length + ' (' + pct + '%)' };
+                });
+                rows.push({
+                    label: 'Avg. Assessment Score (all modules)',
+                    val: assessments.length ? Math.round(assessments.reduce((s, a) => s + a.score, 0) / assessments.length) + '%' : '—'
+                });
+                stats = { students: studentsList.length, modules: modules.length, scope: genModule === 'all' ? 'All' : '1 Module' };
+            } else if (genType === 'practice-engagement') {
+                rType = 'student';
+                const practices = allLogs.practice_sessions || [];
+                const activeIds = new Set(practices.map(p => p.student_id));
+                const engaged = activeIds.size;
+                const totalPts = practices.reduce((s, p) => s + p.score * 10, 0);
+                const avgScore = practices.length ? Math.round(practices.reduce((s, p) => s + p.score, 0) / practices.length) : 0;
+                stats = { students: studentsList.length, engaged: engaged, sessions: practices.length, avgScore: avgScore + '%' };
+                rows = [
+                    { label: 'Students with practice sessions', val: engaged + ' / ' + studentsList.length },
+                    { label: 'Total practice sessions logged', val: practices.length },
+                    { label: 'Avg. practice score', val: avgScore + '%' },
+                    { label: 'Total practice points earned', val: totalPts.toLocaleString() + ' pts' },
+                    { label: 'Student filter applied', val: genFilter }
+                ];
+            }
+
+            const monthYear = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            return {
+                title: typeLabel + ' — ' + monthYear,
+                type: rType,
+                format: genFormat.toUpperCase(),
+                module: genModule === 'all' ? 'All' : genModule.split(':')[0],
+                period: genPeriod,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                createdAt: new Date(),
+                stats,
+                rows
+            };
+        }
         function generateReport() {
+            if (!templateReports.length) { alert('Report data is still loading — please try again in a moment.'); return; }
+            const newReport = buildReportFromConfig();
+            newReport.id = reportData.reduce((m, x) => Math.max(m, x.id), 0) + 1;
+            reportData.unshift(newReport);
+            renderReportsTable();
+            logActivity(newReport, 'Generated');
+            updateReportTypesCount();
             closeGenerateModal();
+
             const b = document.querySelector('.topbar-right .btn-primary');
             const o = b.innerHTML;
             b.innerHTML = '<i class="fa-solid fa-check"></i> Report Generated!';
             b.style.background = '#16a34a';
             setTimeout(() => { b.innerHTML = o; b.style.background = ''; }, 2200);
-        }
-        function previewFromGenerate() { closeGenerateModal(); openPreviewModal(1); }
 
+            exportReport(newReport, newReport.format);
+        }
+        function previewFromGenerate() {
+            if (!templateReports.length) { alert('Report data is still loading — please try again in a moment.'); return; }
+            closeGenerateModal();
+            showReportPreview(buildReportFromConfig());
+        }
+
+        let currentPreviewReport = null;
         function openPreviewModal(id) {
             const r = reportData.find(r => r.id === id); if (!r) return;
+            showReportPreview(r);
+        }
+        function showReportPreview(r) {
+            currentPreviewReport = r;
             document.getElementById('previewSub').textContent = r.title;
             const typeColor = { class: '#2563eb', student: '#16a34a', assessment: '#d97706' }[r.type] || '#6b7280';
             document.getElementById('previewContent').innerHTML = `
@@ -1872,7 +2090,7 @@
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
                 <div>
                     <div class="preview-title">${r.title}</div>
-                    <div class="preview-meta">MotoMaster &bull; R. Garcia &bull; Automotive Technology Dept. &bull; Generated: May 28, 2025</div>
+                    <div class="preview-meta">MotoMaster &bull; R. Garcia &bull; Automotive Technology Dept. &bull; Generated: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
                 </div>
                 <span class="badge" style="background:${typeColor}15;color:${typeColor};border:1px solid ${typeColor}40">${r.type.charAt(0).toUpperCase() + r.type.slice(1)}</span>
             </div>
@@ -1895,7 +2113,15 @@
             document.body.style.overflow = 'hidden';
         }
         function closePreviewModal() { document.getElementById('previewModal').classList.remove('open'); document.body.style.overflow = ''; }
-        function downloadReport(id) { const r = reportData.find(r => r.id === id); alert('Downloading: ' + r?.title + '\n(UI demo)'); }
+        function downloadReport(id) {
+            const r = reportData.find(r => r.id === id);
+            if (!r) return;
+            exportReport(r, r.format || (r.type === 'student' ? 'CSV' : 'PDF'));
+        }
+        function downloadPreviewReport(format) {
+            if (!currentPreviewReport) return;
+            exportReport(currentPreviewReport, format);
+        }
         function deleteReport(id) { const r = reportData.find(r => r.id === id); if (confirm('Delete "' + r?.title + '"?')) { reportData = reportData.filter(x => x.id !== id); renderReportsTable(); updateReportTypesCount(); } }
 
         ['generateModal', 'previewModal'].forEach(id => {

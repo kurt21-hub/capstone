@@ -79,10 +79,13 @@ const AssessmentProgress = {
     async saveProgress(progressData) {
         const payload = {
             title: progressData.title || this.config.defaultTitle,
+            type: progressData.type,
             score: progressData.score || 0,
             completion_status: progressData.completion_status || 'Completed',
             time_elapsed_seconds: progressData.time_elapsed_seconds || 0,
             steps: progressData.steps || [],
+            student_id: progressData.student_id,
+            student: progressData.student,
         };
 
         try {

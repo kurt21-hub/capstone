@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Maintenance — Module Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background: #5b6170; color: #1a1a2e; padding: 32px 16px; }
+        .page { width: 210mm; max-width: 100%; margin: 0 auto 24px; background: #fff; padding: 22mm 20mm; box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+        .doc-header { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; border-bottom: 3px solid #2563eb; }
+        .doc-logo { width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 1.35rem; font-weight: 700; flex-shrink: 0; }
+        .doc-brand { font-size: 0.72rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #2563eb; }
+        .doc-title { font-family: 'Rajdhani', sans-serif; font-size: 1.9rem; font-weight: 700; color: #12122b; line-height: 1.1; }
+        .doc-sub { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+        .doc-badge { margin-left: auto; text-align: right; flex-shrink: 0; font-size: 0.7rem; color: #6b7280; line-height: 1.5; }
+        .doc-badge strong { display: block; color: #12122b; font-size: 0.78rem; }
+        .section { margin-top: 26px; }
+        .section-title { display: flex; align-items: center; gap: 10px; font-family: 'Rajdhani', sans-serif; font-size: 1.15rem; font-weight: 700; color: #1d4ed8; margin-bottom: 10px; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+        .section-num { width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; font-size: 0.78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .lead { font-size: 0.85rem; color: #374151; line-height: 1.6; margin-bottom: 10px; }
+        .step { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; page-break-inside: avoid; }
+        .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .step-num { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1d4ed8; font-size: 0.78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .step-name { font-size: 0.92rem; font-weight: 800; color: #12122b; }
+        .step-meta { margin-left: auto; display: flex; gap: 6px; flex-shrink: 0; }
+        .chip { font-size: 0.62rem; font-weight: 800; padding: 3px 9px; border-radius: 20px; background: #f3f4f6; color: #6b7280; }
+        .chip.diff-easy { background: #ecfdf5; color: #16a34a; }
+        .chip.diff-medium { background: #fffbeb; color: #d97706; }
+        .step-desc { font-size: 0.78rem; color: #6b7280; margin: 2px 0 8px 36px; }
+        .step-list { margin-left: 36px; list-style: none; }
+        .step-list li { position: relative; font-size: 0.8rem; color: #374151; line-height: 1.55; padding-left: 18px; margin-bottom: 3px; }
+        .step-list li::before { content: counter(list-item); position: absolute; left: 0; font-size: 0.66rem; font-weight: 800; color: #2563eb; }
+        .safety { display: flex; align-items: flex-start; gap: 8px; margin: 9px 0 0 36px; padding: 8px 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 9px; font-size: 0.74rem; color: #9a3412; line-height: 1.45; }
+        .safety svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+        .safety strong { font-weight: 800; }
+        .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin-left: 4px; }
+        .tool { display: flex; align-items: center; gap: 9px; font-size: 0.82rem; color: #374151; font-weight: 600; }
+        .tool::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); flex-shrink: 0; }
+        .quiz-item { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 9px; margin-bottom: 7px; font-size: 0.82rem; color: #374151; }
+        .q-num { width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0; background: #eef2ff; color: #4f46e5; font-size: 0.72rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .takeaway { display: flex; align-items: flex-start; gap: 10px; font-size: 0.84rem; color: #374151; margin-bottom: 7px; font-weight: 600; }
+        .takeaway svg { width: 17px; height: 17px; color: #16a34a; flex-shrink: 0; margin-top: 1px; }
+        .doc-footer { margin-top: 30px; padding-top: 14px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; font-size: 0.68rem; color: #9ca3af; }
+        .print-hint { position: fixed; bottom: 18px; right: 18px; background: #12122b; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 10px 16px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.3); }
+        @media print { body { background: #fff; padding: 0; } .page { width: auto; margin: 0; box-shadow: none; padding: 0; } .print-hint { display: none; } }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="doc-header">
+        <div class="doc-logo">M</div>
+        <div>
+            <div class="doc-brand">MotoMaster Module Guide</div>
+            <div class="doc-title">Battery Maintenance</div>
+            <div class="doc-sub">Battery inspection, service, and safe replacement</div>
+        </div>
+        <div class="doc-badge"><strong>15 Lessons</strong>~35 min total · Easy</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">1</span>Overview</div>
+        <p class="lead">This guide covers battery maintenance — why it is critical for vehicle reliability — the same procedure taught in the Battery learning module, practice simulation, and assessment simulation.</p>
+        <p class="lead"><strong>What you will learn:</strong></p>
+        <ul class="step-list" style="margin-left:20px;">
+            <li>The role of the battery and the signs of failure.</li>
+            <li>The correct order for disconnecting and reconnecting battery cables.</li>
+            <li>An 11-step procedure to safely service and replace a vehicle battery.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">2</span>Tools &amp; Materials</div>
+        <div class="tools">
+            <div class="tool">Replacement battery (matching CCA rating and size)</div>
+            <div class="tool">Wrench set (typically 10 mm)</div>
+            <div class="tool">Wire brush or battery terminal cleaner</div>
+            <div class="tool">Baking soda and water solution (for corrosion)</div>
+            <div class="tool">Safety glasses and acid-resistant gloves</div>
+        </div>
+        <div class="safety" style="margin-left:4px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span><strong>Safety Reminder:</strong> Batteries contain sulfuric acid and produce hydrogen gas. Always wear eye protection and gloves, and work in a ventilated area away from sparks.</span></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">3</span>Procedure — 11 Steps</div>
+
+        <div class="step"><div class="step-head"><span class="step-num">1</span><span class="step-name">Safety Precautions</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Review critical safety rules before working on the battery.</div>
+            <ol class="step-list">
+                <li>Turn off the ignition and remove the key.</li>
+                <li>Put on safety glasses and acid-resistant gloves before touching the battery.</li>
+                <li>Ensure no open flames or smoking near the battery — hydrogen gas can ignite.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Do not place metal tools across the battery terminals</strong> — this can cause a dangerous short circuit and arc flash.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">2</span><span class="step-name">Locate the Battery</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Find the battery in the engine bay or trunk depending on the vehicle model.</div>
+            <ol class="step-list">
+                <li>Open the hood and look for a rectangular plastic case with two cable terminals (red and black).</li>
+                <li>On some vehicles the battery is in the trunk or under a rear seat — check the owner's manual.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">3</span><span class="step-name">Inspect the Battery</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Assess the battery condition before deciding whether to clean or replace it.</div>
+            <ol class="step-list">
+                <li>Check the terminals for white or blue corrosion buildup.</li>
+                <li>Look for a swollen or cracked case — this indicates the battery must be replaced.</li>
+                <li>Check the manufacture date label; batteries older than 3–5 years are nearing end of life.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">4</span><span class="step-name">Disconnect the Negative Cable</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Always remove the negative (−) cable first to prevent short circuits.</div>
+            <ol class="step-list">
+                <li>Identify the black cable connected to the terminal marked "−" or "NEG".</li>
+                <li>Use a 10 mm wrench to loosen the clamp nut.</li>
+                <li>Wiggle the clamp free and move the cable away from the battery.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Negative first, positive last</strong> — the universal rule for battery disconnection to prevent sparks.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">5</span><span class="step-name">Disconnect the Positive Cable</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Remove the positive (+) cable after the negative is safely set aside.</div>
+            <ol class="step-list">
+                <li>Identify the red cable connected to the terminal marked "+" or "POS".</li>
+                <li>Loosen the clamp nut with a wrench and remove the cable from the terminal.</li>
+                <li>Keep the positive cable away from any metal surfaces.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">6</span><span class="step-name">Remove the Battery</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Unbolt the battery hold-down bracket and carefully lift the battery out.</div>
+            <ol class="step-list">
+                <li>Remove the hold-down bracket bolt or clamp at the base of the battery.</li>
+                <li>Lift the battery straight up — keep it level to avoid spilling acid.</li>
+                <li>Set it on a flat, stable surface away from the vehicle.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Car batteries are heavy (15–25 kg).</strong> Lift with your legs, not your back. Do not tilt — acid may leak from vent caps.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">7</span><span class="step-name">Clean the Battery Tray &amp; Terminals</span><span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Remove corrosion from the battery tray and cable terminals before installing the new battery.</div>
+            <ol class="step-list">
+                <li>Mix one tablespoon of baking soda with one cup of water.</li>
+                <li>Apply the solution to corroded areas on the tray and clamps, then scrub with a wire brush.</li>
+                <li>Rinse with clean water and dry thoroughly with a rag.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">8</span><span class="step-name">Install the New Battery</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Place the new battery into the tray with the correct terminal orientation.</div>
+            <ol class="step-list">
+                <li>Lower the new battery into the tray, matching the positive terminal to the positive cable side.</li>
+                <li>Reinstall the hold-down bracket and tighten securely — the battery must not move.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>A loose battery can shift during driving</strong> and cause terminal shorts or damage to the engine bay.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">9</span><span class="step-name">Connect the Positive Cable</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Reconnect the positive (+) cable first when installing a battery.</div>
+            <ol class="step-list">
+                <li>Slide the red cable clamp onto the positive (+) terminal.</li>
+                <li>Tighten the clamp nut firmly with a wrench — the cable should not rotate on the post.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">10</span><span class="step-name">Connect the Negative Cable</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Reconnect the negative (−) cable last to complete the circuit safely.</div>
+            <ol class="step-list">
+                <li>Slide the black cable clamp onto the negative (−) terminal.</li>
+                <li>Tighten the clamp nut securely.</li>
+                <li>Apply a thin coat of terminal grease or petroleum jelly to both terminals to prevent future corrosion.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Positive first, negative last</strong> — the universal rule for reconnection to prevent sparks.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">11</span><span class="step-name">Test and Verify</span><span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Start the engine and verify the battery and electrical system are working correctly.</div>
+            <ol class="step-list">
+                <li>Start the engine and verify it cranks smoothly without hesitation.</li>
+                <li>Check that all dashboard warning lights extinguish normally after startup.</li>
+                <li>Test electrical components — headlights, wipers, and radio — to confirm full power.</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">4</span>Knowledge Check</div>
+        <div class="quiz-item"><span class="q-num">Q1</span>Which battery cable must always be disconnected first — and why?</div>
+        <div class="quiz-item"><span class="q-num">Q2</span>What household item can be used to neutralize battery corrosion?</div>
+        <div class="quiz-item"><span class="q-num">Q3</span>When reconnecting, which cable goes on first — positive or negative?</div>
+        <div class="quiz-item"><span class="q-num">Q4</span>What does a swollen battery case indicate?</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">5</span>Key Takeaways</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Always remove negative first, reconnect negative last — this prevents dangerous sparks.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Clean corrosion with baking soda solution and a wire brush before fitting the new battery.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Secure the hold-down bracket firmly — a loose battery is a safety hazard.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Apply terminal grease to prevent future corrosion and ensure good electrical contact.</div>
+    </div>
+
+    <div class="doc-footer"><span>MotoMaster — Automotive Repair Simulation</span><span>Battery Maintenance Module Guide</span></div>
+</div>
+
+<div class="print-hint">Ctrl + P → Save as PDF</div>
+
+</body>
+</html>

@@ -4,12 +4,42 @@ header('Content-Type: application/json');
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 if ($mysqli->connect_errno) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+    exit;
+}
+
+// GET ?action=sections -> sections that already have registered students
+// or are assigned to teachers
+if (isset($_GET['action']) && $_GET['action'] === 'sections') {
+    $sectionSet = [];
+    $res = $mysqli->query("SELECT DISTINCT section FROM students WHERE section <> ''");
+    if ($res) {
+        while ($row = $res->fetch_assoc()) {
+            $sectionSet[$row['section']] = true;
+        }
+        $res->free();
+    }
+    $res2 = $mysqli->query("SELECT assigned_sections FROM instructors WHERE assigned_sections IS NOT NULL AND assigned_sections <> ''");
+    if ($res2) {
+        while ($row = $res2->fetch_assoc()) {
+            foreach (explode(',', $row['assigned_sections']) as $sec) {
+                $sec = strtoupper(trim($sec));
+                if (preg_match('/^[A-Z]$/', $sec)) {
+                    $sectionSet[$sec] = true;
+                }
+            }
+        }
+        $res2->free();
+    }
+    $sections = array_keys($sectionSet);
+    sort($sections);
+    echo json_encode(['success' => true, 'sections' => $sections]);
+    $mysqli->close();
     exit;
 }
 
@@ -42,11 +72,12 @@ if (strlen($first) > 50 || strlen($last) > 50) {
     exit;
 }
 
-if (strlen($section) > 50) {
+if ($section === '' || !preg_match('/^[A-Za-z]$/', $section)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Section is too long (max 50 characters)']);
+    echo json_encode(['success' => false, 'message' => 'Section must be a single letter (A-Z)']);
     exit;
 }
+$section = strtoupper($section);
 
 /**
  * Ensure students table exists and supports new registrations.

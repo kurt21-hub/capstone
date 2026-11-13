@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brake Pad Replacement — Module Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background: #5b6170; color: #1a1a2e; padding: 32px 16px; }
+        .page { width: 210mm; max-width: 100%; margin: 0 auto 24px; background: #fff; padding: 22mm 20mm; box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+        .doc-header { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; border-bottom: 3px solid #2563eb; }
+        .doc-logo { width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 1.35rem; font-weight: 700; flex-shrink: 0; }
+        .doc-brand { font-size: 0.72rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #2563eb; }
+        .doc-title { font-family: 'Rajdhani', sans-serif; font-size: 1.9rem; font-weight: 700; color: #12122b; line-height: 1.1; }
+        .doc-sub { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+        .doc-badge { margin-left: auto; text-align: right; flex-shrink: 0; font-size: 0.7rem; color: #6b7280; line-height: 1.5; }
+        .doc-badge strong { display: block; color: #12122b; font-size: 0.78rem; }
+        .section { margin-top: 26px; }
+        .section-title { display: flex; align-items: center; gap: 10px; font-family: 'Rajdhani', sans-serif; font-size: 1.15rem; font-weight: 700; color: #1d4ed8; margin-bottom: 10px; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+        .section-num { width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; font-size: 0.78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .lead { font-size: 0.85rem; color: #374151; line-height: 1.6; margin-bottom: 10px; }
+        .step { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; page-break-inside: avoid; }
+        .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .step-num { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1d4ed8; font-size: 0.78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .step-name { font-size: 0.92rem; font-weight: 800; color: #12122b; }
+        .step-meta { margin-left: auto; display: flex; gap: 6px; flex-shrink: 0; }
+        .chip { font-size: 0.62rem; font-weight: 800; padding: 3px 9px; border-radius: 20px; background: #f3f4f6; color: #6b7280; }
+        .chip.diff-easy { background: #ecfdf5; color: #16a34a; }
+        .chip.diff-medium { background: #fffbeb; color: #d97706; }
+        .step-desc { font-size: 0.78rem; color: #6b7280; margin: 2px 0 8px 36px; }
+        .step-list { margin-left: 36px; list-style: none; }
+        .step-list li { position: relative; font-size: 0.8rem; color: #374151; line-height: 1.55; padding-left: 18px; margin-bottom: 3px; }
+        .step-list li::before { content: counter(list-item); position: absolute; left: 0; font-size: 0.66rem; font-weight: 800; color: #2563eb; }
+        .safety { display: flex; align-items: flex-start; gap: 8px; margin: 9px 0 0 36px; padding: 8px 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 9px; font-size: 0.74rem; color: #9a3412; line-height: 1.45; }
+        .safety svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+        .safety strong { font-weight: 800; }
+        .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin-left: 4px; }
+        .tool { display: flex; align-items: center; gap: 9px; font-size: 0.82rem; color: #374151; font-weight: 600; }
+        .tool::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); flex-shrink: 0; }
+        .quiz-item { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 9px; margin-bottom: 7px; font-size: 0.82rem; color: #374151; }
+        .q-num { width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0; background: #eef2ff; color: #4f46e5; font-size: 0.72rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .takeaway { display: flex; align-items: flex-start; gap: 10px; font-size: 0.84rem; color: #374151; margin-bottom: 7px; font-weight: 600; }
+        .takeaway svg { width: 17px; height: 17px; color: #16a34a; flex-shrink: 0; margin-top: 1px; }
+        .doc-footer { margin-top: 30px; padding-top: 14px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; font-size: 0.68rem; color: #9ca3af; }
+        .print-hint { position: fixed; bottom: 18px; right: 18px; background: #12122b; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 10px 16px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.3); }
+        @media print { body { background: #fff; padding: 0; } .page { width: auto; margin: 0; box-shadow: none; padding: 0; } .print-hint { display: none; } }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="doc-header">
+        <div class="doc-logo">M</div>
+        <div>
+            <div class="doc-brand">MotoMaster Module Guide</div>
+            <div class="doc-title">Brake Pad Replacement</div>
+            <div class="doc-sub">Brake pad inspection, removal, and installation</div>
+        </div>
+        <div class="doc-badge"><strong>20 Lessons</strong>~75 min total · Easy–Medium</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">1</span>Overview</div>
+        <p class="lead">This guide covers the complete brake pad replacement process from start to finish — the same procedure taught in the Brake Pad Replacement learning module, practice simulation, and assessment simulation.</p>
+        <p class="lead"><strong>What you will learn:</strong></p>
+        <ul class="step-list" style="margin-left:20px;">
+            <li>Why regular brake pad replacements are essential for vehicle safety.</li>
+            <li>The tools and materials required for a safe brake pad change.</li>
+            <li>A 16-step procedure from preparation to completion.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">2</span>Tools &amp; Materials</div>
+        <div class="tools">
+            <div class="tool">Hydraulic jack and jack stands</div>
+            <div class="tool">Lug wrench or impact drill</div>
+            <div class="tool">New brake pads</div>
+            <div class="tool">C-clamp or caliper piston compressor tool</div>
+            <div class="tool">Socket set</div>
+            <div class="tool">Bungee cord or zip tie</div>
+        </div>
+        <div class="safety" style="margin-left:4px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span><strong>Safety Reminder:</strong> Always wear gloves and safety glasses. Brake dust can be harmful.</span></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">3</span>Procedure — 16 Steps</div>
+
+        <div class="step"><div class="step-head"><span class="step-num">1</span><span class="step-name">Prepare the Vehicle</span><span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Park on a flat surface, engage parking brake, block the wheels.</div>
+            <ol class="step-list">
+                <li>Park on a flat, level surface and engage parking brake.</li>
+                <li>Place wheel chocks behind the rear tires.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Never work on a slope</strong>, and ensure the vehicle is perfectly stationary.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">2</span><span class="step-name">Loosen the Lug Nuts</span><span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Break the lug nuts loose before raising the vehicle.</div>
+            <ol class="step-list">
+                <li>Use a lug wrench to perform a quarter-turn counterclockwise on each lug nut.</li>
+                <li>Do NOT remove the nuts completely while the vehicle is on the ground.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">3</span><span class="step-name">Raise the Vehicle</span><span class="step-meta"><span class="chip">5 min</span><span class="chip diff-medium">Medium</span></span></div>
+            <div class="step-desc">Use a jack to lift the car and secure it with jack stands.</div>
+            <ol class="step-list">
+                <li>Position the hydraulic jack on the manufacturer-recommended pinch weld.</li>
+                <li>Lift until the tire clears the ground completely.</li>
+                <li>Place a jack stand under a secure frame rail and lower the car onto it.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">4</span><span class="step-name">Remove the Wheel</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Fully unscrew the lug nuts and take the wheel off.</div>
+            <ol class="step-list">
+                <li>Completely undo the loosened lug nuts.</li>
+                <li>Pull the wheel straight out.</li>
+                <li>Place the wheel flat under the car frame for extra protection.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">5</span><span class="step-name">Inspect Rotor &amp; Caliper</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Examine the brake rotor and caliper for scoring, wear, or fluid leaks.</div>
+            <ol class="step-list">
+                <li>Run your finger over the rotor — check for deep grooves or pitting.</li>
+                <li>Inspect the caliper boot for brake fluid leaks.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">6</span><span class="step-name">Remove Caliper Bolts</span><span class="step-meta"><span class="chip">7 min</span><span class="chip diff-medium">Medium</span></span></div>
+            <div class="step-desc">Unbolt the brake caliper from its mounting bracket.</div>
+            <ol class="step-list">
+                <li>Locate the two slider pins/bolts on the back of the caliper.</li>
+                <li>Use your socket set to loosen and remove the bolts.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">7</span><span class="step-name">Secure the Caliper</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Hang the caliper out of the way safely.</div>
+            <ol class="step-list">
+                <li>Slide the caliper off the rotor.</li>
+                <li>Use a bungee cord or a zip tie to hang the caliper securely from the suspension spring.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">8</span><span class="step-name">Remove the Old Pads</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Pop the old brake pads out of the mounting bracket.</div>
+            <ol class="step-list">
+                <li>Note how the metal retaining clips are placed.</li>
+                <li>Slide old pads straight away from the rotor.</li>
+                <li>Keep one old pad to use for compressing the piston next.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">9</span><span class="step-name">Inspect Mounting Bracket</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Ensure the bracket hardware is in good condition.</div>
+            <ol class="step-list">
+                <li>Remove old retaining clips.</li>
+                <li>Use a wire brush to clean the bracket.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">10</span><span class="step-name">Compress the Caliper Piston</span><span class="step-meta"><span class="chip">5 min</span><span class="chip diff-medium">Medium</span></span></div>
+            <div class="step-desc">Push the caliper's hydraulic piston back into its housing.</div>
+            <ol class="step-list">
+                <li>Place your old brake pad directly against the piston face.</li>
+                <li>Position a C-clamp so it squeezes the back of the caliper and the old brake pad.</li>
+                <li>Tighten the clamp until the piston is flush with the caliper housing.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">11</span><span class="step-name">Apply Brake Grease</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Lubricate parts to prevent brake squeal.</div>
+            <ol class="step-list">
+                <li>Apply a small amount of brake caliper grease to the slider pins.</li>
+                <li>Apply grease to the backing plate of the new pads, avoiding the friction material.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">12</span><span class="step-name">Install the New Brake Pads</span><span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Snap the new pads into the bracket.</div>
+            <ol class="step-list">
+                <li>Snap on the new retaining clips into the bracket.</li>
+                <li>Slide the new pads squarely into the mounting bracket against the rotor.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">13</span><span class="step-name">Reinstall the Caliper</span><span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Swing the caliper back down over the new, thicker brake pads.</div>
+            <ol class="step-list">
+                <li>Remove the bungee cord / zip tie from the caliper.</li>
+                <li>Slide the caliper over the new pads. Ensure you do not twist the brake hose.</li>
+                <li>Re-insert the slider bolts and tighten snugly with your socket wrench.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">14</span><span class="step-name">Reinstall the Wheel</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Put the wheel back on the vehicle.</div>
+            <ol class="step-list">
+                <li>Lift the wheel back onto the lug studs.</li>
+                <li>Hand-thread all lug nuts in a star-pattern to hold it securely.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">15</span><span class="step-name">Lower the Vehicle</span><span class="step-meta"><span class="chip">5 min</span><span class="chip diff-medium">Medium</span></span></div>
+            <div class="step-desc">Set the car back to the ground securely.</div>
+            <ol class="step-list">
+                <li>Jack the car up slightly to remove the jack stand.</li>
+                <li>Slowly release jack pressure.</li>
+                <li>Tighten the lug nuts heavily in a star-pattern.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">16</span><span class="step-name">Pump the Brakes</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Rebuild brake pressure before shifting out of Park.</div>
+            <ol class="step-list">
+                <li>Sit in the driver's seat.</li>
+                <li>Pump the brake pedal firmly 4–5 times until it feels very stiff.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>DO NOT drive without pumping the brakes first.</strong></span></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">4</span>Knowledge Check</div>
+        <div class="quiz-item"><span class="q-num">Q1</span>Why must a jack stand be used?</div>
+        <div class="quiz-item"><span class="q-num">Q2</span>Why do we hang the caliper securely?</div>
+        <div class="quiz-item"><span class="q-num">Q3</span>What tool is used to push the piston back?</div>
+        <div class="quiz-item"><span class="q-num">Q4</span>What must be done in the cabin before driving?</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">5</span>Key Takeaways</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Always secure the vehicle and never rely on a hydraulic jack alone.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Never stretch or dangle the brake lines.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Compressing the piston is essential to fit new, thicker pads.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Always pump the brake pedal several times to restore brake pressure.</div>
+    </div>
+
+    <div class="doc-footer"><span>MotoMaster — Automotive Repair Simulation</span><span>Brake Pad Replacement Module Guide</span></div>
+</div>
+
+<div class="print-hint">Ctrl + P → Save as PDF</div>
+
+</body>
+</html>

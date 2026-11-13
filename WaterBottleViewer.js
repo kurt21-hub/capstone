@@ -33,7 +33,7 @@ export function initWaterViewer(containerId) {
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setPixelRatio(window.devicePixelRatio || 1);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
         renderer.setSize(w, h);
         renderer.setClearColor(0x000000, 0);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -70,11 +70,24 @@ export function initWaterViewer(containerId) {
         fill.position.set(-2, 1, -1);
         scene.add(fill);
 
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
+        let isRunning = false;
+        function requestRender() {
+            if (!isRunning) {
+                isRunning = true;
+                requestAnimationFrame(renderLoop);
+            }
         }
+
+        function renderLoop() {
+            const needMore = controls ? controls.update() : false;
+            renderer.render(scene, camera);
+            if (needMore) {
+                requestAnimationFrame(renderLoop);
+            } else {
+                isRunning = false;
+            }
+        }
+        controls.addEventListener('change', requestRender);
 
         const loader = new GLTFLoader();
         console.log('WaterViewer: loading model models/Bottledwater.glb');
@@ -127,7 +140,7 @@ export function initWaterViewer(containerId) {
                     });
                 });
 
-                animate();
+                requestRender();
             },
             undefined,
             (err) => console.error('Failed to load Bottledwater model:', err)
@@ -140,6 +153,7 @@ export function initWaterViewer(containerId) {
                 camera.aspect = cw / ch;
                 camera.updateProjectionMatrix();
                 renderer.setSize(cw, ch);
+                requestRender();
             });
             ro.observe(container);
         }

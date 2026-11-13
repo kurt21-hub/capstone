@@ -1,0 +1,190 @@
+import * as THREE from './three.module.js';
+import { OrbitControls } from './OrbitControls.js';
+import { GLTFLoader } from './GLTFLoader.js';
+
+export function initOilEngineViewer(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    console.log('initOilEngineViewer', containerId, container);
+    if (container.querySelector('canvas')) { console.warn('Oil engine viewer already initialized'); return; }
+
+    requestAnimationFrame(() => {
+        const w = container.clientWidth || 130;
+        const h = container.clientHeight || 100;
+
+        // simple visible status so we can see loading state without DevTools
+        const status = document.createElement('div');
+        status.style.position = 'absolute';
+        status.style.left = '8px';
+        status.style.top = '8px';
+        status.style.padding = '6px 8px';
+        status.style.background = 'rgba(0,0,0,0.6)';
+        status.style.color = '#fff';
+        status.style.fontSize = '11px';
+        status.style.borderRadius = '6px';
+        status.style.zIndex = '20';
+        status.textContent = 'loading...';
+        container.appendChild(status);
+
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(35, w / h, 0.01, 100);
+        camera.position.set(0, 0, 2.2);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+        renderer.setSize(w, h);
+        renderer.setClearColor(0x000000, 0);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+
+        const canvas = renderer.domElement;
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.cursor = 'grab';
+        container.appendChild(canvas);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.1;
+        controls.enablePan = false;
+        controls.enableZoom = false;
+        controls.autoRotate = false;
+        controls.minDistance = 0.6;
+        controls.maxDistance = 5.0;
+
+        canvas.addEventListener('pointerdown', () => { canvas.style.cursor = 'grabbing'; }, { passive: true });
+        window.addEventListener('pointerup', () => { canvas.style.cursor = 'grab'; }, { passive: true });
+        canvas.addEventListener('pointerleave', () => { canvas.style.cursor = 'grab'; }, { passive: true });
+
+        scene.add(new THREE.HemisphereLight(0xffffff, 0x333333, 1.0));
+        const key = new THREE.DirectionalLight(0xffffff, 1.6);
+        key.position.set(2, 3, 2);
+        scene.add(key);
+        const fill = new THREE.DirectionalLight(0xffd7c2, 0.6);
+        fill.position.set(-2, 1, -1);
+        scene.add(fill);
+
+        const savedPos = new THREE.Vector3(0, 0, 2.2);
+        const savedTarget = new THREE.Vector3(0, 0, 0);
+        let returning = false;
+        let resetTimer = null;
+
+        let isRunning = false;
+        function requestRender() {
+            if (!isRunning) {
+                isRunning = true;
+                requestAnimationFrame(renderLoop);
+            }
+        }
+
+        function renderLoop() {
+            let needMore = controls ? controls.update() : false;
+            if (returning) {
+                camera.position.lerp(savedPos, 0.15);
+                controls.target.lerp(savedTarget, 0.15);
+                if (camera.position.distanceTo(savedPos) < 0.001 && controls.target.distanceTo(savedTarget) < 0.001) {
+                    camera.position.copy(savedPos);
+                    controls.target.copy(savedTarget);
+                    returning = false;
+                }
+                needMore = true;
+            }
+            renderer.render(scene, camera);
+            if (needMore) {
+                requestAnimationFrame(renderLoop);
+            } else {
+                isRunning = false;
+            }
+        }
+        controls.addEventListener('change', requestRender);
+        controls.addEventListener('start', () => {
+            returning = false;
+            if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+        });
+        controls.addEventListener('end', () => {
+            if (resetTimer) clearTimeout(resetTimer);
+            resetTimer = setTimeout(() => { returning = true; requestRender(); }, 800);
+        });
+
+        const loader = new GLTFLoader();
+        console.log('OilEngineViewer: loading model models/oli_engine.glb');
+        loader.load(
+            'models/oli_engine.glb',
+            (gltf) => {
+                console.log('OilEngineViewer: model loaded');
+                status.textContent = 'loaded';
+                setTimeout(() => { status.style.display = 'none'; }, 600);
+                const model = gltf.scene;
+                // face the labeled front of the jug toward the camera
+                model.rotation.y = -Math.PI / 2;
+
+                const box = new THREE.Box3().setFromObject(model);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                model.position.sub(center);
+
+                const maxDim = Math.max(size.x, size.y, size.z);
+                if (maxDim > 0) model.scale.setScalar((1.0 / maxDim) * 1.2);
+
+                const pivot = new THREE.Group();
+                pivot.add(model);
+                scene.add(pivot);
+
+                // compute pivot bounds, log for debugging
+                const box2 = new THREE.Box3().setFromObject(pivot);
+                const center2 = box2.getCenter(new THREE.Vector3());
+                const size2 = box2.getSize(new THREE.Vector3());
+                console.log('OilEngineViewer: pivot bounds', { size: size2, center: center2 });
+
+                // frame camera to fit model
+                const maxDim2 = Math.max(size2.x, size2.y, size2.z);
+                if (maxDim2 > 0) {
+                    const distance = maxDim2 * 1.6 + 0.4;
+                    camera.position.set(center2.x, center2.y + maxDim2 * 0.45, center2.z + distance);
+                    camera.lookAt(center2);
+                    controls.target.copy(center2);
+                    controls.update();
+                }
+
+                // remember this as the default view so the model always returns to it
+                savedPos.copy(camera.position);
+                savedTarget.copy(controls.target);
+
+                model.traverse((child) => {
+                    if (!child.isMesh) return;
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    const mats = Array.isArray(child.material) ? child.material : [child.material];
+                    mats.forEach((m) => {
+                        if (!m) return;
+                        m.side = THREE.DoubleSide;
+                        if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
+                        m.needsUpdate = true;
+                    });
+                });
+
+                requestRender();
+            },
+            undefined,
+            (err) => console.error('Failed to load oil engine model:', err)
+        );
+
+        if (window.ResizeObserver) {
+            const ro = new ResizeObserver(() => {
+                const cw = container.clientWidth || 1;
+                const ch = container.clientHeight || 1;
+                camera.aspect = cw / ch;
+                camera.updateProjectionMatrix();
+                renderer.setSize(cw, ch);
+                requestRender();
+            });
+            ro.observe(container);
+        }
+    });
+}

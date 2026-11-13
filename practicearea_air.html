@@ -8,6 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
         rel="stylesheet" />
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 <style>
     *,
@@ -187,7 +188,7 @@
         display: flex;
         flex-direction: column;
         padding: 14px 12px;
-        overflow-y: auto;
+        overflow: hidden;
         scrollbar-width: none;
         gap: 10px;
     }
@@ -210,6 +211,14 @@
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        scrollbar-width: none;
+    }
+
+    .tools-grid::-webkit-scrollbar {
+        display: none;
     }
 
     .tool-card {
@@ -257,7 +266,8 @@
         font-weight: 700;
         color: #2563eb;
         text-decoration: none;
-        margin-top: 4px;
+        margin-top: auto;
+        flex-shrink: 0;
     }
 
     .view-all-btn svg {
@@ -796,6 +806,13 @@
                     <div class="timer-val" id="timer">00:00:00</div>
                 </div>
             </div>
+            <button class="end-btn" onclick="restartSimulation()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 4v6h6" />
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+                Restart
+            </button>
             <button class="end-btn" onclick="endSimulationAndSave()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10" />
@@ -818,21 +835,21 @@
                     <div class="tool-3d-placeholder" id="gloves-model"></div>
                     <div class="tool-label">Gloves</div>
                 </div>
-                <div class="tool-card" id="batteryToolCard">
+                <div class="tool-card" id="batteryToolCard" style="display:none;">
                     <div class="tool-3d-placeholder" id="battery-model" style="cursor:pointer;user-select:none;"></div>
                     <div class="tool-label">Battery (Click to use)</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="water-model"></div>
-                    <div class="tool-label">Water</div>
+                    <div class="tool-label">Compressed Air</div>
                 </div>
                 <div class="tool-card">
-                    <div class="tool-3d-placeholder" id="baking-model"></div>
-                    <div class="tool-label">Baking Soda</div>
+                    <div class="tool-3d-placeholder" id="baking-model" style="display:none;"></div>
+                    <div class="tool-label" style="display:none;">Baking Soda</div>
                 </div>
                 <div class="tool-card">
-                    <div class="tool-3d-placeholder" id="wire-model"></div>
-                    <div class="tool-label">Wire Brush</div>
+                    <div class="tool-3d-placeholder" id="wire-model" style="display:none;"></div>
+                    <div class="tool-label" style="display:none;">Wire Brush</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="socket-model"></div>
@@ -842,13 +859,21 @@
                     <div class="tool-3d-placeholder" id="goggles-model"></div>
                     <div class="tool-label">Safety Goggles</div>
                 </div>
-                <div class="tool-card">
+                <div class="tool-card" style="display:none;">
                     <div class="tool-3d-placeholder" id="bowl-model"></div>
-                    <div class="tool-label">Bowl</div>
+                    <div class="tool-label">Parts Tray</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="papertowel-model"></div>
-                    <div class="tool-label">Paper Towel</div>
+                    <div class="tool-label">Shop Rag</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-3d-placeholder" id="airfilter-model"></div>
+                    <div class="tool-label">Air Filter</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-3d-placeholder" id="plier-model"></div>
+                    <div class="tool-label">Pliers</div>
                 </div>
             </div>
             <a href="#" class="view-all-btn">
@@ -872,27 +897,27 @@
                 <div class="step-bar">
                     <div class="step-node">
                         <div class="step-circle active">1</div>
-                        <div class="step-name active">Inspect Battery</div>
+                        <div class="step-name active">Open Hood</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">2</div>
-                        <div class="step-name">Clean Terminals</div>
+                        <div class="step-name">Open Housing</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">3</div>
-                        <div class="step-name">Check Electrolyte</div>
+                        <div class="step-name">Clean Housing</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">4</div>
-                        <div class="step-name">Secure Battery</div>
+                        <div class="step-name">Install Filter</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">5</div>
-                        <div class="step-name">Test System</div>
+                        <div class="step-name">Secure & Check</div>
                     </div>
                 </div>
             </div>
@@ -913,9 +938,15 @@
                             style="width:94%;height:86%;border-radius:10px;border:2px dashed rgba(99,102,241,0.18);display:flex;align-items:center;justify-content:center;padding:6px;background:transparent;">
                             <div
                                 style="text-align:center;color:rgba(99,102,241,0.95);font-weight:800;font-size:0.82rem;">
-                                Mix Here</div>
+                                Parts Tray Area</div>
                         </div>
                     </div>
+                    <!-- Step 3 action: inspect the housing interior -->
+                    <button id="checkHousingBtn" onclick="checkHousingForDirt()"
+                        style="display:none;position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:10020;padding:11px 20px;border:none;border-radius:12px;background:#2563eb;color:#fff;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(37,99,235,0.35);align-items:center;gap:8px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                        Check Housing for Dust &amp; Dirt
+                    </button>
                 </div>
             </div>
 
@@ -933,9 +964,9 @@
                     </svg>
                     Current Task
                 </div>
-                <div class="rp-task-title">Inspect Battery Condition</div>
-                <div class="rp-task-desc">Check the battery body, terminals, and cables for cracks, leaks, swelling,
-                    or damage.</div>
+                <div class="rp-task-title">Prepare & Open the Hood</div>
+                <div class="rp-task-desc">Make sure the engine is off and cool, open and secure the hood, then
+                    locate the air filter box.</div>
             </div>
 
             <div class="rp-section">
@@ -943,8 +974,8 @@
                     <div class="sound-toggle-copy">
                         <div class="sound-toggle-label">Engine Swipe</div>
                         <strong>Engine sound</strong>
-                        <span>Turn ON to play the engine audio loop.</span>
-                        <span class="sound-state" id="engineSoundState">OFF</span>
+                        <span>Starts ON — switch OFF to service safely.</span>
+                        <span class="sound-state" id="engineSoundState">ON</span>
                     </div>
                     <label class="sound-switch" for="engineSwipeToggle" aria-label="Engine sound toggle">
                         <input type="checkbox" id="engineSwipeToggle">
@@ -966,7 +997,7 @@
 
             <!-- Battery Diagnostic Status Indicator -->
             <div id="batteryStatusIndicator" style="display:none;margin-bottom:15px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.05);border:1.5px solid #e5e7eb;">
-                <div style="font-size:0.75rem;color:#6b7280;font-weight:700;margin-bottom:4px;">BATTERY DIAGNOSTIC STATUS</div>
+                <div style="font-size:0.75rem;color:#6b7280;font-weight:700;margin-bottom:4px;">AIR FILTER STATUS</div>
                 <div id="batteryStatusValue" style="font-size:0.9rem;font-weight:800;display:flex;align-items:center;gap:6px;">
                     <!-- Filled dynamically -->
                 </div>
@@ -986,10 +1017,10 @@
                     Instructions
                 </div>
                 <ol class="instr-list" id="instrList">
-                    <li>Ensure ignition is off and keys are removed</li>
-                    <li>Visually inspect the battery for cracks, bulging, or leaks</li>
-                    <li>Check terminal connections are tight and corrosion-free</li>
-                    <li>Inspect battery cables for fraying or damage</li>
+                    <li>Confirm the engine is OFF and completely cool</li>
+                    <li>Pull the hood latch and secure the hood open</li>
+                    <li>Locate the black plastic air filter box near the engine</li>
+                    <li>Identify the large air intake hose connected to the box</li>
                 </ol>
             </div>
 
@@ -1000,23 +1031,15 @@
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M9 11l3 3L22 4" />
                     </svg>
-                    Inspection Checklist
+                    Preparation & Safety Checklist
                 </div>
-                <div id="inspectionList" style="display:flex;flex-direction:column;gap:10px;">
-                    <label
-                        style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:8px;cursor:pointer;transition:all 0.2s;">
-                        <input type="checkbox" class="inspect-check" data-index="0"
-                            style="width:18px;height:18px;accent-color:#2563eb;cursor:pointer;">
-                        <span style="font-size:0.75rem;color:#374151;flex:1;">Ignition off and keys removed</span>
-                    </label>
-                    <label
-                        style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:8px;cursor:pointer;transition:all 0.2s;">
-                        <input type="checkbox" class="inspect-check" data-index="1"
-                            style="width:18px;height:18px;accent-color:#2563eb;cursor:pointer;">
-                        <span style="font-size:0.75rem;color:#374151;flex:1;">Battery has no cracks, bulging,
-                            or leaks</span>
-                    </label>
-                </div>
+                <ol class="instr-list" id="inspectionList">
+                    <li data-index="0">Engine is OFF and completely cool</li>
+                    <li data-index="1">Hood opened and secured safely</li>
+                    <li data-index="2">Air filter box located near the engine</li>
+                    <li data-index="3">Large intake hose connection identified</li>
+                    <li data-index="4">New filter and tools prepared</li>
+                </ol>
                 <div
                     style="margin-top:12px;padding:10px 12px;background:#f1f5f9;border-radius:8px;border-left:3px solid #2563eb;">
                     <span style="font-size:0.75rem;color:#64748b;">✓ Complete all inspections, then click <strong>Next
@@ -1033,7 +1056,7 @@
                         </svg>
                         Safety Reminder
                     </div>
-                    <p id="safetyText">Always wear safety goggles and gloves — battery acid can cause burns.</p>
+                    <p id="safetyText">Engine must be OFF and cool — a hot engine causes burns.</p>
                 </div>
             </div>
 
@@ -1053,7 +1076,7 @@
                         <!-- Removed items will appear here -->
                     </div>
                     <div id="noItemsMessage" style="text-align:center;color:#9ca3af;font-size:0.7rem;padding:10px 0;">
-                        No items removed yet. Hover over battery caps to remove them.
+                        No items removed yet.
                     </div>
                 </div>
             </div>
@@ -1096,6 +1119,15 @@
 
     <script src="js/practice_progress.js"></script>
     <script>
+        // Flag that a practice simulation is open — an assessment running in
+        // another tab watches this key and finalizes itself immediately.
+        try { localStorage.setItem('motomasterActiveSim', 'practice:' + document.title); } catch (e) {}
+    </script>
+    <script>
+        // This practice sim is air-filter-only — disable battery terminal/battery
+        // mesh interactions in ThreeScene2.js (no hover cards, no click actions).
+        window.__disableBatteryInteractions = true;
+
         const toggleBtn = document.getElementById('toggleBtn');
         const panel = document.querySelector('.panel');
         const timeBox = document.querySelector('.time-box');
@@ -1408,7 +1440,7 @@
                 dragging = true;
                 draggingItemType = type;
                 if (ghost) ghost.remove();
-                ghost = createItemGhost(type === 'soda' ? 'Baking Soda' : 'Water');
+                ghost = createItemGhost(type === 'soda' ? 'Baking Soda' : 'Compressed Air');
                 moveGhost(e.clientX, e.clientY);
                 window.addEventListener('pointermove', onItemPointerMove);
                 window.addEventListener('pointerup', onItemPointerUp, { once: true });
@@ -1438,7 +1470,7 @@
 
                 if (hit) {
                     if (!bowlPlaced) {
-                        showSequenceWarning('Please place the bowl in the mixing area first.');
+                        showSequenceWarning('Please place the parts tray in the Parts Tray Area first.');
                         draggingItemType = null;
                         return;
                     }
@@ -1589,7 +1621,7 @@
                     showMixModal();
                 } else {
                     const t = document.createElement('div');
-                    t.textContent = 'Water added to bowl. Now drag and drop Baking Soda into the bowl.';
+                    t.textContent = 'Housing blown out with compressed air.';
                     t.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 14px;border-radius:10px;z-index:100050;font-weight:700;';
                     document.body.appendChild(t);
                     setTimeout(() => t.remove(), 2500);
@@ -1614,18 +1646,6 @@
                 setTimeout(() => t.remove(), 1600);
                 // mark that the user has mixed baking soda + water
                 window.mixtureDone = true;
-                // Mark the first instruction of the Clean Terminals step (step index 1, instruction 0) as done
-                try {
-                    window.stepInstrDone = window.stepInstrDone || {};
-                    window.stepInstrDone[1] = window.stepInstrDone[1] || [];
-                    window.stepInstrDone[1][0] = true;
-                    // If the instructions panel is currently showing step 2, update the DOM
-                    const instrList = document.getElementById('instrList');
-                    if (instrList && currentStepIndex === 1) {
-                        const li = instrList.children[0];
-                        if (li) li.classList.add('done');
-                    }
-                } catch (e) { console.warn('Failed to mark instruction done', e); }
             });
 
             if (btnCloseMix) btnCloseMix.addEventListener('click', () => { mixModal.style.display = 'none'; });
@@ -1636,6 +1656,20 @@
 
         window.addEventListener('load', () => {
             initPaperTowelViewer('papertowel-model');
+        });
+    </script>
+    <script type="module">
+        import { initAirFilterViewer } from './AirFilterViewer.js';
+
+        window.addEventListener('load', () => {
+            initAirFilterViewer('airfilter-model');
+        });
+    </script>
+    <script type="module">
+        import { initPlierViewer } from './PlierViewer.js';
+
+        window.addEventListener('load', () => {
+            initPlierViewer('plier-model');
         });
     </script>
     <script>
@@ -2300,16 +2334,72 @@
     <script>
         // ── STEP REVIEW DATA (tracked from user actions during simulation) ───
         const STEP_REVIEW_TITLES = [
-            'Step 1: Inspect Battery Condition',
-            'Step 2: Clean Battery Terminals',
-            'Step 3: Check Electrolyte Level',
-            'Step 4: Secure Battery Mount',
-            'Step 5: Test Electrical System'
+            'Step 1: Prepare & Open the Hood',
+            'Step 2: Open Housing & Remove Filter',
+            'Step 3: Inspect & Clean Housing',
+            'Step 4: Install the New Filter',
+            'Step 5: Secure Housing & Final Check'
         ];
 
         function getRecommendationForMistake(message) {
             const m = (message || '').toLowerCase();
-            
+
+            // Air filter replacement checklist feedback
+            if (m.includes('engine is off') || m.includes('completely cool')) {
+                return 'Tip: Always make sure the engine is OFF and cool before working — a hot engine can burn you.';
+            }
+            if (m.includes('hood latch') || m.includes('secure the hood') || m.includes('hood opened')) {
+                return 'Tip: Pull the hood latch and secure the hood properly so it cannot fall while you work.';
+            }
+            if (m.includes('air filter box') || m.includes('black plastic')) {
+                return 'Tip: The air filter box is the black plastic box near the engine — follow the large intake hose to find it.';
+            }
+            if (m.includes('intake hose')) {
+                return 'Tip: The filter box connects to the large air intake hose — that is how you identify it.';
+            }
+            if (m.includes('new filter and') || m.includes('tools prepared')) {
+                return 'Tip: Have the correct replacement filter and tools ready before opening the housing.';
+            }
+            if (m.includes('metal clips') || m.includes('housing screws')) {
+                return 'Tip: Release the metal clips or remove the screws gently — plastic clips snap if forced.';
+            }
+            if (m.includes('lift the housing cover') || m.includes('pull the housing cover')) {
+                return 'Tip: Pull the cover straight up and off — some housings have hoses or sensors attached nearby.';
+            }
+            if (m.includes('old air filter') || m.includes('filter gently')) {
+                return 'Tip: Remove the old filter gently to avoid shaking trapped dirt into the intake.';
+            }
+            if (m.includes('shaking dirt') || m.includes('debris into the intake') || m.includes('debris fall into the intake')) {
+                return 'Tip: Keep dirt and debris out of the intake opening — anything that falls in goes straight into the engine.';
+            }
+            if (m.includes('orientation')) {
+                return 'Tip: Note which way the old filter sits before removing it — the new one goes in the same way.';
+            }
+            if (m.includes('dust and dirt') || m.includes('leaves') || m.includes('clean cloth') || m.includes('completely clean')) {
+                return 'Tip: Check for dust, leaves, and debris inside the housing and wipe it clean with a cloth before installing the new filter.';
+            }
+            if (m.includes('same way')) {
+                return 'Tip: Position the new filter exactly the same way the old one was seated.';
+            }
+            if (m.includes('snugly') || m.includes('no gaps') || m.includes('seats flat')) {
+                return 'Tip: The filter must fit snugly with no gaps — gaps let unfiltered air into the engine.';
+            }
+            if (m.includes('filter media') || m.includes('bending')) {
+                return 'Tip: Do not bend or crush the filter media — a damaged filter cannot seal or filter properly.';
+            }
+            if (m.includes('correct filter type')) {
+                return 'Tip: Confirm the replacement filter matches the vehicle specification before installing.';
+            }
+            if (m.includes('cover back') || m.includes('lock') || m.includes('tighten the screws')) {
+                return 'Tip: Refit the cover and lock all clips or screws evenly so the housing stays sealed.';
+            }
+            if (m.includes('sealed') || m.includes('gaps around the cover')) {
+                return 'Tip: Check that the cover is fully closed with no gaps — an unsealed housing lets dirty air bypass the filter.';
+            }
+            if (m.includes('close the hood')) {
+                return 'Tip: Close the hood securely after confirming everything is tight and sealed.';
+            }
+
             // Critical battery feedback
             if (m.includes('critical battery condition') || m.includes('critical battery not replaced')) {
                 return 'CRITICAL WARNING: A damaged battery with cracks, bulging, or leaks must be replaced immediately. If you continue without replacement: (1) The vehicle will likely not start due to insufficient voltage, (2) Acid leaks can corrode surrounding components and the engine bay, (3) A damaged battery may explode during charging or operation, causing injury. Always replace batteries showing physical damage.';
@@ -2465,10 +2555,52 @@
                 if (saved.completion_status === 'Completed') {
                     // Starting a new attempt - reset tracker and status to In Progress
                     console.log('PracticeArea: Previous attempt was completed. Starting new attempt.');
+                    applyStartupEngineState();
                     await saveCurrentProgress('In Progress');
                 } else {
                     // Restore tracker data
                     PracticeProgress.restoreProgress(saved, simulationTracker);
+
+                    // Restore step position and in-page UI state so the student
+                    // lands back on the step they were working on
+                    if (typeof saved.current_step_index === 'number' && !isNaN(saved.current_step_index)) {
+                        currentStepIndex = Math.max(0, Math.min(saved.current_step_index, totalSteps - 1));
+                    }
+                    if (saved.time_elapsed_seconds) {
+                        window.__practiceElapsedSeconds = saved.time_elapsed_seconds;
+                        if (typeof startPracticeTimer === 'function') {
+                            startPracticeTimer();
+                        }
+                    }
+                    if (saved.step_instr_done && typeof saved.step_instr_done === 'object') {
+                        // All instruction steps are checklist-driven here, so the
+                        // checkbox itself is the state and can be restored directly.
+                        window.stepInstrDone = saved.step_instr_done;
+                    }
+                    // Restore the physical scene state (cover off, old filter
+                    // out, new filter in, hood open, inspection items done) so
+                    // a reload leaves parts exactly where the student left them.
+                    if (saved.scene_state && typeof saved.scene_state === 'object') {
+                        window.airSimState = Object.assign(window.airSimState || {}, saved.scene_state);
+                    }
+                    // Fallback for saves made before scene_state existed:
+                    // infer the physical state from completed instructions so
+                    // removed parts don't reappear on the engine.
+                    window.airSimState = window.airSimState || {};
+                    if (!window.airSimState.coverOff && !window.airSimState.oldFilterRemoved && !window.airSimState.newFilterInstalled) {
+                        const s2 = (window.stepInstrDone && window.stepInstrDone[1]) || [];
+                        const s4 = (window.stepInstrDone && window.stepInstrDone[3]) || [];
+                        const s5 = (window.stepInstrDone && window.stepInstrDone[4]) || [];
+                        if (s2[0]) window.airSimState.clipsReleased = true;
+                        if (s2[1] && !s5[0]) window.airSimState.coverOff = true;
+                        if (s2[2]) window.airSimState.oldFilterRemoved = true;
+                        if (s4[0] || s4[1]) window.airSimState.newFilterInstalled = true;
+                        if (window.airSimState.newFilterInstalled) window.airSimState.oldFilterRemoved = false;
+                    }
+                    applyRestoredSceneState(window.airSimState);
+                    applyStartupEngineState();
+                    updateStepUI();
+                    console.log('PracticeArea: Resumed at step', currentStepIndex + 1, 'of', totalSteps);
                 }
 
                 // Show welcome back notification with previous score
@@ -2523,7 +2655,61 @@
                 __progressLoaded = true;
             } else {
                 console.log('PracticeArea: No saved progress found');
+                applyStartupEngineState();
             }
+        }
+
+        // Applies a saved scene_state once the scene APIs exist. Polls because
+        // the car GLB loads asynchronously after page load.
+        function applyRestoredSceneState(st) {
+            if (!st) return;
+            let tries = 0;
+            const poll = setInterval(() => {
+                tries++;
+                const ready = typeof window.setAirFilterBoxOpen === 'function' &&
+                    typeof window.setAirFilterRemoved === 'function' &&
+                    typeof window.checkAirFilterBox === 'function';
+                if (!ready) {
+                    if (tries > 60) clearInterval(poll); // ~30s timeout
+                    return;
+                }
+                clearInterval(poll);
+
+                // Hood
+                if (st.hoodOpen && typeof window.isHoodOpen === 'function' &&
+                    typeof window.toggleHood === 'function' && !window.isHoodOpen()) {
+                    window.toggleHood();
+                }
+
+                // Housing cover — off stays off, on stays on
+                if (st.coverOff && !window.checkAirFilterBox().open) {
+                    window.setAirFilterBoxOpen(true);
+                } else if (!st.coverOff && window.checkAirFilterBox().open) {
+                    window.setAirFilterBoxOpen(false);
+                }
+
+                // Filter mesh: hidden when the old one is out and the new one
+                // hasn't been installed yet
+                window.setAirFilterRemoved(!!(st.oldFilterRemoved && !st.newFilterInstalled));
+
+                // Rebuild the Removed Items Storage
+                try {
+                    if (st.coverOff) {
+                        removedItems.set('airFilterBoxCover', { type: 'airFilterBoxCover', name: 'Housing Cover' });
+                    }
+                    if (st.oldFilterRemoved) {
+                        removedItems.set('oldAirFilter', { type: 'oldAirFilter', name: 'Old Air Filter' });
+                    }
+                    updateRemovedItemsContainer();
+                } catch (e) {}
+
+                // Step 1 inspection items
+                if (st.inspectDone && typeof window.setInspectChecked === 'function') {
+                    Object.keys(st.inspectDone).forEach((idx) => {
+                        if (st.inspectDone[idx]) window.setInspectChecked(parseInt(idx, 10), true);
+                    });
+                }
+            }, 500);
         }
 
         function dismissProgressNotification() {
@@ -2535,19 +2721,38 @@
         }
 
         /**
-         * Save current progress to database
+         * Build the progress payload used for both periodic saves and unload beacons
          */
-        async function saveCurrentProgress(status = 'In Progress') {
+        function buildProgressPayload(status) {
             const summary = PracticeProgress.getSummary(simulationTracker);
-            if (!summary) return;
+            if (!summary) return null;
 
+            const student = getLoggedInStudent();
             const payload = {
                 title: 'Air Filter Replacement',
                 score: summary.overall_score,
                 completion_status: status,
                 time_elapsed_seconds: window.__practiceElapsedSeconds || 0,
+                current_step_index: currentStepIndex,
+                step_instr_done: window.stepInstrDone || {},
+                scene_state: window.airSimState || {},
                 steps: PracticeProgress.transformTrackerData(simulationTracker, STEP_REVIEW_TITLES)
             };
+            if (student && student.student_id) {
+                payload.student_id = student.student_id;
+            }
+            if (student) {
+                payload.student = student;
+            }
+            return payload;
+        }
+
+        /**
+         * Save current progress to database
+         */
+        async function saveCurrentProgress(status = 'In Progress') {
+            const payload = buildProgressPayload(status);
+            if (!payload) return;
 
             const result = await PracticeProgress.saveProgress(payload);
             if (result.success) {
@@ -2565,6 +2770,40 @@
             window.location.href = 'practicetasks.html';
         }
         window.endSimulationAndSave = endSimulationAndSave;
+
+        // Restart the simulation from Step 1 — stores the steps completed so
+        // far, clears the current attempt, then reloads to a fresh state.
+        window.restartSimulation = function () {
+            const doRestart = async () => {
+                try { await saveCurrentProgress('In Progress'); } catch (e) { console.warn('Save before reset failed:', e); }
+                try {
+                    const res = await fetch('reset_practice.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: 'Air Filter Replacement' })
+                    });
+                    const data = await res.json();
+                    if (!data || !data.success) throw new Error((data && data.message) || 'Reset failed');
+                } catch (e) {
+                    console.warn('Reset request failed:', e);
+                    try {
+                        if (typeof window.showSequenceWarning === 'function') {
+                            window.showSequenceWarning('Restart failed — the attempt could not be reset.');
+                        } else {
+                            console.warn('Restart failed — the attempt could not be reset.');
+                        }
+                    } catch (e2) { console.warn('Restart failed — the attempt could not be reset.'); }
+                    return;
+                }
+                window.__practiceCompleted = true;
+                window.location.reload();
+            };
+            if (typeof window.showToolUseCard === 'function') {
+                window.showToolUseCard('Restart Simulation?', 'Your progress is saved first, then the simulation starts over from Step 1.', doRestart);
+            } else if (window.confirm('Restart simulation? Your progress will be saved and the simulation will start over from Step 1.')) {
+                doRestart();
+            }
+        };
 
         /**
          * Start auto-save interval (saves every 30 seconds)
@@ -2592,10 +2831,25 @@
             startAutoSave();
         });
 
-        // Save on page unload
+        // Save on page unload - sendBeacon survives the unload, unlike async fetch
         window.addEventListener('beforeunload', () => {
             if (window.__practiceCompleted) return;
-            saveCurrentProgress('In Progress');
+            const payload = buildProgressPayload('In Progress');
+            if (!payload) return;
+            try {
+                const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain' });
+                const sent = navigator.sendBeacon('save_practice_simulation.php', blob);
+                if (!sent) {
+                    fetch('save_practice_simulation.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        keepalive: true
+                    });
+                }
+            } catch (e) {
+                saveCurrentProgress('In Progress');
+            }
         });
 
         const engineSwipeAudio = new Audio('music/notstarting.mp3');
@@ -2621,9 +2875,23 @@
                     await engineSwipeAudio.play();
                 } catch (error) {
                     console.warn('Engine swipe audio could not start:', error);
-                    engineSwipeEnabled = false;
-                    if (stateLabel) stateLabel.textContent = 'OFF';
-                    if (toggle) toggle.checked = false;
+                    // Browsers block autoplay before the first user gesture.
+                    // Keep the engine ON and keep retrying on every user
+                    // interaction until the audio actually starts playing.
+                    const startEvents = ['pointerdown', 'keydown', 'touchstart', 'click'];
+                    const stopRetrying = () => {
+                        startEvents.forEach((evt) => document.removeEventListener(evt, retryPlay));
+                    };
+                    function retryPlay() {
+                        if (!engineSwipeEnabled) {
+                            stopRetrying();
+                            return;
+                        }
+                        engineSwipeAudio.play()
+                            .then(stopRetrying)
+                            .catch(() => { /* still blocked — try again on the next gesture */ });
+                    }
+                    startEvents.forEach((evt) => document.addEventListener(evt, retryPlay));
                 }
             } else {
                 engineSwipeAudio.pause();
@@ -2641,6 +2909,18 @@
         }
         syncPracticeStepIndex();
 
+        // Engine sound policy on (re)load: a fresh Step 1 starts with the
+        // engine ON — the student must switch it OFF to verify the "engine
+        // is OFF" inspection item. Once that item is verified (or the
+        // student moved past Step 1), a refreshed page stays silent.
+        function applyStartupEngineState() {
+            const inspectDone = (window.airSimState && window.airSimState.inspectDone) || {};
+            const shouldBeOn = currentStepIndex === 0 && !inspectDone[0];
+            if (shouldBeOn !== engineSwipeEnabled) setEngineSwipeEnabled(shouldBeOn);
+        }
+        window.applyStartupEngineState = applyStartupEngineState;
+        applyStartupEngineState();
+
         function classifySequenceMessage(message) {
             const text = (message || '').toLowerCase();
             // If battery needs replacement, 'battery installed successfully' is NOT correct
@@ -2652,7 +2932,14 @@
                 text.includes('successfully') ||
                 text.includes('refilled') ||
                 text.includes('accepted and installed') ||
-                text.includes('marked for disposal')
+                text.includes('marked for disposal') ||
+                text.includes('housing opened') ||
+                text.includes('housing closed') ||
+                text.includes('old air filter removed') ||
+                text.includes('new air filter installed') ||
+                text.includes('air filter box located') ||
+                text.includes('intake hose identified') ||
+                text.includes('filter and tools prepared')
             ) {
                 return 'correct';
             }
@@ -2679,26 +2966,13 @@
             const data = simulationTracker.steps[stepIdx];
             data.title = STEP_REVIEW_TITLES[stepIdx];
 
-            // Clear previous correct items for checklists to prevent carryover of unchecked/previous states
-            if (stepIdx === 0 || stepIdx === 3 || stepIdx === 4) {
-                data.correct = [];
-            } else if (stepIdx === 1 || stepIdx === 2) {
-                // Remove list-item instructions from correct array to re-evaluate them cleanly
-                const instructionsList = [
-                    ['Mix baking soda', 'Disconnect negative', 'Apply paste', 'Wipe terminals', 'Reconnect positive', 'Remove the old battery', 'Drag and drop the new battery'],
-                    ['Remove battery caps', 'Check electrolyte', 'Top up', 'Do not overfill', 'Replace caps']
-                ];
-                const activeInstrs = instructionsList[stepIdx - 1];
-                data.correct = data.correct.filter(c => {
-                    const text = c.toLowerCase();
-                    return !activeInstrs.some(pattern => text.includes(pattern.toLowerCase()));
-                });
-            }
+            // Clear previous correct items to prevent carryover of unchecked/previous states
+            data.correct = [];
 
             if (stepIdx === 0) {
-                document.querySelectorAll('.inspect-check').forEach((cb) => {
-                    const label = cb.closest('label')?.querySelector('span')?.textContent?.trim();
-                    if (cb.checked && label) simulationTracker.addCorrect(label, 0);
+                document.querySelectorAll('#inspectionList li').forEach((li) => {
+                    const label = li.textContent.trim();
+                    if (li.classList.contains('done') && label) simulationTracker.addCorrect(label, 0);
                 });
             } else {
                 const done = window.stepInstrDone?.[stepIdx] || [];
@@ -2750,7 +3024,9 @@
                         score: overallScore,
                         completion_status: 'Completed',
                         time_elapsed_seconds: window.__practiceElapsedSeconds || 0,
-                        steps: stepsPayload
+                        steps: stepsPayload,
+                        student_id: student.student_id,
+                        student: student
                     })
                 });
                 const data = await res.json();
@@ -2893,10 +3169,10 @@
 
         // Return true if the user can proceed from the given step index
         function canProceedFromStep(stepIdx) {
-            // Step 0 uses the inspection checklist
+            // Step 0 uses the inspection list — every item must be verified done
             if (stepIdx === 0) {
-                const checkboxes = document.querySelectorAll('.inspect-check');
-                return Array.from(checkboxes).every(cb => cb.checked);
+                const items = document.querySelectorAll('#inspectionList li');
+                return items.length > 0 && Array.from(items).every(li => li.classList.contains('done'));
             }
 
             // For other steps, ensure every instruction list item is marked done
@@ -2971,6 +3247,12 @@
                 }
             }
 
+            // Steps 2–4 (indices 1–3): the engine must stay OFF — force it off
+            // whenever one of those steps becomes active.
+            if (currentStepIndex >= 1 && currentStepIndex <= 3 && engineSwipeEnabled) {
+                setEngineSwipeEnabled(false);
+            }
+
             // Update step bar circles
             document.querySelectorAll('.step-circle').forEach((el, i) => {
                 el.classList.remove('active', 'done');
@@ -2983,37 +3265,35 @@
             });
 
             // Update right panel task title & desc
-            const titles = ['Inspect Battery Condition', 'Clean Battery Terminals', 'Check Electrolyte Level', 'Secure Battery Mount', 'Test Electrical System'];
+            const titles = ['Prepare & Open the Hood', 'Open Housing & Remove Filter', 'Inspect & Clean Housing', 'Install the New Filter', 'Secure Housing & Final Check'];
             const descs = [
-                'Check battery casing for cracks, leaks, or swelling. Verify terminal connections.',
-                'Remove corrosion from terminals using a wire brush and baking soda solution.',
-                'Check electrolyte levels in each cell and top up with distilled water if needed.',
-                'Ensure battery hold-down bracket is tight and battery does not move.',
-                'Start engine and verify charging system voltage. Check all electrical functions.'
+                'Make sure the engine is off and cool, open and secure the hood, then locate the air filter box.',
+                'Release the clips or screws, pull the cover off, and remove the old air filter gently.',
+                'Check the housing for dust, leaves, and debris, and wipe it clean if needed.',
+                'Insert the new filter in the same orientation and make sure it fits snugly with no gaps.',
+                'Refit and lock the cover, verify the housing is sealed, and close the hood.'
             ];
             document.querySelector('.rp-task-title').textContent = titles[currentStepIndex] || titles[titles.length - 1];
             document.querySelector('.rp-task-desc').textContent = descs[currentStepIndex] || descs[descs.length - 1];
 
             // Update instructions list
             const instructions = [
-                ['Ensure ignition is off and keys are removed', 'Visually inspect the battery for cracks, bulging, or leaks'],
-                window.batteryNeedsReplacement ?
-                    ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Remove the old battery from the car engine bay', 'Drag and drop the new battery from the tools area to install it', 'Reconnect positive (+) first, then negative (-) terminal'] :
-                    ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Apply paste to terminals and use wire brush to remove corrosion', 'Wipe terminals clean with a damp cloth and dry thoroughly', 'Reconnect positive (+) first, then negative (-) terminal'],
-                ['Remove battery caps carefully — wear safety goggles', 'Check electrolyte level in each cell against MIN/MAX marks', 'Top up ONLY with distilled water if below minimum', 'Do not overfill — leave space for expansion', 'Replace caps securely and wipe any spills'],
-                ['Check battery hold-down bracket for tightness', 'Inspect bracket bolts for corrosion and tightness', 'Ensure battery sits level and does not shift when pushed', 'Check that battery tray is not rusted through', 'Tighten bracket evenly — do not over-tighten'],
-                ['Reconnect all terminals and start the engine', 'Listen for smooth starter motor operation', 'Record battery test results and service date in log']
+                ['Confirm the engine is OFF and completely cool', 'Pull the hood latch and secure the hood open', 'Locate the black plastic air filter box near the engine', 'Identify the large air intake hose connected to the box', 'Prepare the new filter and basic tools'],
+                ['Release the metal clips or remove the housing screws', 'Pull the housing cover off and set it aside', 'Take out the old air filter gently'],
+                ['Check inside the housing for dust and dirt', 'Wipe the housing with a clean cloth if needed', 'Make sure the housing is completely clean'],
+                ['Position the new filter the same way as the old one', 'Make sure it fits snugly with no gaps around the edges'],
+                ['Put the housing cover back in place', 'Lock the metal clips or tighten the screws', 'Close the hood securely', 'Start the engine and check that it runs smoothly']
             ];
             const safetyNotes = [
-                'Always wear safety goggles and gloves — battery acid can cause burns.',
-                'Disconnect negative terminal first to avoid short circuits.',
-                'Never smoke or create sparks near a battery — hydrogen gas is explosive.',
-                'Do not overtighten hold-down bracket — it can crack the battery case.',
-                'If battery is hot, wait for it to cool before opening caps.'
+                'Engine must be OFF and cool — a hot engine causes burns.',
+                'Handle the cover gently — plastic clips can snap if forced.',
+                'Never let debris fall into the intake — it goes straight into the engine.',
+                'A poorly seated filter lets unfiltered air into the engine — check for gaps.',
+                'Make sure the cover is fully sealed — an open housing lets dirt in over time.'
             ];
             const instrList = document.getElementById('instrList');
             if (instrList) {
-                const checklistMode = currentStepIndex === 3 || currentStepIndex === 4;
+                const checklistMode = false; // all steps are action-verified
                 instrList.classList.toggle('checklist-mode', checklistMode);
                 window.stepInstrDone = window.stepInstrDone || {};
                 const doneArray = window.stepInstrDone[currentStepIndex] || [];
@@ -3068,34 +3348,39 @@
                 }
             }
 
-            // Show mix area only on step 2 (index 1)
+            // Parts tray drop zone removed — Removed Items Storage covers this
             const mixDrop = document.getElementById('mixDropZone');
-            if (mixDrop) mixDrop.style.display = (currentStepIndex === 1) ? 'flex' : 'none';
+            if (mixDrop) mixDrop.style.display = 'none';
 
-            // Show/hide Step 2 Battery Replacement Diagnostic Status indicator
+            // Show/hide Air Filter Status indicator on the open-housing step
             const statusIndicator = document.getElementById('batteryStatusIndicator');
             if (statusIndicator) {
                 if (currentStepIndex === 1) {
                     statusIndicator.style.display = 'block';
                     const valueEl = document.getElementById('batteryStatusValue');
                     if (valueEl) {
-                        if (window.batteryNeedsReplacement) {
-                            valueEl.innerHTML = '<span style="color:#dc2626;">REPLACE BATTERY (Health: 42%)</span>';
-                        } else {
-                            valueEl.innerHTML = '<span style="color:#22c55e;">GOOD (Health: 88%)</span>';
-                        }
+                        valueEl.innerHTML = '<span style="color:#dc2626;">DIRTY — REPLACE (Airflow: Restricted)</span>';
                     }
                 } else {
                     statusIndicator.style.display = 'none';
                 }
             }
 
-            // Update battery hover action label: CLEAN BATTERY on Step 2, otherwise CHECK BATTERY
-            const btnCheck = document.getElementById('btnCheckBattery');
-            const btnLabel = document.getElementById('btnCheckBatteryLabel');
-            if (btnLabel) {
-                btnLabel.textContent = (currentStepIndex === 1) ? 'CLEAN BATTERY' : 'CHECK BATTERY';
+            // "Check Housing" action button — only on the inspect/clean step,
+            // and shows as already checked once item 0 is verified
+            const checkHousingBtn = document.getElementById('checkHousingBtn');
+            if (checkHousingBtn) {
+                const alreadyChecked = !!((window.stepInstrDone && window.stepInstrDone[2]) || [])[0];
+                checkHousingBtn.style.display = currentStepIndex === 2 ? 'flex' : 'none';
+                checkHousingBtn.disabled = alreadyChecked;
+                checkHousingBtn.style.opacity = alreadyChecked ? '0.55' : '1';
+                checkHousingBtn.style.cursor = alreadyChecked ? 'default' : 'pointer';
+                checkHousingBtn.innerHTML = alreadyChecked
+                    ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;"><polyline points="20 6 9 17 4 12"/></svg> Housing Checked'
+                    : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Check Housing for Dust &amp; Dirt';
             }
+
+            // Battery interactions are disabled in this sim (air filter only).
 
             // Disable battery tool in tools area for steps 1, 4, and 5 (indices 0, 3, 4)
             try {
@@ -3113,78 +3398,92 @@
                 console.warn('Failed to update battery tool state', e);
             }
 
-        }
-
-        // Handle checkbox changes for visual feedback
-        document.querySelectorAll('.inspect-check').forEach(cb => {
-            cb.addEventListener('change', () => {
-                // Visual feedback
-                const label = cb.closest('label');
-                if (cb.checked) {
-                    label.style.background = '#dbeafe';
-                    label.style.border = '1px solid #93c5fd';
-                } else {
-                    label.style.background = '#f9fafb';
-                    label.style.border = 'none';
+            // Air filter tool is usable on the prep step (index 0 — marks the
+            // "tools prepared" inspection item) and the install step (index 3)
+            try {
+                const airFilterToolEl = document.getElementById('airfilter-model');
+                if (airFilterToolEl) {
+                    if (![0, 3].includes(currentStepIndex)) {
+                        airFilterToolEl.classList.add('tool-disabled');
+                        airFilterToolEl.style.cursor = 'not-allowed';
+                    } else {
+                        airFilterToolEl.classList.remove('tool-disabled');
+                        airFilterToolEl.style.cursor = 'pointer';
+                    }
                 }
-            });
-        });
+            } catch (e) {
+                console.warn('Failed to update air filter tool state', e);
+            }
+
+            // Pliers tool is usable on the prep step (index 0), the housing
+            // removal step (index 1 — releases the clips) and the final
+            // secure-housing step (index 4 — locks them again)
+            try {
+                const plierToolEl = document.getElementById('plier-model');
+                if (plierToolEl) {
+                    const plierCardEl = plierToolEl.closest('.tool-card') || plierToolEl;
+                    plierCardEl.style.cursor = [0, 1, 4].includes(currentStepIndex) ? 'pointer' : 'not-allowed';
+                }
+            } catch (e) {
+                console.warn('Failed to update plier tool state', e);
+            }
+
+            // Paper towel tool is usable on the prep step (index 0) and the
+            // clean-housing step (index 2)
+            try {
+                const towelToolEl = document.getElementById('papertowel-model');
+                if (towelToolEl) {
+                    const towelCardEl = towelToolEl.closest('.tool-card') || towelToolEl;
+                    towelCardEl.style.cursor = [0, 2].includes(currentStepIndex) ? 'pointer' : 'not-allowed';
+                }
+            } catch (e) {
+                console.warn('Failed to update paper towel tool state', e);
+            }
+
+            // Reconcile the physical scene with airSimState on every step
+            // change — removed parts must stay in Removed Items Storage and
+            // only come back when the stored item is explicitly clicked.
+            try {
+                const st = window.airSimState;
+                if (st) {
+                    if (typeof window.checkAirFilterBox === 'function' &&
+                        typeof window.setAirFilterBoxOpen === 'function') {
+                        const coverOpen = window.checkAirFilterBox().open;
+                        if (st.coverOff && !coverOpen) window.setAirFilterBoxOpen(true);
+                        else if (!st.coverOff && coverOpen) window.setAirFilterBoxOpen(false);
+                    }
+                    if (typeof window.checkAirFilter === 'function' &&
+                        typeof window.setAirFilterRemoved === 'function') {
+                        const shouldBeOut = !!(st.oldFilterRemoved && !st.newFilterInstalled);
+                        if (window.checkAirFilter().removed !== shouldBeOut) {
+                            window.setAirFilterRemoved(shouldBeOut);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to reconcile air filter scene state', e);
+            }
+
+        }
 
         // Wire Next Step button
         document.getElementById('nextStepBtn').addEventListener('click', () => {
-            // Identify unchecked checkboxes as mistakes
+            // Identify unverified inspection items as mistakes
             if (currentStepIndex === 0) {
                 // Clear all mistakes for Step 1
                 simulationTracker.steps[0].mistakes = [];
-                const checkboxes = document.querySelectorAll('.inspect-check');
-                checkboxes.forEach(cb => {
-                    if (!cb.checked) {
-                        const labelText = cb.closest('label').querySelector('span').textContent.trim();
-                        simulationTracker.addMistake(`Missed inspection: ${labelText}`, 0);
+                document.querySelectorAll('#inspectionList li').forEach(li => {
+                    if (!li.classList.contains('done')) {
+                        simulationTracker.addMistake(`Missed inspection: ${li.textContent.trim()}`, 0);
                     }
                 });
-                
-                // Check if battery is critical but user didn't mark it for replacement
-                if (window.batteryNeedsReplacement) {
-                    const cracksChecked = document.querySelector('.inspect-check[data-index="1"]')?.checked;
-                    if (!cracksChecked) {
-                        simulationTracker.addMistake('Critical battery condition not addressed: Battery has cracks/bulging/leaks and needs replacement. If not replaced, the battery may fail to start the vehicle, cause electrical system issues, or pose safety risks from acid leaks.', 0);
-                    }
-                }
-            } else if (currentStepIndex === 1 || currentStepIndex === 2) {
-                // Clear only previous unfinished task mistakes so we don't duplicate them
-                simulationTracker.steps[currentStepIndex].mistakes = simulationTracker.steps[currentStepIndex].mistakes.filter(
-                    m => !m.startsWith('Unfinished task:')
-                );
-                const instrList = document.getElementById('instrList');
-                if (instrList) {
-                    const items = instrList.querySelectorAll('li');
-                    items.forEach(li => {
-                        if (!li.classList.contains('done')) {
-                            const labelText = li.textContent.trim();
-                            simulationTracker.addMistake(`Unfinished task: ${labelText}`, currentStepIndex);
-                        }
-                    });
-                }
-                
-                // Check if battery needs replacement but wasn't replaced in Step 2
-                if (currentStepIndex === 1 && window.batteryNeedsReplacement) {
-                    const instructionsDone = window.stepInstrDone?.[1] || [];
-                    const batteryRemoved = instructionsDone[2]; // Index 2 is "Remove the old battery"
-                    const batteryInstalled = instructionsDone[3]; // Index 3 is "Drag and drop the new battery"
-                    
-                    if (!batteryRemoved || !batteryInstalled) {
-                        simulationTracker.addMistake('Critical battery not replaced: The battery has critical damage (cracks/bulging/leaks) and must be replaced. Continuing with a damaged battery will result in the vehicle not starting, unreliable electrical performance, and potential safety hazards from acid leakage or battery explosion.', 1);
-                    }
-                }
-            } else if (currentStepIndex === 3 || currentStepIndex === 4) {
-                // Clear all mistakes for checklist steps (Step 4 & 5)
+            } else if (currentStepIndex >= 1) {
+                // Clear all mistakes for checklist steps and re-evaluate unchecked items
                 simulationTracker.steps[currentStepIndex].mistakes = [];
-                const checkboxes = document.querySelectorAll('#instrList input[type="checkbox"]');
-                checkboxes.forEach(cb => {
-                    if (!cb.checked) {
-                        const labelText = cb.closest('label').querySelector('span').textContent.trim();
-                        simulationTracker.addMistake(`Missed instruction: ${labelText}`, currentStepIndex);
+                // Steps 2-5 are action-verified — unfinished items are li's not marked done
+                document.querySelectorAll('#instrList li').forEach(li => {
+                    if (!li.classList.contains('done')) {
+                        simulationTracker.addMistake(`Missed instruction: ${li.textContent.trim()}`, currentStepIndex);
                     }
                 });
             }
@@ -3195,6 +3494,20 @@
         if (engineSwipeToggle) {
             engineSwipeToggle.addEventListener('change', () => {
                 setEngineSwipeEnabled(engineSwipeToggle.checked);
+                // Inspection item 1 tracks the live engine state
+                if (typeof window.syncEngineOffChecklist === 'function') window.syncEngineOffChecklist();
+                // Step 5 sound check — starting the engine verifies the item
+                if (engineSwipeToggle.checked && typeof currentStepIndex !== 'undefined' && currentStepIndex === 4) {
+                    if (typeof window.markStepInstructionDone === 'function') {
+                        window.markStepInstructionDone(4, 3); // Start the engine and check that it runs smoothly
+                    }
+                    if (typeof window.recordSimulationEvent === 'function') {
+                        window.recordSimulationEvent('Engine started successfully — runs smoothly.');
+                    }
+                    if (typeof window.showPrepToast === 'function') {
+                        window.showPrepToast('Engine started — sound check passed.');
+                    }
+                }
             });
         }
 
@@ -3223,8 +3536,8 @@
                 return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             };
 
-            let elapsedSeconds = 0;
-            window.__practiceElapsedSeconds = 0;
+            let elapsedSeconds = window.__practiceElapsedSeconds || 0;
+            window.__practiceElapsedSeconds = elapsedSeconds;
             timerEl.textContent = formatTime(elapsedSeconds);
 
             if (window.__practiceTimerInterval) {
@@ -3786,15 +4099,15 @@
             style="background:#fff;border-radius:12px;padding:18px;width:340px;box-shadow:0 18px 40px rgba(0,0,0,0.25);">
             <div
                 style="font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700;color:#111827;margin-bottom:8px;">
-                Add Water</div>
-            <div style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">Enter amount of water (ml) to add to the
-                bowl.</div>
+                Use Compressed Air</div>
+            <div style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">Enter amount of compressed air bursts to
+                blow out the housing.</div>
             <input id="waterAmountInput" type="number" min="0" value="30"
                 style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;">
             <div style="display:flex;gap:10px;">
                 <button id="btnWaterConfirm"
-                    style="flex:1;padding:10px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer;">Add
-                    Water</button>
+                    style="flex:1;padding:10px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer;">Blow
+                    Out</button>
                 <button id="btnWaterCancel"
                     style="flex:1;padding:10px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;color:#374151;cursor:pointer;">Cancel</button>
             </div>
@@ -4164,16 +4477,7 @@
                             // For Check Electrolyte Level (step 2 index=2) mark "Remove battery caps" (instr 0)
                             if (currentStepIndex === 2) markInstructionDone(2, 0);
                         }
-                        // Removing caps clears final reconnect instruction (index 4) for the current step
-                        try {
-                            window.stepInstrDone = window.stepInstrDone || {};
-                            window.stepInstrDone[currentStepIndex] = window.stepInstrDone[currentStepIndex] || [];
-                            window.stepInstrDone[currentStepIndex][4] = false;
-                            if (currentStepIndex === currentStepIndex) {
-                                const instrList = document.getElementById('instrList');
-                                if (instrList && instrList.children[4]) instrList.children[4].classList.remove('done');
-                            }
-                        } catch (e) { /* ignore */ }
+                        // Instruction state is checklist-driven — cap removal does not alter it
                     } catch (err) { console.warn('Failed to update instructions after cap removal', err); }
 
                     // Lock position after successful removal
@@ -4274,6 +4578,30 @@
             } else {
                 noMessage.style.display = 'none';
                 container.innerHTML = Array.from(removedItems.entries()).map(([index, item]) => {
+                    // Handle removed old air filter (replaced, not reinstalled)
+                    if (item.type === 'oldAirFilter') {
+                        return `
+                            <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border-radius:8px;border:1.5px solid #fde68a;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                                <div style="width:16px;height:16px;border-radius:4px;background:#d97706;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 7v10M11 7v10M15 7v10"/></svg>
+                                </div>
+                                <span style="font-size:0.7rem;font-weight:600;color:#374151;">Old Air Filter</span>
+                                <span style="font-size:0.6rem;color:#9ca3af;margin-left:auto;">For disposal</span>
+                            </div>
+                        `;
+                    }
+                    // Handle removed housing cover (click to refit on final step)
+                    if (item.type === 'airFilterBoxCover') {
+                        return `
+                            <div onclick="replaceItemFromContainer('airFilterBoxCover')" style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border-radius:8px;border:1.5px solid #bfdbfe;box-shadow:0 1px 3px rgba(0,0,0,0.1);cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';">
+                                <div style="width:16px;height:16px;border-radius:4px;background:#2563eb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="3" y="8" width="18" height="8" rx="2"/><path d="M6 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></svg>
+                                </div>
+                                <span style="font-size:0.7rem;font-weight:600;color:#374151;">Housing Cover</span>
+                                <span style="font-size:0.6rem;color:#9ca3af;margin-left:auto;">Click to replace</span>
+                            </div>
+                        `;
+                    }
                     // Handle battery item
                     if (item.type === 'battery') {
                         return `
@@ -4300,20 +4628,11 @@
         }
 
         // Helper to mark an instruction done for a specific step and update UI
+        // NOTE: Instruction steps are checklist-driven for the air filter
+        // replacement flow, so scene-prop actions (battery caps, mixing, etc.)
+        // must not mark instructions — this is intentionally a no-op.
         function markInstructionDone(stepIdx, instrIdx) {
-            window.stepInstrDone = window.stepInstrDone || {};
-            window.stepInstrDone[stepIdx] = window.stepInstrDone[stepIdx] || [];
-            window.stepInstrDone[stepIdx][instrIdx] = true;
-            if (currentStepIndex === stepIdx) {
-                const instrList = document.getElementById('instrList');
-                if (instrList && instrList.children[instrIdx]) instrList.children[instrIdx].classList.add('done');
-            }
-            const instrList = document.getElementById('instrList');
-            if (instrList && instrList.children[instrIdx]) {
-                const li = instrList.children[instrIdx];
-                const text = (li.querySelector('span') || li).textContent.trim();
-                if (text && window.simulationTracker) window.simulationTracker.addCorrect(text, stepIdx);
-            }
+            return;
         }
 
         // Replace item from container - puts it back
@@ -4325,6 +4644,38 @@
                 }
                 return null;
             };
+
+            // Handle air filter housing cover refit — only on the final
+            // "Secure Housing & Final Check" step, and only after the new
+            // filter is seated.
+            if (itemKey === 'airFilterBoxCover') {
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 4) {
+                    showSequenceWarning('Refit the housing cover during the Secure Housing & Final Check step.');
+                    return;
+                }
+                if (typeof window.checkAirFilter === 'function' && window.checkAirFilter().removed) {
+                    showSequenceWarning('Install the new air filter before refitting the cover!');
+                    return;
+                }
+                if (typeof window.setAirFilterBoxOpen === 'function') {
+                    window.setAirFilterBoxOpen(false);
+                }
+                removedItems.delete('airFilterBoxCover');
+                updateRemovedItemsContainer();
+                if (typeof window.updateAirSimState === 'function') {
+                    window.updateAirSimState({ coverOff: false });
+                }
+                if (typeof window.markStepInstructionDone === 'function') {
+                    window.markStepInstructionDone(4, 0); // Put the housing cover back in place
+                }
+                if (typeof window.recordSimulationEvent === 'function') {
+                    window.recordSimulationEvent('Housing cover refitted successfully.');
+                }
+                if (typeof window.showPrepToast === 'function') {
+                    showPrepToast('Housing cover refitted.');
+                }
+                return;
+            }
 
             // Handle battery replacement
             if (itemKey === 'battery') {
@@ -4426,11 +4777,7 @@
             isBatteryCardLocked = false;
             
             if (confirm) {
-                const cb = document.querySelector('.inspect-check[data-index="1"]');
-                if (cb && !cb.checked) {
-                    cb.checked = true;
-                    cb.dispatchEvent(new Event('change'));
-                }
+                if (typeof window.setInspectChecked === 'function') window.setInspectChecked(1, true);
             }
         };
 
@@ -4472,18 +4819,7 @@
             switch (action) {
                 case 'clean':
                     showSequenceWarning('Battery cleaned successfully!');
-                    // Mark instruction 3 (apply paste & brush) and 4 (wipe) as done
-                    try {
-                        window.stepInstrDone = window.stepInstrDone || {};
-                        window.stepInstrDone[1] = window.stepInstrDone[1] || [];
-                        window.stepInstrDone[1][2] = true;
-                        window.stepInstrDone[1][3] = true;
-                        if (currentStepIndex === 1) {
-                            const instrList = document.getElementById('instrList');
-                            if (instrList && instrList.children[2]) instrList.children[2].classList.add('done');
-                            if (instrList && instrList.children[3]) instrList.children[3].classList.add('done');
-                        }
-                    } catch (err) { console.warn('Failed to mark instructions 3/4 after clean', err); }
+                    // Instruction state is checklist-driven — scene actions do not mark it
 
                     // Close modal after a delay
                     setTimeout(() => {
@@ -4890,6 +5226,762 @@
                 const card = document.getElementById('batteryUseCard');
                 if (card) card.remove();
             };
+        })();
+    </script>
+
+    <script>
+        // --- Step 1 inspection items are verified by real sim actions ---
+        // (same pattern as practicearea_engine.html — numbered instr-list
+        // items get .done instead of manual checkboxes)
+
+        // Persistent sim state — saved to the DB as scene_state so a reload
+        // restores exactly where the student left off (cover off, filter out,
+        // new filter in, hood open, inspection items verified).
+        window.airSimState = window.airSimState || {
+            hoodOpen: false,
+            clipsReleased: false,
+            coverOff: false,
+            oldFilterRemoved: false,
+            newFilterInstalled: false,
+            inspectDone: {}
+        };
+
+        function updateAirSimState(patch) {
+            Object.assign(window.airSimState, patch);
+            try {
+                if (typeof saveCurrentProgress === 'function') saveCurrentProgress('In Progress');
+            } catch (e) { /* ignore save errors */ }
+        }
+        window.updateAirSimState = updateAirSimState;
+
+        function setInspectChecked(index, checked) {
+            const li = document.querySelector(`#inspectionList li[data-index="${index}"]`);
+            if (li) li.classList.toggle('done', !!checked);
+            if (window.airSimState) {
+                window.airSimState.inspectDone[index] = !!checked;
+            }
+            const items = document.querySelectorAll('#inspectionList li');
+            if (items.length > 0 && Array.from(items).every((el) => el.classList.contains('done'))) {
+                window.__step1AllDone = true;
+            }
+        }
+        window.setInspectChecked = setInspectChecked;
+
+        // Marks a numbered instruction item done (li.done + saved state).
+        // markInstructionDone stays a no-op so battery-leftover scene actions
+        // can't mark instructions — only this helper is used by the air flow.
+        function markStepInstructionDone(stepIdx, instrIdx) {
+            window.stepInstrDone = window.stepInstrDone || {};
+            window.stepInstrDone[stepIdx] = window.stepInstrDone[stepIdx] || [];
+            window.stepInstrDone[stepIdx][instrIdx] = true;
+            const instrList = document.getElementById('instrList');
+            if (instrList && instrList.children[instrIdx] && currentStepIndex === stepIdx) {
+                const li = instrList.children[instrIdx];
+                li.classList.add('done');
+                const cb = li.querySelector('input[type="checkbox"]');
+                if (cb) cb.checked = true;
+                const text = (li.querySelector('span') || li).textContent.trim();
+                if (text && typeof simulationTracker !== 'undefined') simulationTracker.addCorrect(text, stepIdx);
+            }
+        }
+        window.markStepInstructionDone = markStepInstructionDone;
+
+        // Item 1 follows the live engine state: done while the engine sound is OFF
+        // Only synced on Step 1 — later steps start the engine on purpose, and
+        // a completed inspection item must not un-verify.
+        function syncEngineOffChecklist() {
+            if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 0) return;
+            const off = !engineSwipeEnabled;
+            setInspectChecked(0, off);
+        }
+        window.syncEngineOffChecklist = syncEngineOffChecklist;
+
+        function showPrepToast(message) {
+            const t = document.createElement('div');
+            t.textContent = message;
+            t.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#166534;color:#fff;padding:8px 14px;border-radius:10px;z-index:100050;font-weight:700;font-family:Nunito,sans-serif;';
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
+        window.showPrepToast = showPrepToast;
+
+        window.addEventListener('load', () => {
+            // Item 2: "Hood opened and secured safely" — follows hoodToggled
+            // events dispatched by ThreeScene2.js (hood click or hood button)
+            window.addEventListener('hoodToggled', (e) => {
+                const isOpen = !!(e.detail && e.detail.open);
+                // Only mark on open — closing the hood later must not
+                // un-verify this completed inspection item.
+                if (isOpen) setInspectChecked(1, true);
+                if (typeof window.updateAirSimState === 'function') {
+                    window.updateAirSimState({ hoodOpen: isOpen });
+                }
+                // Step 5: closing the hood verifies "Close the hood securely"
+                if (!isOpen && typeof currentStepIndex !== 'undefined' && currentStepIndex === 4) {
+                    if (typeof window.markStepInstructionDone === 'function') {
+                        window.markStepInstructionDone(4, 2); // Close the hood securely
+                    }
+                    if (typeof window.recordSimulationEvent === 'function') {
+                        window.recordSimulationEvent('Hood closed successfully.');
+                    }
+                    if (typeof window.showPrepToast === 'function') {
+                        window.showPrepToast('Hood closed securely.');
+                    }
+                }
+            });
+
+            // Restored progress: if the hood is already open once the scene API
+            // exists, mark the item done right away.
+            const hoodPoll = setInterval(() => {
+                if (typeof window.isHoodOpen === 'function') {
+                    if (window.isHoodOpen()) setInspectChecked(1, true);
+                    clearInterval(hoodPoll);
+                }
+            }, 500);
+            setTimeout(() => clearInterval(hoodPoll), 30000);
+
+            // Item 5: "New filter and tools prepared" — clicking the Air Filter
+            // tool card on Step 1 counts as preparing it. The listener stays on
+            // the inner 3D placeholder because the card-level handler below only
+            // receives label/padding clicks (the inner handler stops propagation).
+            const airToolEl = document.getElementById('airfilter-model');
+            if (airToolEl) {
+                airToolEl.addEventListener('click', () => {
+                    if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
+                        setInspectChecked(4, true);
+                        if (typeof window.recordSimulationEvent === 'function') {
+                            window.recordSimulationEvent('New filter and tools prepared.');
+                        }
+                        showPrepToast('New filter and tools prepared.');
+                    }
+                });
+                // Label/padding clicks on the air filter card: prep on Step 1,
+                // install card on Step 4 — mirrors the inner-area behavior.
+                const airCard = airToolEl.closest('.tool-card');
+                if (airCard) {
+                    airCard.addEventListener('click', () => {
+                        if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
+                            setInspectChecked(4, true);
+                            if (typeof window.recordSimulationEvent === 'function') {
+                                window.recordSimulationEvent('New filter and tools prepared.');
+                            }
+                            showPrepToast('New filter and tools prepared.');
+                            return;
+                        }
+                        if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 3) {
+                            showSequenceWarning('Air filter tool is not available during this step.');
+                            return;
+                        }
+                        if (typeof window.showAirFilterUseCard === 'function') window.showAirFilterUseCard();
+                    });
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // Air filter housing + filter interaction (events dispatched by ThreeScene2.js)
+        window.addEventListener('load', () => {
+            // Clicking the housing toggles it open/closed — only during the
+            // "Open Housing & Remove Filter" (index 1) and "Secure Housing &
+            // Final Check" (index 4) steps. On Step 1 (index 0) it instead
+            // verifies the "Air filter box located" inspection item.
+            window.addEventListener('airFilterBoxClicked', () => {
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
+                    if (typeof window.setInspectChecked === 'function') window.setInspectChecked(2, true);
+                    if (typeof window.recordSimulationEvent === 'function') {
+                        window.recordSimulationEvent('Air filter box located.');
+                    }
+                    showPrepToast('Air filter box located.');
+                    return;
+                }
+                if (typeof window.setAirFilterBoxOpen !== 'function') return;
+                if (![1, 4].includes(currentStepIndex)) {
+                    showSequenceWarning('The housing cover is only handled during the removal and refit steps.');
+                    return;
+                }
+                if (currentStepIndex === 1) {
+                    // Step 2 sequence: clips must be released before pulling the cover
+                    const done1 = (window.stepInstrDone && window.stepInstrDone[1]) || [];
+                    if (!done1[0]) {
+                        showSequenceWarning('Release the metal clips or housing screws first (use the Pliers tool).');
+                        return;
+                    }
+                    if (window.checkAirFilterBox && window.checkAirFilterBox().open) return; // already off
+                    window.setAirFilterBoxOpen(true);
+                    if (typeof window.updateAirSimState === 'function') {
+                        window.updateAirSimState({ coverOff: true });
+                    }
+                    try {
+                        removedItems.set('airFilterBoxCover', { type: 'airFilterBoxCover', name: 'Housing Cover' });
+                        updateRemovedItemsContainer();
+                    } catch (e) {}
+                    if (typeof window.markStepInstructionDone === 'function') {
+                        window.markStepInstructionDone(1, 1); // Pull the housing cover off and set it aside
+                    }
+                    if (typeof window.recordSimulationEvent === 'function') {
+                        window.recordSimulationEvent('Air filter housing cover removed successfully.');
+                    }
+                    if (typeof window.showPrepToast === 'function') {
+                        showPrepToast('Housing cover pulled off — stored in Removed Items.');
+                    }
+                    return;
+                }
+                // Step 5 — the cover is refitted from the Removed Items Storage,
+                // so scene clicks here do nothing.
+                showSequenceWarning('Refit the housing cover from the Removed Items Storage.');
+            });
+
+            // Clicking the filter removes the old one (housing must be open).
+            window.addEventListener('airFilterClicked', (e) => {
+                if (typeof window.checkAirFilter !== 'function' || typeof window.setAirFilterRemoved !== 'function') return;
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 1) {
+                    showSequenceWarning('Remove the old air filter during the housing removal step.');
+                    return;
+                }
+                if (typeof window.checkAirFilterBox === 'function' && !window.checkAirFilterBox().open) {
+                    showSequenceWarning('Pull the housing cover off first!');
+                    return;
+                }
+                if (!window.checkAirFilter().removed) {
+                    window.setAirFilterRemoved(true);
+                    if (typeof window.updateAirSimState === 'function') {
+                        window.updateAirSimState({ oldFilterRemoved: true });
+                    }
+                    try {
+                        removedItems.set('oldAirFilter', { type: 'oldAirFilter', name: 'Old Air Filter' });
+                        updateRemovedItemsContainer();
+                    } catch (e) {}
+                    if (typeof window.markStepInstructionDone === 'function') {
+                        window.markStepInstructionDone(1, 2); // Take out the old air filter gently
+                    }
+                    if (typeof window.recordSimulationEvent === 'function') {
+                        window.recordSimulationEvent('Old air filter removed.');
+                    }
+                    showSequenceWarning('Old air filter removed!');
+                }
+            });
+
+            // On Step 1 (index 0) clicking the intake hose verifies the
+            // "intake hose identified" inspection item. On Step 3 (index 2) it
+            // verifies checking inside the housing and around the intake.
+            window.addEventListener('airIntakeHoseClicked', () => {
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
+                    if (typeof window.setInspectChecked === 'function') window.setInspectChecked(3, true);
+                    if (typeof window.recordSimulationEvent === 'function') {
+                        window.recordSimulationEvent('Intake hose identified.');
+                    }
+                    showPrepToast('Intake hose identified.');
+                    return;
+                }
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 2) {
+                    if (typeof window.markStepInstructionDone === 'function') {
+                        window.markStepInstructionDone(2, 0); // Check inside the housing for dust and dirt
+                    }
+                    if (typeof window.recordSimulationEvent === 'function') {
+                        window.recordSimulationEvent('Housing and intake area inspected successfully.');
+                    }
+                    if (typeof window.showPrepToast === 'function') {
+                        showPrepToast('Housing interior and intake checked.');
+                    }
+                    return;
+                }
+                showSequenceWarning('The intake hose stays connected — only the housing cover and filter come off.');
+            });
+
+            // Pliers tool card — wired to the whole card so the label counts too.
+            // Step 1 (index 0): marks the "new filter and tools prepared" item.
+            // Step 2 (index 1): opens the Release Clips confirm card.
+            const plierToolEl = document.getElementById('plier-model');
+            if (plierToolEl) {
+                const plierCard = plierToolEl.closest('.tool-card') || plierToolEl;
+                plierCard.addEventListener('click', () => {
+                    if (typeof currentStepIndex === 'undefined') return;
+                    if (currentStepIndex === 0) {
+                        if (typeof window.setInspectChecked === 'function') window.setInspectChecked(4, true);
+                        if (typeof window.recordSimulationEvent === 'function') {
+                            window.recordSimulationEvent('New filter and tools prepared.');
+                        }
+                        if (typeof window.showPrepToast === 'function') showPrepToast('New filter and tools prepared.');
+                        return;
+                    }
+                    if (currentStepIndex === 1) showPlierUseCard('release');
+                    if (currentStepIndex === 4) showPlierUseCard('lock');
+                });
+            }
+
+            // Paper Towel tool card — Step 3 (index 2): wipe the housing clean.
+            const towelToolEl = document.getElementById('papertowel-model');
+            if (towelToolEl) {
+                const towelCard = towelToolEl.closest('.tool-card') || towelToolEl;
+                towelCard.addEventListener('click', () => {
+                    if (typeof currentStepIndex === 'undefined') return;
+                    if (currentStepIndex === 0) {
+                        if (typeof window.setInspectChecked === 'function') window.setInspectChecked(4, true);
+                        if (typeof window.recordSimulationEvent === 'function') {
+                            window.recordSimulationEvent('New filter and tools prepared.');
+                        }
+                        if (typeof window.showPrepToast === 'function') showPrepToast('New filter and tools prepared.');
+                        return;
+                    }
+                    if (currentStepIndex === 2) showPaperTowelUseCard();
+                });
+            }
+        });
+
+        // Paper Towel confirmation card — wipes the housing clean
+        window.showPaperTowelUseCard = function () {
+            const existing = document.getElementById('paperTowelUseCard');
+            if (existing) return;
+            const card = document.createElement('div');
+            card.id = 'paperTowelUseCard';
+            card.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 100000;
+                background: #fff;
+                border-radius: 16px;
+                padding: 20px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+                font-family: 'Nunito', sans-serif;
+                min-width: 260px;
+                max-width: 320px;
+                text-align: center;
+            `;
+            card.innerHTML = `
+                <div style="margin-bottom: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                    </div>
+                    <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.15rem; font-weight: 700; color: #1a1a2e; margin: 0;">Wipe Housing?</h3>
+                    <p style="font-size: 0.78rem; color: #6b7280; margin: 6px 0 0;">Wipe the inside of the housing with a clean cloth?</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="usePaperTowelTool()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: none; border-radius: 10px; background: #16a34a; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Wipe Clean
+                    </button>
+                    <button onclick="cancelPaperTowelTool()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: 2px solid #e5e7eb; border-radius: 10px; background: #fff; color: #374151; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                        Cancel
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(card);
+        };
+
+        window.usePaperTowelTool = function () {
+            const card = document.getElementById('paperTowelUseCard');
+            if (card) card.remove();
+            if (typeof window.markStepInstructionDone === 'function') {
+                window.markStepInstructionDone(2, 1); // Wipe the housing with a clean cloth if needed
+                window.markStepInstructionDone(2, 2); // Make sure the housing is completely clean
+            }
+            if (typeof window.recordSimulationEvent === 'function') {
+                window.recordSimulationEvent('Housing wiped clean successfully.');
+            }
+            if (typeof window.showPrepToast === 'function') {
+                showPrepToast('Housing wiped clean!');
+            }
+        };
+
+        window.cancelPaperTowelTool = function () {
+            const card = document.getElementById('paperTowelUseCard');
+            if (card) card.remove();
+        };
+
+        // Step 3 action button — inspect the exposed housing interior.
+        // Opens a modal that runs a 1-100% "checking" scan, then reports
+        // whether dust/dirt was found. Requires the cover to be off.
+        let __housingCheckTimer = null;
+        window.checkHousingForDirt = function () {
+            if (typeof currentStepIndex === 'undefined' || currentStepIndex !== 2) return;
+            if (typeof window.checkAirFilterBox === 'function' && !window.checkAirFilterBox().open) {
+                showSequenceWarning('Pull the housing cover off first!');
+                return;
+            }
+            if (__housingCheckTimer) return; // a scan is already running
+            let existing = document.getElementById('housingCheckCard');
+            if (existing) existing.remove();
+
+            const card = document.createElement('div');
+            card.id = 'housingCheckCard';
+            card.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 100000;
+                background: #fff;
+                border-radius: 16px;
+                padding: 20px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+                font-family: 'Nunito', sans-serif;
+                width: 300px;
+                text-align: center;
+            `;
+            card.innerHTML = `
+                <div style="width:44px;height:44px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                </div>
+                <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:#1a1a2e;margin:0 0 4px;">Checking Housing…</h3>
+                <p id="hcStatus" style="font-size:0.78rem;color:#6b7280;margin:0 0 14px;">Scanning for dust and dirt</p>
+                <div style="height:10px;border-radius:999px;background:#e5e7eb;overflow:hidden;margin-bottom:8px;">
+                    <div id="hcBar" style="height:100%;width:1%;border-radius:999px;background:linear-gradient(90deg,#3b82f6,#2563eb);transition:width 0.15s linear;"></div>
+                </div>
+                <div id="hcPct" style="font-size:0.8rem;font-weight:800;color:#2563eb;">1%</div>
+                <div id="hcResult" style="display:none;margin-top:14px;"></div>
+            `;
+            document.body.appendChild(card);
+
+            let pct = 1;
+            __housingCheckTimer = setInterval(() => {
+                pct += Math.floor(Math.random() * 4) + 2; // 2-5% per tick
+                if (pct >= 100) {
+                    pct = 100;
+                    clearInterval(__housingCheckTimer);
+                    __housingCheckTimer = null;
+                    finishHousingCheck();
+                }
+                const bar = document.getElementById('hcBar');
+                const pctEl = document.getElementById('hcPct');
+                if (bar) bar.style.width = pct + '%';
+                if (pctEl) pctEl.textContent = pct + '%';
+            }, 120);
+        };
+
+        function finishHousingCheck() {
+            const status = document.getElementById('hcStatus');
+            const result = document.getElementById('hcResult');
+            const card = document.getElementById('housingCheckCard');
+            if (!card) return;
+            if (status) status.textContent = 'Scan complete';
+            if (result) {
+                result.style.display = 'block';
+                result.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:10px;background:#fef3c7;border:1.5px solid #fcd34d;margin-bottom:12px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <span style="font-size:0.78rem;font-weight:700;color:#92400e;">Dust &amp; dirt detected — wipe the housing with a clean cloth.</span>
+                    </div>
+                    <button onclick="closeHousingCheck()" style="width:100%;padding:10px;border:none;border-radius:10px;background:#2563eb;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:800;">Done</button>
+                `;
+            }
+        }
+
+        window.closeHousingCheck = function () {
+            const card = document.getElementById('housingCheckCard');
+            if (card) card.remove();
+            if (__housingCheckTimer) {
+                clearInterval(__housingCheckTimer);
+                __housingCheckTimer = null;
+            }
+            if (typeof window.markStepInstructionDone === 'function') {
+                window.markStepInstructionDone(2, 0); // Check inside the housing for dust and dirt
+            }
+            if (typeof window.recordSimulationEvent === 'function') {
+                window.recordSimulationEvent('Housing checked for dust and dirt successfully.');
+            }
+            if (typeof window.showPrepToast === 'function') {
+                window.showPrepToast('Dust and dirt found — the housing needs cleaning.');
+            }
+            const btn = document.getElementById('checkHousingBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.55';
+                btn.style.cursor = 'default';
+                btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;"><polyline points="20 6 9 17 4 12"/></svg> Housing Checked';
+            }
+        };
+
+        // Pliers confirmation card — releases the housing clips/screws
+        window.showPlierUseCard = function (mode) {
+            const existing = document.getElementById('plierUseCard');
+            if (existing) return;
+            const isLock = mode === 'lock';
+            const title = isLock ? 'Lock Clips?' : 'Release Clips?';
+            const desc = isLock
+                ? 'Use the pliers to lock the metal clips or tighten the housing screws?'
+                : 'Use the pliers to release the metal clips or housing screws?';
+            const btnLabel = isLock ? 'Lock Clips' : 'Release Clips';
+            const card = document.createElement('div');
+            card.id = 'plierUseCard';
+            card.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 100000;
+                background: #fff;
+                border-radius: 16px;
+                padding: 20px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+                font-family: 'Nunito', sans-serif;
+                min-width: 260px;
+                max-width: 320px;
+                text-align: center;
+            `;
+            card.innerHTML = `
+                <div style="margin-bottom: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    </div>
+                    <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.15rem; font-weight: 700; color: #1a1a2e; margin: 0;">${title}</h3>
+                    <p style="font-size: 0.78rem; color: #6b7280; margin: 6px 0 0;">${desc}</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="usePlierTool('${isLock ? 'lock' : 'release'}')" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: none; border-radius: 10px; background: #16a34a; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        ${btnLabel}
+                    </button>
+                    <button onclick="cancelPlierTool()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: 2px solid #e5e7eb; border-radius: 10px; background: #fff; color: #374151; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                        Cancel
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(card);
+        };
+
+        window.usePlierTool = function (mode) {
+            const card = document.getElementById('plierUseCard');
+            if (card) card.remove();
+            if (mode === 'lock') {
+                // Step 5: locking clips only makes sense once the cover is back on
+                if (typeof window.checkAirFilterBox === 'function' && window.checkAirFilterBox().open) {
+                    showSequenceWarning('Refit the housing cover before locking the clips!');
+                    return;
+                }
+                if (typeof window.updateAirSimState === 'function') {
+                    window.updateAirSimState({ clipsLocked: true });
+                }
+                if (typeof window.markStepInstructionDone === 'function') {
+                    window.markStepInstructionDone(4, 1); // Lock the metal clips or tighten the screws
+                }
+                if (typeof window.recordSimulationEvent === 'function') {
+                    window.recordSimulationEvent('Housing clips locked successfully.');
+                }
+                if (typeof window.showPrepToast === 'function') {
+                    window.showPrepToast('Housing clips locked!');
+                }
+                return;
+            }
+            if (typeof window.updateAirSimState === 'function') {
+                window.updateAirSimState({ clipsReleased: true });
+            }
+            if (typeof window.markStepInstructionDone === 'function') {
+                window.markStepInstructionDone(1, 0); // Release the metal clips or remove the housing screws
+            }
+            if (typeof window.recordSimulationEvent === 'function') {
+                window.recordSimulationEvent('Housing clips released successfully.');
+            }
+            if (typeof window.showPrepToast === 'function') {
+                window.showPrepToast('Housing clips released!');
+            }
+        };
+
+        window.cancelPlierTool = function () {
+            const card = document.getElementById('plierUseCard');
+            if (card) card.remove();
+        };
+    </script>
+
+    <script>
+        // Air Filter Tool Drag-and-Drop and Click Functionality
+        (function initAirFilterTool() {
+            const filterTool = document.getElementById('airfilter-model');
+            if (!filterTool) return;
+
+            filterTool.style.touchAction = 'none';
+
+            let isDragging = false;
+            let filterGhost = null;
+
+            function createFilterGhost() {
+                const g = document.createElement('div');
+                g.id = 'airFilterGhost';
+                g.style.position = 'fixed';
+                g.style.left = '0px';
+                g.style.top = '0px';
+                g.style.pointerEvents = 'none';
+                g.style.width = '80px';
+                g.style.height = '80px';
+                g.style.opacity = '0.95';
+                g.style.zIndex = '100020';
+                g.style.transform = 'translate(-50%,-50%) scale(1.02)';
+                g.style.display = 'flex';
+                g.style.alignItems = 'center';
+                g.style.justifyContent = 'center';
+                g.innerHTML = `
+                    <div style="background:#1e293b;border-radius:10px;padding:12px;border:2px solid #2563eb;box-shadow:0 8px 24px rgba(0,0,0,0.3);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5">
+                            <rect x="3" y="7" width="18" height="10" rx="2" />
+                            <path d="M7 7v10M11 7v10M15 7v10" />
+                        </svg>
+                        <span style="font-size:0.6rem;font-weight:800;letter-spacing:0.5px;color:#fff;">AIR FILTER</span>
+                    </div>
+                `;
+                document.body.appendChild(g);
+                return g;
+            }
+
+            function moveFilterGhost(x, y) {
+                if (filterGhost) {
+                    filterGhost.style.left = x + 'px';
+                    filterGhost.style.top = y + 'px';
+                }
+            }
+
+            function toolBlocked() {
+                return typeof currentStepIndex !== 'undefined' && currentStepIndex !== 3;
+            }
+
+            // Install the new filter — requires the housing open and the old
+            // filter already removed.
+            window.useAirFilterTool = function () {
+                const card = document.getElementById('airFilterUseCard');
+                if (card) card.remove();
+
+                if (toolBlocked()) {
+                    showSequenceWarning('Air filter tool is not available during this step.');
+                    return;
+                }
+                if (typeof window.checkAirFilterBox === 'function' && !window.checkAirFilterBox().open) {
+                    showSequenceWarning('Pull the housing cover off first!');
+                    return;
+                }
+                if (typeof window.checkAirFilter === 'function' && !window.checkAirFilter().removed) {
+                    showSequenceWarning('Remove the old air filter first!');
+                    return;
+                }
+                if (typeof window.setAirFilterRemoved === 'function') {
+                    window.setAirFilterRemoved(false);
+                    if (typeof window.updateAirSimState === 'function') {
+                        window.updateAirSimState({ newFilterInstalled: true });
+                    }
+                    if (typeof window.markStepInstructionDone === 'function') {
+                        window.markStepInstructionDone(3, 0); // Position the new filter the same way as the old one
+                        window.markStepInstructionDone(3, 1); // Make sure it fits snugly with no gaps
+                    }
+                    if (typeof window.recordSimulationEvent === 'function') {
+                        window.recordSimulationEvent('New air filter installed successfully!');
+                    }
+                    if (typeof window.showPrepToast === 'function') {
+                        showPrepToast('New air filter installed!');
+                    }
+                }
+            };
+
+            window.cancelAirFilterTool = function () {
+                const card = document.getElementById('airFilterUseCard');
+                if (card) card.remove();
+            };
+
+            window.showAirFilterUseCard = function () {
+                let existingCard = document.getElementById('airFilterUseCard');
+                if (existingCard) existingCard.remove();
+
+                const card = document.createElement('div');
+                card.id = 'airFilterUseCard';
+                card.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    z-index: 100000;
+                    background: #fff;
+                    border-radius: 16px;
+                    padding: 24px;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+                    font-family: 'Nunito', sans-serif;
+                    min-width: 280px;
+                    text-align: center;
+                `;
+                card.innerHTML = `
+                    <div style="margin-bottom: 16px;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 7v10M11 7v10M15 7v10"/></svg>
+                        </div>
+                        <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 0;">Install Air Filter?</h3>
+                        <p style="font-size: 0.8rem; color: #6b7280; margin: 8px 0 0;">Insert the new filter into the housing?</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="useAirFilterTool()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: none; border-radius: 10px; background: #16a34a; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            Use
+                        </button>
+                        <button onclick="cancelAirFilterTool()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; background: #fff; color: #374151; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                            Cancel
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(card);
+            };
+
+            filterTool.addEventListener('pointerdown', (e) => {
+                // On Step 1 a click counts as "new filter and tools prepared" —
+                // let the click event through without starting a drag.
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) return;
+                if (toolBlocked()) {
+                    showSequenceWarning('Air filter tool is not available during this step.');
+                    return;
+                }
+                e.preventDefault();
+                isDragging = true;
+                if (filterGhost) filterGhost.remove();
+                filterGhost = createFilterGhost();
+                moveFilterGhost(e.clientX, e.clientY);
+                window.addEventListener('pointermove', onFilterPointerMove);
+                window.addEventListener('pointerup', onFilterPointerUp, { once: true });
+            });
+
+            function onFilterPointerMove(e) {
+                if (!isDragging) return;
+                moveFilterGhost(e.clientX, e.clientY);
+
+                const simArea = document.querySelector('.simulation-area');
+                if (simArea) {
+                    const rect = simArea.getBoundingClientRect();
+                    if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                        simArea.style.boxShadow = 'inset 0 0 40px rgba(37,99,235,0.2)';
+                    } else {
+                        simArea.style.boxShadow = 'none';
+                    }
+                }
+            }
+
+            function onFilterPointerUp(e) {
+                isDragging = false;
+                window.removeEventListener('pointermove', onFilterPointerMove);
+
+                const simArea = document.querySelector('.simulation-area');
+                if (simArea) {
+                    simArea.style.boxShadow = 'none';
+                    const rect = simArea.getBoundingClientRect();
+                    if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                        useAirFilterTool();
+                    }
+                }
+
+                if (filterGhost) {
+                    filterGhost.remove();
+                    filterGhost = null;
+                }
+            }
+
+            // Click fallback opens the confirm card — except on Step 1 where a
+            // click verifies the "new filter and tools prepared" inspection item.
+            filterTool.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) return;
+                if (toolBlocked()) {
+                    showSequenceWarning('Air filter tool is not available during this step.');
+                    return;
+                }
+                showAirFilterUseCard();
+            });
         })();
     </script>
 </body>

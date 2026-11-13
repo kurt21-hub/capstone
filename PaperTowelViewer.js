@@ -1,5 +1,6 @@
 import * as THREE from './three.module.js';
 import { GLTFLoader } from './GLTFLoader.js';
+import { OrbitControls } from './OrbitControls.js';
 
 export function initPaperTowelViewer(containerId, options = {}) {
     const container = document.getElementById(containerId);
@@ -18,7 +19,7 @@ export function initPaperTowelViewer(containerId, options = {}) {
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setPixelRatio(window.devicePixelRatio || 1);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
         renderer.setSize(w, h);
         renderer.setClearColor(0x000000, 0);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -36,6 +37,13 @@ export function initPaperTowelViewer(containerId, options = {}) {
         let model = null;
         let pivot = null;
 
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.1;
+        controls.enablePan = false;
+        controls.minDistance = 0.6;
+        controls.maxDistance = 5.0;
+
         scene.add(new THREE.HemisphereLight(0xffffff, 0x333333, 1.0));
 
         const key = new THREE.DirectionalLight(0xffffff, 1.6);
@@ -46,11 +54,24 @@ export function initPaperTowelViewer(containerId, options = {}) {
         fill.position.set(-2, 1, -1);
         scene.add(fill);
 
-        function animate() {
-            requestAnimationFrame(animate);
-            if (pivot) pivot.rotation.y += 0.005;
-            renderer.render(scene, camera);
+        let isRunning = false;
+        function requestRender() {
+            if (!isRunning) {
+                isRunning = true;
+                requestAnimationFrame(renderLoop);
+            }
         }
+
+        function renderLoop() {
+            const needMore = controls ? controls.update() : false;
+            renderer.render(scene, camera);
+            if (needMore) {
+                requestAnimationFrame(renderLoop);
+            } else {
+                isRunning = false;
+            }
+        }
+        controls.addEventListener('change', requestRender);
 
         const loader = new GLTFLoader();
         loader.load(
@@ -84,7 +105,7 @@ export function initPaperTowelViewer(containerId, options = {}) {
                     });
                 });
 
-                animate();
+                requestRender();
             },
             undefined,
             (err) => console.error('Failed to load Paper Towel model:', err)
@@ -97,6 +118,7 @@ export function initPaperTowelViewer(containerId, options = {}) {
                 camera.aspect = cw / ch;
                 camera.updateProjectionMatrix();
                 renderer.setSize(cw, ch);
+                requestRender();
             });
             ro.observe(container);
         }

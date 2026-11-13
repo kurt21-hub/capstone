@@ -8,6 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
         rel="stylesheet" />
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 <style>
     *,
@@ -257,7 +258,8 @@
         font-weight: 700;
         color: #2563eb;
         text-decoration: none;
-        margin-top: 4px;
+        margin-top: auto;
+        flex-shrink: 0;
     }
 
     .view-all-btn svg {
@@ -501,6 +503,82 @@
         letter-spacing: 0.6px;
         text-transform: uppercase;
         color: #2563eb;
+    }
+
+    .fuel-action-btns {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .fuel-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 9px;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        min-width: 116px;
+    }
+
+    .fuel-action-btn.primary {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35);
+    }
+
+    .fuel-action-btn.danger {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(220, 38, 38, 0.3);
+    }
+
+    .fuel-action-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+        filter: brightness(1.08);
+    }
+
+    .fuel-action-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .fuel-action-btn:disabled {
+        background: #e5e7eb;
+        color: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .fuel-action-btn.done {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
+        cursor: default;
+    }
+
+    .fuel-action-btn svg,
+    .fuel-action-btn span:not(.loosen-fill) {
+        position: relative;
+        z-index: 1;
+    }
+
+    .loosen-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0%;
+        background: rgba(255, 255, 255, 0.3);
+        pointer-events: none;
     }
 
     .rp-label {
@@ -762,6 +840,7 @@
     }
 </style>
 
+<script>window.THREE_SCENE_CAR_MODEL = 'models/Car_with_fuel_filter.glb';</script>
 <script type="module" src="ThreeScene2.js"></script>
 
 <body>
@@ -796,6 +875,13 @@
                     <div class="timer-val" id="timer">00:00:00</div>
                 </div>
             </div>
+            <button class="end-btn" onclick="restartSimulation()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 4v6h6" />
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+                Restart
+            </button>
             <button class="end-btn" onclick="endSimulationAndSave()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10" />
@@ -820,19 +906,19 @@
                 </div>
                 <div class="tool-card" id="batteryToolCard">
                     <div class="tool-3d-placeholder" id="battery-model" style="cursor:pointer;user-select:none;"></div>
-                    <div class="tool-label">Battery (Click to use)</div>
+                    <div class="tool-label">New Fuel Filter (Click to use)</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="water-model"></div>
-                    <div class="tool-label">Water</div>
+                    <div class="tool-label">Penetrating Oil</div>
                 </div>
-                <div class="tool-card">
-                    <div class="tool-3d-placeholder" id="baking-model"></div>
-                    <div class="tool-label">Baking Soda</div>
+                <div class="tool-card" style="display:none;">
+                    <div class="tool-3d-placeholder" id="baking-model" style="display:none;"></div>
+                    <div class="tool-label" style="display:none;">Baking Soda</div>
                 </div>
-                <div class="tool-card">
-                    <div class="tool-3d-placeholder" id="wire-model"></div>
-                    <div class="tool-label">Wire Brush</div>
+                <div class="tool-card" style="display:none;">
+                    <div class="tool-3d-placeholder" id="wire-model" style="display:none;"></div>
+                    <div class="tool-label" style="display:none;">Wire Brush</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="socket-model"></div>
@@ -844,11 +930,19 @@
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="bowl-model"></div>
-                    <div class="tool-label">Bowl</div>
+                    <div class="tool-label">Drip Pan</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="papertowel-model"></div>
-                    <div class="tool-label">Paper Towel</div>
+                    <div class="tool-label">Shop Rag</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-3d-placeholder" id="socketset-model"></div>
+                    <div class="tool-label">Socket Set</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-3d-placeholder" id="plier-model"></div>
+                    <div class="tool-label">Pliers</div>
                 </div>
             </div>
             <a href="#" class="view-all-btn">
@@ -872,27 +966,27 @@
                 <div class="step-bar">
                     <div class="step-node">
                         <div class="step-circle active">1</div>
-                        <div class="step-name active">Inspect Battery</div>
+                        <div class="step-name active">Safety & Locate</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">2</div>
-                        <div class="step-name">Clean Terminals</div>
+                        <div class="step-name">Disconnect Lines</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">3</div>
-                        <div class="step-name">Check Electrolyte</div>
+                        <div class="step-name">Replace Filter</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">4</div>
-                        <div class="step-name">Secure Battery</div>
+                        <div class="step-name">Reconnect & Tighten</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">5</div>
-                        <div class="step-name">Test System</div>
+                        <div class="step-name">Prime & Test</div>
                     </div>
                 </div>
             </div>
@@ -913,7 +1007,7 @@
                             style="width:94%;height:86%;border-radius:10px;border:2px dashed rgba(99,102,241,0.18);display:flex;align-items:center;justify-content:center;padding:6px;background:transparent;">
                             <div
                                 style="text-align:center;color:rgba(99,102,241,0.95);font-weight:800;font-size:0.82rem;">
-                                Mix Here</div>
+                                Drip Pan Area</div>
                         </div>
                     </div>
                 </div>
@@ -933,23 +1027,46 @@
                     </svg>
                     Current Task
                 </div>
-                <div class="rp-task-title">Inspect Battery Condition</div>
-                <div class="rp-task-desc">Check the battery body, terminals, and cables for cracks, leaks, swelling,
-                    or damage.</div>
+                <div class="rp-task-title">Safety & Locate the Filter</div>
+                <div class="rp-task-desc">Disconnect the battery for safety, then locate the fuel filter mounted
+                    on the firewall.</div>
             </div>
 
-            <div class="rp-section">
+            <div class="rp-section" id="engineSwipeSection">
                 <div class="sound-toggle-card">
                     <div class="sound-toggle-copy">
                         <div class="sound-toggle-label">Engine Swipe</div>
                         <strong>Engine sound</strong>
-                        <span>Turn ON to play the engine audio loop.</span>
-                        <span class="sound-state" id="engineSoundState">OFF</span>
+                        <span>Starts ON — switch OFF to service safely.</span>
+                        <span class="sound-state" id="engineSoundState">ON</span>
                     </div>
                     <label class="sound-switch" for="engineSwipeToggle" aria-label="Engine sound toggle">
                         <input type="checkbox" id="engineSwipeToggle">
                         <span class="sound-slider"></span>
                     </label>
+                </div>
+            </div>
+
+            <!-- Banjo Bolt pressure-relief actions (Step 2 only) -->
+            <div class="rp-section" id="banjoBoltCard" style="display:none;">
+                <div class="sound-toggle-card">
+                    <div class="sound-toggle-copy">
+                        <div class="sound-toggle-label">Fuel Pressure Relief</div>
+                        <strong>Top Banjo Bolt</strong>
+                        <span>Loosen slowly to relieve pressure, then remove the bolt.</span>
+                        <span class="sound-state" id="banjoBoltState" style="color:#dc2626;">Pressurized</span>
+                    </div>
+                    <div class="fuel-action-btns">
+                        <button type="button" class="fuel-action-btn primary" id="btnLoosenBanjo">
+                            <span class="loosen-fill" id="loosenFill"></span>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            <span id="loosenBtnText">Loosen Bolt</span>
+                        </button>
+                        <button type="button" class="fuel-action-btn danger" id="btnRemoveBanjo" disabled>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                            <span id="removeBtnText">Remove Bolt</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -966,7 +1083,7 @@
 
             <!-- Battery Diagnostic Status Indicator -->
             <div id="batteryStatusIndicator" style="display:none;margin-bottom:15px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.05);border:1.5px solid #e5e7eb;">
-                <div style="font-size:0.75rem;color:#6b7280;font-weight:700;margin-bottom:4px;">BATTERY DIAGNOSTIC STATUS</div>
+                <div style="font-size:0.75rem;color:#6b7280;font-weight:700;margin-bottom:4px;">FUEL FILTER STATUS</div>
                 <div id="batteryStatusValue" style="font-size:0.9rem;font-weight:800;display:flex;align-items:center;gap:6px;">
                     <!-- Filled dynamically -->
                 </div>
@@ -986,10 +1103,10 @@
                     Instructions
                 </div>
                 <ol class="instr-list" id="instrList">
-                    <li>Ensure ignition is off and keys are removed</li>
-                    <li>Visually inspect the battery for cracks, bulging, or leaks</li>
-                    <li>Check terminal connections are tight and corrosion-free</li>
-                    <li>Inspect battery cables for fraying or damage</li>
+                    <li>Disconnect the battery negative terminal first</li>
+                    <li>Confirm ignition is OFF and keys are removed</li>
+                    <li>Locate the fuel filter mounted on the firewall</li>
+                    <li>Wear gloves and safety goggles</li>
                 </ol>
             </div>
 
@@ -1000,23 +1117,15 @@
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M9 11l3 3L22 4" />
                     </svg>
-                    Inspection Checklist
+                    Preparation & Safety Checklist
                 </div>
-                <div id="inspectionList" style="display:flex;flex-direction:column;gap:10px;">
-                    <label
-                        style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:8px;cursor:pointer;transition:all 0.2s;">
-                        <input type="checkbox" class="inspect-check" data-index="0"
-                            style="width:18px;height:18px;accent-color:#2563eb;cursor:pointer;">
-                        <span style="font-size:0.75rem;color:#374151;flex:1;">Ignition off and keys removed</span>
-                    </label>
-                    <label
-                        style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:8px;cursor:pointer;transition:all 0.2s;">
-                        <input type="checkbox" class="inspect-check" data-index="1"
-                            style="width:18px;height:18px;accent-color:#2563eb;cursor:pointer;">
-                        <span style="font-size:0.75rem;color:#374151;flex:1;">Battery has no cracks, bulging,
-                            or leaks</span>
-                    </label>
-                </div>
+                <ol class="instr-list" id="inspectionList">
+                    <li data-index="0">Ignition OFF and keys removed</li>
+                    <li data-index="1">Battery negative terminal disconnected first</li>
+                    <li data-index="2">Fuel filter located on the firewall</li>
+                    <li data-index="3">Wearing gloves and safety goggles</li>
+                    <li data-index="4">Wrenches, rag, and new filter prepared</li>
+                </ol>
                 <div
                     style="margin-top:12px;padding:10px 12px;background:#f1f5f9;border-radius:8px;border-left:3px solid #2563eb;">
                     <span style="font-size:0.75rem;color:#64748b;">✓ Complete all inspections, then click <strong>Next
@@ -1033,7 +1142,7 @@
                         </svg>
                         Safety Reminder
                     </div>
-                    <p id="safetyText">Always wear safety goggles and gloves — battery acid can cause burns.</p>
+                    <p id="safetyText">Disconnect the battery first — a single spark near fuel vapor can ignite a fire.</p>
                 </div>
             </div>
 
@@ -1053,7 +1162,7 @@
                         <!-- Removed items will appear here -->
                     </div>
                     <div id="noItemsMessage" style="text-align:center;color:#9ca3af;font-size:0.7rem;padding:10px 0;">
-                        No items removed yet. Hover over battery caps to remove them.
+                        No items removed yet. Remove parts during the simulation to see them here.
                     </div>
                 </div>
             </div>
@@ -1073,7 +1182,7 @@
                     <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
             </div>
-            <div class="tip-text"><strong>TIP</strong> Follow each step carefully for a successful oil change.</div>
+            <div class="tip-text"><strong>TIP</strong> Follow each step carefully for a successful fuel filter replacement.</div>
         </div>
         <button class="step-nav-btn prev">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -1095,6 +1204,11 @@
     </div>
 
     <script src="js/practice_progress.js"></script>
+    <script>
+        // Flag that a practice simulation is open — an assessment running in
+        // another tab watches this key and finalizes itself immediately.
+        try { localStorage.setItem('motomasterActiveSim', 'practice:' + document.title); } catch (e) {}
+    </script>
     <script>
         const toggleBtn = document.getElementById('toggleBtn');
         const panel = document.querySelector('.panel');
@@ -1222,10 +1336,10 @@
     </script>
 
     <script type="module">
-        import { initBatteryViewer } from './BatteryViewer.js';
+        import { initFuelFilterViewer } from './FuelFilterViewer.js';
 
         window.addEventListener('load', () => {
-            initBatteryViewer('battery-model', {
+            initFuelFilterViewer('battery-model', {
                 enableDrag: false,
                 enableRotate: true,
                 enableSelection: false,
@@ -1272,6 +1386,20 @@
 
         window.addEventListener('load', () => {
             initBowlViewer('bowl-model');
+        });
+    </script>
+    <script type="module">
+        import { initWrenchSocketsetViewer } from './WrenchSocketsetViewer.js';
+
+        window.addEventListener('load', () => {
+            initWrenchSocketsetViewer('socketset-model');
+        });
+    </script>
+    <script type="module">
+        import { initPlierViewer } from './PlierViewer.js';
+
+        window.addEventListener('load', () => {
+            initPlierViewer('plier-model');
         });
     </script>
     <script>
@@ -1336,14 +1464,14 @@
             }
 
             function onPointerDown(e) {
-                // Require inspection completion before allowing mixing station interactions
-                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
-                    showSequenceWarning('Please complete the inspection checklist and proceed to the next step before using the mixing station.');
+                // The drip pan work area is only used during the disconnect step
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 1) {
+                    showSequenceWarning('The drip pan is only needed during the disconnect step.');
                     return;
                 }
 
                 if (bowlPlaced) {
-                    showSequenceWarning('Bowl already placed in the mix area.');
+                    showSequenceWarning('Drip pan already placed in the work area.');
                     return;
                 }
                 e.preventDefault();
@@ -1398,9 +1526,9 @@
             }
 
             function onItemPointerDown(e, type) {
-                // Require inspection completion before allowing mixing station interactions
-                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
-                    showSequenceWarning('Please complete the inspection checklist and proceed to the next step before using the mixing station.');
+                // Penetrating oil is only applied during the disconnect step
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 1) {
+                    showSequenceWarning('Penetrating oil is only needed during the disconnect step.');
                     return;
                 }
 
@@ -1408,7 +1536,7 @@
                 dragging = true;
                 draggingItemType = type;
                 if (ghost) ghost.remove();
-                ghost = createItemGhost(type === 'soda' ? 'Baking Soda' : 'Water');
+                ghost = createItemGhost(type === 'soda' ? 'Baking Soda' : 'Penetrating Oil');
                 moveGhost(e.clientX, e.clientY);
                 window.addEventListener('pointermove', onItemPointerMove);
                 window.addEventListener('pointerup', onItemPointerUp, { once: true });
@@ -1438,7 +1566,7 @@
 
                 if (hit) {
                     if (!bowlPlaced) {
-                        showSequenceWarning('Please place the bowl in the mixing area first.');
+                        showSequenceWarning('Please place the drip pan in the work area first.');
                         draggingItemType = null;
                         return;
                     }
@@ -1488,6 +1616,13 @@
                         viewerDiv.style.justifyContent = 'center';
                         dropInner.appendChild(viewerDiv);
                         bowlPlaced = true;
+
+                        // Step 2 (index 1): the drip pan catches fuel spray,
+                        // satisfying "Use a rag to catch any fuel spray"
+                        if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 1) {
+                            markInstructionDone(1, 1);
+                            try { window.recordSimulationEvent('Drip pan positioned successfully to catch fuel spray.'); } catch (e) {}
+                        }
 
                         // initialize a fresh BowlViewer instance inside the placed container with retries
                         (async function tryInitPlacedViewer(attempts = 0) {
@@ -1583,13 +1718,20 @@
             if (btnWaterConfirm) btnWaterConfirm.addEventListener('click', () => {
                 waterAmount = Number(waterInput.value) || 0;
                 waterModal.style.display = 'none';
-                
+
+                // Step 2 (index 1): penetrating oil loosens the banjo bolt and
+                // relieves fuel pressure
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 1) {
+                    markInstructionDone(1, 0);
+                    try { window.recordSimulationEvent('Penetrating oil applied successfully — banjo bolt loosened, pressure relieved.'); } catch (e) {}
+                }
+
                 // If both are now added, show the mix modal
                 if (sodaAmount > 0 && waterAmount > 0) {
                     showMixModal();
                 } else {
                     const t = document.createElement('div');
-                    t.textContent = 'Water added to bowl. Now drag and drop Baking Soda into the bowl.';
+                    t.textContent = 'Penetrating oil applied to the fittings.';
                     t.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 14px;border-radius:10px;z-index:100050;font-weight:700;';
                     document.body.appendChild(t);
                     setTimeout(() => t.remove(), 2500);
@@ -1614,18 +1756,6 @@
                 setTimeout(() => t.remove(), 1600);
                 // mark that the user has mixed baking soda + water
                 window.mixtureDone = true;
-                // Mark the first instruction of the Clean Terminals step (step index 1, instruction 0) as done
-                try {
-                    window.stepInstrDone = window.stepInstrDone || {};
-                    window.stepInstrDone[1] = window.stepInstrDone[1] || [];
-                    window.stepInstrDone[1][0] = true;
-                    // If the instructions panel is currently showing step 2, update the DOM
-                    const instrList = document.getElementById('instrList');
-                    if (instrList && currentStepIndex === 1) {
-                        const li = instrList.children[0];
-                        if (li) li.classList.add('done');
-                    }
-                } catch (e) { console.warn('Failed to mark instruction done', e); }
             });
 
             if (btnCloseMix) btnCloseMix.addEventListener('click', () => { mixModal.style.display = 'none'; });
@@ -2300,16 +2430,66 @@
     <script>
         // ── STEP REVIEW DATA (tracked from user actions during simulation) ───
         const STEP_REVIEW_TITLES = [
-            'Step 1: Inspect Battery Condition',
-            'Step 2: Clean Battery Terminals',
-            'Step 3: Check Electrolyte Level',
-            'Step 4: Secure Battery Mount',
-            'Step 5: Test Electrical System'
+            'Step 1: Safety & Locate the Filter',
+            'Step 2: Relieve Pressure & Disconnect Lines',
+            'Step 3: Replace the Fuel Filter',
+            'Step 4: Reconnect Lines & Tighten',
+            'Step 5: Prime & Test the Engine'
         ];
 
         function getRecommendationForMistake(message) {
             const m = (message || '').toLowerCase();
-            
+
+            // Fuel-filter-specific recommendations
+            if (m.includes('battery negative') && m.includes('first')) {
+                return 'Tip: Always disconnect the battery negative terminal first — it prevents sparks while working near fuel.';
+            }
+            if (m.includes('ignition is off') || m.includes('keys are removed')) {
+                return 'Tip: Always confirm the ignition is OFF and keys removed before working on the fuel system.';
+            }
+            if (m.includes('fuel filter mounted') || m.includes('firewall')) {
+                return 'Tip: The fuel filter is mounted on the firewall in the engine bay — locate it before starting any work.';
+            }
+            if (m.includes('gloves and safety goggles')) {
+                return 'Tip: Always wear gloves and safety goggles — fuel spray causes eye and skin irritation.';
+            }
+            if (m.includes('wrenches') || m.includes('new filter') && m.includes('prepare')) {
+                return 'Tip: Gather the correct wrenches, a rag, and the new filter before relieving fuel pressure.';
+            }
+            if (m.includes('banjo bolt slowly') || m.includes('relieve fuel pressure')) {
+                return 'Tip: Loosen the banjo bolt slowly to relieve pressure — opening it quickly sprays pressurized fuel.';
+            }
+            if (m.includes('rag') || m.includes('fuel spray')) {
+                return 'Tip: Always have a rag ready — fuel sprays slightly when pressure is released.';
+            }
+            if (m.includes('washer')) {
+                return 'Tip: Keep track of every washer — missing washers are the most common cause of fuel leaks.';
+            }
+            if (m.includes('bracket bolt') || m.includes('slide the old')) {
+                return 'Tip: Remove the mounting bracket bolt first, then slide the filter straight out.';
+            }
+            if (m.includes('arrow') || m.includes('orientation')) {
+                return 'Tip: The arrow on the filter must point toward the engine — installing it backwards restricts fuel flow.';
+            }
+            if (m.includes('sits firmly')) {
+                return 'Tip: The filter must sit firmly in the bracket — a loose filter vibrates and can crack the lines.';
+            }
+            if (m.includes('bottom fuel line') || m.includes('lower fuel line')) {
+                return 'Tip: Reconnect the bottom fuel line first — it is harder to reach once the top bolt is in.';
+            }
+            if (m.includes('torque') || m.includes('over-tightened')) {
+                return 'Tip: Tighten fittings firmly but not over-tightened — stripped banjo bolt threads cause leaks.';
+            }
+            if (m.includes('key to on') || m.includes('build fuel pressure')) {
+                return 'Tip: Turn the key to ON before starting — this primes the fuel system and builds pressure.';
+            }
+            if (m.includes('fuel leak')) {
+                return 'Tip: Check every fitting for leaks — even a small fuel drip is a serious fire hazard.';
+            }
+            if (m.includes('smoothly')) {
+                return 'Tip: The engine should idle smoothly — hesitation can mean air in the lines or a misoriented filter.';
+            }
+
             // Critical battery feedback
             if (m.includes('critical battery condition') || m.includes('critical battery not replaced')) {
                 return 'CRITICAL WARNING: A damaged battery with cracks, bulging, or leaks must be replaced immediately. If you continue without replacement: (1) The vehicle will likely not start due to insufficient voltage, (2) Acid leaks can corrode surrounding components and the engine bay, (3) A damaged battery may explode during charging or operation, causing injury. Always replace batteries showing physical damage.';
@@ -2456,7 +2636,12 @@
             if (__progressLoaded) return;
 
             console.log('PracticeArea: Loading saved progress...');
-            const data = await PracticeProgress.loadProgress('Fuel Filter Replacement');
+            let data = null;
+            try {
+                data = await PracticeProgress.loadProgress('Fuel Filter Replacement');
+            } catch (err) {
+                console.warn('PracticeArea: Failed to load progress', err);
+            }
 
             if (data && data.current_progress) {
                 const saved = data.current_progress;
@@ -2465,10 +2650,30 @@
                 if (saved.completion_status === 'Completed') {
                     // Starting a new attempt - reset tracker and status to In Progress
                     console.log('PracticeArea: Previous attempt was completed. Starting new attempt.');
+                    applyStartupEngineState(null);
                     await saveCurrentProgress('In Progress');
                 } else {
                     // Restore tracker data
                     PracticeProgress.restoreProgress(saved, simulationTracker);
+
+                    // Restore step position, checklist state, and elapsed time
+                    if (typeof saved.current_step_index === 'number') {
+                        currentStepIndex = Math.max(0, Math.min(saved.current_step_index, totalSteps - 1));
+                    }
+                    if (saved.step_instr_done) {
+                        window.stepInstrDone = saved.step_instr_done;
+                    }
+                    if (typeof saved.battery_needs_replacement === 'boolean') {
+                        window.batteryNeedsReplacement = saved.battery_needs_replacement;
+                    }
+                    if (saved.scene_state) {
+                        applySavedSceneStateWhenReady(saved.scene_state);
+                    }
+                    if (typeof saved.time_elapsed_seconds === 'number') {
+                        window.__practiceElapsedSeconds = saved.time_elapsed_seconds;
+                    }
+                    updateStepUI();
+                    applyStartupEngineState(saved.scene_state);
                 }
 
                 // Show welcome back notification with previous score
@@ -2523,7 +2728,19 @@
                 __progressLoaded = true;
             } else {
                 console.log('PracticeArea: No saved progress found');
+                applyStartupEngineState(null);
             }
+        }
+
+        // The saved 3D scene state (caps off, filter out, removed items) can
+        // only be applied after the model exposes its APIs — poll until ready.
+        function applySavedSceneStateWhenReady(sceneState, attempts = 40) {
+            const capReady = typeof window.checkBatteryCap === 'function' && !!window.checkBatteryCap(0);
+            if (capReady && typeof window.applySceneState === 'function') {
+                window.applySceneState(sceneState);
+                return;
+            }
+            if (attempts > 0) setTimeout(() => applySavedSceneStateWhenReady(sceneState, attempts - 1), 500);
         }
 
         function dismissProgressNotification() {
@@ -2535,19 +2752,34 @@
         }
 
         /**
-         * Save current progress to database
+         * Build the progress payload (shared by fetch save and beacon unload save)
          */
-        async function saveCurrentProgress(status = 'In Progress') {
+        function buildProgressPayload(status) {
             const summary = PracticeProgress.getSummary(simulationTracker);
-            if (!summary) return;
+            if (!summary) return null;
 
-            const payload = {
+            const student = getLoggedInStudent();
+            return {
                 title: 'Fuel Filter Replacement',
                 score: summary.overall_score,
                 completion_status: status,
                 time_elapsed_seconds: window.__practiceElapsedSeconds || 0,
-                steps: PracticeProgress.transformTrackerData(simulationTracker, STEP_REVIEW_TITLES)
+                current_step_index: currentStepIndex,
+                step_instr_done: window.stepInstrDone || {},
+                battery_needs_replacement: window.batteryNeedsReplacement ?? null,
+                scene_state: (typeof window.collectSceneState === 'function') ? window.collectSceneState() : null,
+                steps: PracticeProgress.transformTrackerData(simulationTracker, STEP_REVIEW_TITLES),
+                student_id: student ? student.student_id : undefined,
+                student: student || undefined
             };
+        }
+
+        /**
+         * Save current progress to database
+         */
+        async function saveCurrentProgress(status = 'In Progress') {
+            const payload = buildProgressPayload(status);
+            if (!payload) return;
 
             const result = await PracticeProgress.saveProgress(payload);
             if (result.success) {
@@ -2565,6 +2797,40 @@
             window.location.href = 'practicetasks.html';
         }
         window.endSimulationAndSave = endSimulationAndSave;
+
+        // Restart the simulation from Step 1 — stores the steps completed so
+        // far, clears the current attempt, then reloads to a fresh state.
+        window.restartSimulation = function () {
+            const doRestart = async () => {
+                try { await saveCurrentProgress('In Progress'); } catch (e) { console.warn('Save before reset failed:', e); }
+                try {
+                    const res = await fetch('reset_practice.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: 'Fuel Filter Replacement' })
+                    });
+                    const data = await res.json();
+                    if (!data || !data.success) throw new Error((data && data.message) || 'Reset failed');
+                } catch (e) {
+                    console.warn('Reset request failed:', e);
+                    try {
+                        if (typeof window.showSequenceWarning === 'function') {
+                            window.showSequenceWarning('Restart failed — the attempt could not be reset.');
+                        } else {
+                            console.warn('Restart failed — the attempt could not be reset.');
+                        }
+                    } catch (e2) { console.warn('Restart failed — the attempt could not be reset.'); }
+                    return;
+                }
+                window.__practiceCompleted = true;
+                window.location.reload();
+            };
+            if (typeof window.showToolUseCard === 'function') {
+                window.showToolUseCard('Restart Simulation?', 'Your progress is saved first, then the simulation starts over from Step 1.', doRestart);
+            } else if (window.confirm('Restart simulation? Your progress will be saved and the simulation will start over from Step 1.')) {
+                doRestart();
+            }
+        };
 
         /**
          * Start auto-save interval (saves every 30 seconds)
@@ -2592,10 +2858,20 @@
             startAutoSave();
         });
 
-        // Save on page unload
+        // Save on page unload — sendBeacon survives refresh/navigation
         window.addEventListener('beforeunload', () => {
             if (window.__practiceCompleted) return;
-            saveCurrentProgress('In Progress');
+            const payload = buildProgressPayload('In Progress');
+            if (!payload) return;
+            const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain' });
+            if (!navigator.sendBeacon('save_practice_simulation.php', blob)) {
+                fetch('save_practice_simulation.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload),
+                    keepalive: true
+                }).catch(() => {});
+            }
         });
 
         const engineSwipeAudio = new Audio('music/notstarting.mp3');
@@ -2621,9 +2897,23 @@
                     await engineSwipeAudio.play();
                 } catch (error) {
                     console.warn('Engine swipe audio could not start:', error);
-                    engineSwipeEnabled = false;
-                    if (stateLabel) stateLabel.textContent = 'OFF';
-                    if (toggle) toggle.checked = false;
+                    // Browsers block autoplay before the first user gesture.
+                    // Keep the engine ON and keep retrying on every user
+                    // interaction until the audio actually starts playing.
+                    const startEvents = ['pointerdown', 'keydown', 'touchstart', 'click'];
+                    const stopRetrying = () => {
+                        startEvents.forEach((evt) => document.removeEventListener(evt, retryPlay));
+                    };
+                    function retryPlay() {
+                        if (!engineSwipeEnabled) {
+                            stopRetrying();
+                            return;
+                        }
+                        engineSwipeAudio.play()
+                            .then(stopRetrying)
+                            .catch(() => { /* still blocked — try again on the next gesture */ });
+                    }
+                    startEvents.forEach((evt) => document.addEventListener(evt, retryPlay));
                 }
             } else {
                 engineSwipeAudio.pause();
@@ -2632,6 +2922,34 @@
         }
 
         window.setEngineSwipeEnabled = setEngineSwipeEnabled;
+
+        // Engine sound policy on (re)load: only a fresh Step 1 starts with the
+        // engine ON. Once the student confirms ignition OFF (or moves past
+        // Step 1), a refreshed page stays silent — on Step 5 the student
+        // primes/starts the engine themselves.
+        let engineAutostartAllowed = false;
+
+        function applyStartupEngineState(savedSceneState) {
+            const inspectDone = (window.stepInstrDone && window.stepInstrDone[0]) || [];
+            const savedEngineOn = !savedSceneState || savedSceneState.engineOn !== false;
+            const shouldBeOn = currentStepIndex === 0 && !inspectDone[0] && savedEngineOn;
+            engineAutostartAllowed = shouldBeOn;
+            if (shouldBeOn) {
+                setEngineSwipeEnabled(true).then(() => {
+                    // Browser may block autoplay — retry on first interaction.
+                    if (!engineSwipeEnabled && engineAutostartAllowed) {
+                        const kickEngineAudio = () => {
+                            if (engineAutostartAllowed) setEngineSwipeEnabled(true);
+                        };
+                        window.addEventListener('pointerdown', kickEngineAudio);
+                        window.addEventListener('keydown', kickEngineAudio);
+                    }
+                });
+            } else if (engineSwipeEnabled) {
+                setEngineSwipeEnabled(false);
+            }
+        }
+        window.applyStartupEngineState = applyStartupEngineState;
 
         let currentStepIndex = 0;
         const totalSteps = stepReviewData.length;
@@ -2679,26 +2997,13 @@
             const data = simulationTracker.steps[stepIdx];
             data.title = STEP_REVIEW_TITLES[stepIdx];
 
-            // Clear previous correct items for checklists to prevent carryover of unchecked/previous states
-            if (stepIdx === 0 || stepIdx === 3 || stepIdx === 4) {
-                data.correct = [];
-            } else if (stepIdx === 1 || stepIdx === 2) {
-                // Remove list-item instructions from correct array to re-evaluate them cleanly
-                const instructionsList = [
-                    ['Mix baking soda', 'Disconnect negative', 'Apply paste', 'Wipe terminals', 'Reconnect positive', 'Remove the old battery', 'Drag and drop the new battery'],
-                    ['Remove battery caps', 'Check electrolyte', 'Top up', 'Do not overfill', 'Replace caps']
-                ];
-                const activeInstrs = instructionsList[stepIdx - 1];
-                data.correct = data.correct.filter(c => {
-                    const text = c.toLowerCase();
-                    return !activeInstrs.some(pattern => text.includes(pattern.toLowerCase()));
-                });
-            }
+            // Clear previous correct items to re-evaluate them cleanly from the checklists
+            data.correct = [];
 
             if (stepIdx === 0) {
-                document.querySelectorAll('.inspect-check').forEach((cb) => {
-                    const label = cb.closest('label')?.querySelector('span')?.textContent?.trim();
-                    if (cb.checked && label) simulationTracker.addCorrect(label, 0);
+                document.querySelectorAll('#inspectionList li').forEach((li) => {
+                    const label = li.textContent?.trim();
+                    if (li.classList.contains('done') && label) simulationTracker.addCorrect(label, 0);
                 });
             } else {
                 const done = window.stepInstrDone?.[stepIdx] || [];
@@ -2750,7 +3055,13 @@
                         score: overallScore,
                         completion_status: 'Completed',
                         time_elapsed_seconds: window.__practiceElapsedSeconds || 0,
-                        steps: stepsPayload
+                        current_step_index: currentStepIndex,
+                        step_instr_done: window.stepInstrDone || {},
+                        battery_needs_replacement: window.batteryNeedsReplacement ?? null,
+                        scene_state: (typeof window.collectSceneState === 'function') ? window.collectSceneState() : null,
+                        steps: stepsPayload,
+                        student_id: student.student_id,
+                        student: student
                     })
                 });
                 const data = await res.json();
@@ -2893,10 +3204,10 @@
 
         // Return true if the user can proceed from the given step index
         function canProceedFromStep(stepIdx) {
-            // Step 0 uses the inspection checklist
+            // Step 0 uses the inspection list — every item must be verified done
             if (stepIdx === 0) {
-                const checkboxes = document.querySelectorAll('.inspect-check');
-                return Array.from(checkboxes).every(cb => cb.checked);
+                const items = document.querySelectorAll('#inspectionList li');
+                return items.length > 0 && Array.from(items).every(li => li.classList.contains('done'));
             }
 
             // For other steps, ensure every instruction list item is marked done
@@ -2983,37 +3294,35 @@
             });
 
             // Update right panel task title & desc
-            const titles = ['Inspect Battery Condition', 'Clean Battery Terminals', 'Check Electrolyte Level', 'Secure Battery Mount', 'Test Electrical System'];
+            const titles = ['Safety & Locate the Filter', 'Relieve Pressure & Disconnect Lines', 'Replace the Fuel Filter', 'Reconnect Lines & Tighten', 'Prime & Test the Engine'];
             const descs = [
-                'Check battery casing for cracks, leaks, or swelling. Verify terminal connections.',
-                'Remove corrosion from terminals using a wire brush and baking soda solution.',
-                'Check electrolyte levels in each cell and top up with distilled water if needed.',
-                'Ensure battery hold-down bracket is tight and battery does not move.',
-                'Start engine and verify charging system voltage. Check all electrical functions.'
+                'Disconnect the battery for safety, then locate the fuel filter mounted on the firewall.',
+                'Relieve fuel pressure slowly, remove the fuel lines, and keep track of all washers.',
+                'Remove the old filter from its bracket and install the new one with correct orientation.',
+                'Reconnect the fuel lines with washers in place, tighten securely, and reconnect the battery.',
+                'Prime the fuel system, start the engine, and check for leaks and smooth running.'
             ];
             document.querySelector('.rp-task-title').textContent = titles[currentStepIndex] || titles[titles.length - 1];
             document.querySelector('.rp-task-desc').textContent = descs[currentStepIndex] || descs[descs.length - 1];
 
             // Update instructions list
             const instructions = [
-                ['Ensure ignition is off and keys are removed', 'Visually inspect the battery for cracks, bulging, or leaks'],
-                window.batteryNeedsReplacement ?
-                    ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Remove the old battery from the car engine bay', 'Drag and drop the new battery from the tools area to install it', 'Reconnect positive (+) first, then negative (-) terminal'] :
-                    ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Apply paste to terminals and use wire brush to remove corrosion', 'Wipe terminals clean with a damp cloth and dry thoroughly', 'Reconnect positive (+) first, then negative (-) terminal'],
-                ['Remove battery caps carefully — wear safety goggles', 'Check electrolyte level in each cell against MIN/MAX marks', 'Top up ONLY with distilled water if below minimum', 'Do not overfill — leave space for expansion', 'Replace caps securely and wipe any spills'],
-                ['Check battery hold-down bracket for tightness', 'Inspect bracket bolts for corrosion and tightness', 'Ensure battery sits level and does not shift when pushed', 'Check that battery tray is not rusted through', 'Tighten bracket evenly — do not over-tighten'],
-                ['Reconnect all terminals and start the engine', 'Listen for smooth starter motor operation', 'Record battery test results and service date in log']
+                ['Confirm ignition is OFF and keys are removed', 'Disconnect the battery negative terminal first', 'Locate the fuel filter mounted on the firewall', 'Wear gloves and safety goggles', 'Prepare wrenches, rag, and the new filter'],
+                ['Loosen the top banjo bolt slowly to relieve fuel pressure', 'Use a rag to catch any fuel spray', 'Remove the top banjo bolt completely', 'Remove the lower fuel line fitting with a wrench'],
+                ['Unscrew the mounting bracket bolt', 'Slide the old fuel filter out of the bracket', 'Place the new filter in the bracket'],
+                ['Reconnect the bottom fuel line first', 'Then reinstall the top banjo bolt', 'Tighten fittings to proper torque — firm, not over-tightened', 'Reconnect the battery negative terminal'],
+                ['Turn the key to ON to build fuel pressure — do not start yet', 'Start the engine and let it run', 'Confirm the engine runs smoothly', 'Retighten any leaking fittings if needed']
             ];
             const safetyNotes = [
-                'Always wear safety goggles and gloves — battery acid can cause burns.',
-                'Disconnect negative terminal first to avoid short circuits.',
-                'Never smoke or create sparks near a battery — hydrogen gas is explosive.',
-                'Do not overtighten hold-down bracket — it can crack the battery case.',
-                'If battery is hot, wait for it to cool before opening caps.'
+                'Disconnect the battery first — a single spark near fuel vapor can ignite a fire.',
+                'Relieve pressure slowly — pressurized fuel sprays and is highly flammable.',
+                'Never lose the washers — missing washers cause fuel leaks.',
+                'Bottom line first, then the banjo bolt — wrong order complicates reassembly.',
+                'Check for leaks before driving — a fuel leak is a serious fire hazard.'
             ];
             const instrList = document.getElementById('instrList');
             if (instrList) {
-                const checklistMode = currentStepIndex === 3 || currentStepIndex === 4;
+                const checklistMode = false; // all steps are action-verified
                 instrList.classList.toggle('checklist-mode', checklistMode);
                 window.stepInstrDone = window.stepInstrDone || {};
                 const doneArray = window.stepInstrDone[currentStepIndex] || [];
@@ -3062,6 +3371,16 @@
                 if (currentStepIndex === 0) {
                     inspectionSection.style.display = 'block';
                     if (instructionsSection) instructionsSection.style.display = 'none';
+                    // Restore verified state — inspection items persist in stepInstrDone[0]
+                    const inspectDone = (window.stepInstrDone && window.stepInstrDone[0]) || [];
+                    document.querySelectorAll('#inspectionList li').forEach((li, i) => {
+                        li.classList.toggle('done', !!inspectDone[i]);
+                    });
+                    // Item 1 verified = ignition confirmed OFF — the engine
+                    // sound must be off too (e.g. restored progress).
+                    if (inspectDone[0] && document.getElementById('engineSwipeToggle')?.checked) {
+                        setEngineSwipeEnabled(false);
+                    }
                 } else {
                     inspectionSection.style.display = 'none';
                     if (instructionsSection) instructionsSection.style.display = 'block';
@@ -3072,29 +3391,32 @@
             const mixDrop = document.getElementById('mixDropZone');
             if (mixDrop) mixDrop.style.display = (currentStepIndex === 1) ? 'flex' : 'none';
 
-            // Show/hide Step 2 Battery Replacement Diagnostic Status indicator
+            // Banjo bolt action card only on step 2 (index 1)
+            const banjoCard = document.getElementById('banjoBoltCard');
+            if (banjoCard) {
+                banjoCard.style.display = (currentStepIndex === 1) ? 'block' : 'none';
+                if (currentStepIndex === 1 && typeof window.syncBanjoBoltCard === 'function') window.syncBanjoBoltCard();
+            }
+
+            // Engine swipe only matters where ignition/engine control is used:
+            // Step 1 (confirm ignition OFF) and Step 5 (start the engine)
+            const engineSection = document.getElementById('engineSwipeSection');
+            if (engineSection) {
+                engineSection.style.display = [0, 4].includes(currentStepIndex) ? 'block' : 'none';
+            }
+
+            // Show/hide Fuel Filter Status indicator on the replace step
             const statusIndicator = document.getElementById('batteryStatusIndicator');
             if (statusIndicator) {
-                if (currentStepIndex === 1) {
+                if (currentStepIndex === 2) {
                     statusIndicator.style.display = 'block';
                     const valueEl = document.getElementById('batteryStatusValue');
                     if (valueEl) {
-                        if (window.batteryNeedsReplacement) {
-                            valueEl.innerHTML = '<span style="color:#dc2626;">REPLACE BATTERY (Health: 42%)</span>';
-                        } else {
-                            valueEl.innerHTML = '<span style="color:#22c55e;">GOOD (Health: 88%)</span>';
-                        }
+                        valueEl.innerHTML = '<span style="color:#dc2626;">CLOGGED — REPLACE (Flow: Restricted)</span>';
                     }
                 } else {
                     statusIndicator.style.display = 'none';
                 }
-            }
-
-            // Update battery hover action label: CLEAN BATTERY on Step 2, otherwise CHECK BATTERY
-            const btnCheck = document.getElementById('btnCheckBattery');
-            const btnLabel = document.getElementById('btnCheckBatteryLabel');
-            if (btnLabel) {
-                btnLabel.textContent = (currentStepIndex === 1) ? 'CLEAN BATTERY' : 'CHECK BATTERY';
             }
 
             // Disable battery tool in tools area for steps 1, 4, and 5 (indices 0, 3, 4)
@@ -3113,78 +3435,44 @@
                 console.warn('Failed to update battery tool state', e);
             }
 
-        }
+            // Reflect which tools are usable on the current step
+            try {
+                const usable = {
+                    'gloves-model': [0],
+                    'goggles-model': [0],
+                    'socket-model': [0, 1, 2, 3, 4],
+                    'papertowel-model': [0, 1, 4],
+                    'water-model': [1],
+                    'bowl-model': [1]
+                };
+                Object.entries(usable).forEach(([id, steps]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.cursor = steps.includes(currentStepIndex) ? 'pointer' : 'not-allowed';
+                });
+            } catch (e) {
+                console.warn('Failed to update tool availability', e);
+            }
 
-        // Handle checkbox changes for visual feedback
-        document.querySelectorAll('.inspect-check').forEach(cb => {
-            cb.addEventListener('change', () => {
-                // Visual feedback
-                const label = cb.closest('label');
-                if (cb.checked) {
-                    label.style.background = '#dbeafe';
-                    label.style.border = '1px solid #93c5fd';
-                } else {
-                    label.style.background = '#f9fafb';
-                    label.style.border = 'none';
-                }
-            });
-        });
+        }
 
         // Wire Next Step button
         document.getElementById('nextStepBtn').addEventListener('click', () => {
-            // Identify unchecked checkboxes as mistakes
+            // Identify unverified inspection items as mistakes
             if (currentStepIndex === 0) {
                 // Clear all mistakes for Step 1
                 simulationTracker.steps[0].mistakes = [];
-                const checkboxes = document.querySelectorAll('.inspect-check');
-                checkboxes.forEach(cb => {
-                    if (!cb.checked) {
-                        const labelText = cb.closest('label').querySelector('span').textContent.trim();
-                        simulationTracker.addMistake(`Missed inspection: ${labelText}`, 0);
+                document.querySelectorAll('#inspectionList li').forEach(li => {
+                    if (!li.classList.contains('done')) {
+                        simulationTracker.addMistake(`Missed inspection: ${li.textContent.trim()}`, 0);
                     }
                 });
-                
-                // Check if battery is critical but user didn't mark it for replacement
-                if (window.batteryNeedsReplacement) {
-                    const cracksChecked = document.querySelector('.inspect-check[data-index="1"]')?.checked;
-                    if (!cracksChecked) {
-                        simulationTracker.addMistake('Critical battery condition not addressed: Battery has cracks/bulging/leaks and needs replacement. If not replaced, the battery may fail to start the vehicle, cause electrical system issues, or pose safety risks from acid leaks.', 0);
-                    }
-                }
-            } else if (currentStepIndex === 1 || currentStepIndex === 2) {
-                // Clear only previous unfinished task mistakes so we don't duplicate them
-                simulationTracker.steps[currentStepIndex].mistakes = simulationTracker.steps[currentStepIndex].mistakes.filter(
-                    m => !m.startsWith('Unfinished task:')
-                );
-                const instrList = document.getElementById('instrList');
-                if (instrList) {
-                    const items = instrList.querySelectorAll('li');
-                    items.forEach(li => {
-                        if (!li.classList.contains('done')) {
-                            const labelText = li.textContent.trim();
-                            simulationTracker.addMistake(`Unfinished task: ${labelText}`, currentStepIndex);
-                        }
-                    });
-                }
-                
-                // Check if battery needs replacement but wasn't replaced in Step 2
-                if (currentStepIndex === 1 && window.batteryNeedsReplacement) {
-                    const instructionsDone = window.stepInstrDone?.[1] || [];
-                    const batteryRemoved = instructionsDone[2]; // Index 2 is "Remove the old battery"
-                    const batteryInstalled = instructionsDone[3]; // Index 3 is "Drag and drop the new battery"
-                    
-                    if (!batteryRemoved || !batteryInstalled) {
-                        simulationTracker.addMistake('Critical battery not replaced: The battery has critical damage (cracks/bulging/leaks) and must be replaced. Continuing with a damaged battery will result in the vehicle not starting, unreliable electrical performance, and potential safety hazards from acid leakage or battery explosion.', 1);
-                    }
-                }
-            } else if (currentStepIndex === 3 || currentStepIndex === 4) {
-                // Clear all mistakes for checklist steps (Step 4 & 5)
+            } else if (currentStepIndex >= 1) {
+                // Clear all mistakes for the step and re-evaluate unfinished items
                 simulationTracker.steps[currentStepIndex].mistakes = [];
-                const checkboxes = document.querySelectorAll('#instrList input[type="checkbox"]');
-                checkboxes.forEach(cb => {
-                    if (!cb.checked) {
-                        const labelText = cb.closest('label').querySelector('span').textContent.trim();
-                        simulationTracker.addMistake(`Missed instruction: ${labelText}`, currentStepIndex);
+                // Steps 2-5 are action-verified — unfinished items are li's not marked done
+                document.querySelectorAll('#instrList li').forEach(li => {
+                    if (!li.classList.contains('done')) {
+                        simulationTracker.addMistake(`Missed instruction: ${li.textContent.trim()}`, currentStepIndex);
                     }
                 });
             }
@@ -3195,6 +3483,25 @@
         if (engineSwipeToggle) {
             engineSwipeToggle.addEventListener('change', () => {
                 setEngineSwipeEnabled(engineSwipeToggle.checked);
+                // Step 1 inspection item: ignition/key state tracks the engine
+                if (typeof window.syncIgnitionOffChecklist === 'function') window.syncIgnitionOffChecklist();
+                // Step 5 (index 4): key ON primes the system, then the engine
+                // starts and settles into a smooth idle
+                if (engineSwipeToggle.checked && typeof currentStepIndex !== 'undefined' && currentStepIndex === 4) {
+                    markInstructionDone(4, 0); // Turn the key to ON to build fuel pressure
+                    showPrepToast('Key ON — fuel system priming…');
+                    setTimeout(() => {
+                        if (!engineSwipeEnabled || currentStepIndex !== 4) return;
+                        markInstructionDone(4, 1); // Start the engine and let it run
+                        showPrepToast('Engine started — letting it run.');
+                    }, 2500);
+                    setTimeout(() => {
+                        if (!engineSwipeEnabled || currentStepIndex !== 4) return;
+                        markInstructionDone(4, 2); // Confirm the engine runs smoothly
+                        try { window.recordSimulationEvent('Engine primed and started successfully — idles smoothly.'); } catch (e) {}
+                        showPrepToast('Engine running smoothly.');
+                    }, 5000);
+                }
             });
         }
 
@@ -3223,8 +3530,7 @@
                 return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             };
 
-            let elapsedSeconds = 0;
-            window.__practiceElapsedSeconds = 0;
+            let elapsedSeconds = window.__practiceElapsedSeconds || 0;
             timerEl.textContent = formatTime(elapsedSeconds);
 
             if (window.__practiceTimerInterval) {
@@ -3314,10 +3620,6 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        #btnCheckBattery:hover {
-            background: #1d4ed8 !important;
-        }
-
         #btnRemoveBattery:hover {
             background: #b91c1c !important;
         }
@@ -3327,7 +3629,7 @@
         }
     </style>
 
-    <!-- Battery Main Body Hover Card (appears on hover) -->
+    <!-- Fuel Filter Hover Card (appears on hover) -->
     <div id="batteryHoverCard"
         style="display:none;position:fixed;z-index:99998;pointer-events:auto;font-family:'Nunito',sans-serif;transition:opacity 0.2s;">
         <div
@@ -3343,22 +3645,12 @@
                 <div>
                     <div id="batteryTitle"
                         style="font-family:'Rajdhani',sans-serif;font-size:0.9rem;font-weight:700;color:#1a1a2e;line-height:1;">
-                        Battery</div>
+                        Fuel Filter</div>
                     <div id="batteryStatus" style="font-size:0.6rem;color:#6b7280;">In Position</div>
                 </div>
             </div>
 
             <div style="display:flex;flex-direction:column;gap:6px;">
-                <button id="btnCheckBattery" onclick="hoverBatteryAction('check')"
-                    style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:none;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:700;transition:all 0.2s;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M9 12l2 2 4-4" />
-                    </svg>
-                    <span id="btnCheckBatteryLabel">CHECK BATTERY</span>
-                </button>
-
                 <button id="btnRemoveBattery" onclick="hoverBatteryAction('remove')"
                     style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:none;border-radius:8px;background:#dc2626;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:700;transition:all 0.2s;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -3366,7 +3658,7 @@
                         <path d="M18 6L6 18" />
                         <path d="M6 6l12 12" />
                     </svg>
-                    REMOVE BATTERY
+                    REMOVE FILTER
                 </button>
 
                 <button id="btnReplaceBattery" onclick="hoverBatteryAction('replace')"
@@ -3377,7 +3669,7 @@
                         <path d="M12 12L20 4" />
                         <path d="M16 4h4v4" />
                     </svg>
-                    REPLACE BATTERY
+                    REPLACE FILTER
                 </button>
             </div>
 
@@ -3398,23 +3690,23 @@
                     <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
             </div>
-            <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Physical Casing Inspection</h3>
+            <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Fuel Filter Inspection</h3>
             <p style="font-size:0.85rem;color:#6b7280;line-height:1.5;margin-bottom:20px;">
-                The battery casing has been thoroughly inspected. The casing is completely intact with <strong>no cracks, bulging, or acid leaks</strong>.
+                The fuel filter mounted on the firewall has been located and inspected. The housing is intact with <strong>no dents, corrosion, or fuel seepage</strong>.
             </p>
             
             <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:20px;text-align:left;display:flex;flex-direction:column;gap:10px;">
                 <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
                     <span style="color:#16a34a;font-weight:bold;">✓</span>
-                    <span>No visible casing cracks or damage</span>
+                    <span>Filter housing intact — no dents or corrosion</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
                     <span style="color:#16a34a;font-weight:bold;">✓</span>
-                    <span>No bulging or swelling of the side walls</span>
+                    <span>Inlet/outlet ports clean and undamaged</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
                     <span style="color:#16a34a;font-weight:bold;">✓</span>
-                    <span>No electrolyte/acid leaks around terminals or seams</span>
+                    <span>Flow-direction arrow marking is visible</span>
                 </div>
             </div>
 
@@ -3434,7 +3726,7 @@
             <div
                 style="flex:1;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
                 <div id="battery3DViewer" style="width:100%;height:100%;position:relative;">
-                    <!-- 3D Battery Model will be rendered here by BatteryViewer.js -->
+                    <!-- 3D Fuel Filter Model will be rendered here by FuelFilterViewer.js -->
                 </div>
                 <!-- Close button -->
                 <button onclick="closeBatteryCheckModal()"
@@ -3452,8 +3744,8 @@
                 <div style="margin-bottom:8px;">
                     <h3
                         style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin:0;">
-                        Battery Inspection</h3>
-                    <p style="font-size:0.75rem;color:#6b7280;margin:4px 0 0;">Choose an action for the battery</p>
+                        Fuel Filter Inspection</h3>
+                    <p style="font-size:0.75rem;color:#6b7280;margin:4px 0 0;">Choose an action for the fuel filter</p>
                 </div>
 
                 <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
@@ -3473,8 +3765,8 @@
                                 <path d="M16.24 7.76l2.83-2.83" />
                             </svg>
                         </div>
-                        <span style="font-size:0.85rem;font-weight:700;color:#374151;">Clean Battery</span>
-                        <span style="font-size:0.65rem;color:#6b7280;">Remove corrosion & dirt</span>
+                        <span style="font-size:0.85rem;font-weight:700;color:#374151;">Clean Filter</span>
+                        <span style="font-size:0.65rem;color:#6b7280;">Remove dirt & debris</span>
                     </button>
 
                     <button id="btnThrowBattery" onclick="batteryCheckAction('throw')"
@@ -3489,7 +3781,7 @@
                             </svg>
                         </div>
                         <span style="font-size:0.85rem;font-weight:700;color:#374151;">Throw Away</span>
-                        <span style="font-size:0.65rem;color:#6b7280;">Dispose of battery</span>
+                        <span style="font-size:0.65rem;color:#6b7280;">Dispose of old filter</span>
                     </button>
                 </div>
 
@@ -3786,15 +4078,14 @@
             style="background:#fff;border-radius:12px;padding:18px;width:340px;box-shadow:0 18px 40px rgba(0,0,0,0.25);">
             <div
                 style="font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700;color:#111827;margin-bottom:8px;">
-                Add Water</div>
-            <div style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">Enter amount of water (ml) to add to the
-                bowl.</div>
+                Apply Penetrating Oil</div>
+            <div style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">Enter amount of penetrating oil (ml) to
+                spray on the fittings.</div>
             <input id="waterAmountInput" type="number" min="0" value="30"
                 style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;">
             <div style="display:flex;gap:10px;">
                 <button id="btnWaterConfirm"
-                    style="flex:1;padding:10px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer;">Add
-                    Water</button>
+                    style="flex:1;padding:10px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer;">Apply</button>
                 <button id="btnWaterCancel"
                     style="flex:1;padding:10px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;color:#374151;cursor:pointer;">Cancel</button>
             </div>
@@ -3891,7 +4182,10 @@
         let isCardLocked = false; // Track if card is locked in position
         let lastCardX = 0, lastCardY = 0; // Store position
 
-        // Require inspection completion helper
+        // Require inspection completion helper — battery-level actions
+        // (remove/replace/check) stay blocked until the safety step is done,
+        // but cap and locate interactions are allowed because they verify
+        // the inspection items themselves.
         function requireInspectionOrWarn() {
             if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
                 showSequenceWarning('Please complete the inspection checklist and proceed to the next step before performing this action.');
@@ -3902,7 +4196,6 @@
 
         // Show card on hover (follows mouse)
         window.onBatteryCapHover = function (capInfo, screenX, screenY) {
-            if (!requireInspectionOrWarn()) return;
             if (isCardLocked) return; // Don't update if locked
 
             hoverCapIndex = capInfo.index;
@@ -3932,7 +4225,6 @@
 
         // Lock card in fixed position when clicked
         window.onBatteryCapClicked = function (capInfo, screenX, screenY) {
-            if (!requireInspectionOrWarn()) return;
             if (!isCardLocked) {
                 // First click - lock position closer to cap
                 isCardLocked = true;
@@ -3980,10 +4272,22 @@
         let lastBatteryCardX = 0, lastBatteryCardY = 0;
         let batteryInfo = null;
 
-        // Show battery card on hover only (no click locking)
-        // Only appears when both caps are removed first
-        window.onBatteryHover = function (info, screenX, screenY) {
-            if (!requireInspectionOrWarn()) return;
+        // The battery body is not the service part in this simulation — the
+        // fuel filter is. Hovering it shows nothing; clicking it nudges the
+        // student toward the correct part/fittings instead.
+        window.onBatteryHover = function () { };
+        window.onBatteryClicked = function () {
+            showPrepToast('That\u2019s the battery \u2014 disconnect it via the terminal caps. The fuel filter is the canister on the firewall.');
+        };
+        window.addEventListener('batteryClicked', () => {
+            showPrepToast('That\u2019s the battery \u2014 the fuel filter is the canister mounted on the firewall.');
+        });
+
+        // Fuel filter card on hover only (no click locking)
+        // Only appears once both fittings (caps) are removed
+        window.onFuelFilterHover = function (info, screenX, screenY) {
+            // Step 1 is locate-only — clicking the part verifies it; no card yet
+            if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) return;
             // Check if both caps are removed - if not, return silently (no warning on hover)
             if (!areBothCapsRemoved()) {
                 return;
@@ -3992,24 +4296,25 @@
             batteryInfo = info;
 
             // Update content
-            document.getElementById('batteryTitle').textContent = 'Battery';
+            document.getElementById('batteryTitle').textContent = 'Fuel Filter';
             document.getElementById('batteryStatus').textContent = info.removed ? 'Removed' : 'In Position';
 
             // Show/hide appropriate buttons
             document.getElementById('btnRemoveBattery').style.display = info.removed ? 'none' : 'flex';
             document.getElementById('btnReplaceBattery').style.display = info.removed ? 'flex' : 'none';
 
-            // Position and show - further away from battery (120px instead of 80px)
+            // Position and show — just below the cursor, its top arrow
+            // pointing up at the hovered filter
             batteryHoverCard.style.display = 'block';
             batteryHoverCard.style.opacity = '1';
             lastBatteryCardX = screenX - 110; // centered horizontally
-            lastBatteryCardY = screenY - 120; // further above the cursor
+            lastBatteryCardY = screenY + 18; // just under the cursor
             batteryHoverCard.style.left = lastBatteryCardX + 'px';
             batteryHoverCard.style.top = lastBatteryCardY + 'px';
         };
 
-        // Hide battery card on hover end
-        window.onBatteryHoverEnd = function () {
+        // Hide filter card on hover end
+        window.onFuelFilterHoverEnd = function () {
             batteryHoverCard.style.opacity = '0';
             setTimeout(() => {
                 if (batteryHoverCard.style.opacity === '0') {
@@ -4018,16 +4323,20 @@
             }, 200);
         };
 
-        // Battery click - just keeps card visible while hovering, no lock
-        window.onBatteryClicked = function (info, screenX, screenY) {
-            if (!requireInspectionOrWarn()) return;
-            if (!areBothCapsRemoved()) {
-                showSequenceWarning('Remove both caps first!');
+        // The scene's own default handlers re-assign window.onFuelFilterClicked
+        // after model load and dispatch DOM events — listen for them here.
+        window.addEventListener('fuelFilterClicked', () => {
+            // Step 1 — clicking the fuel filter verifies "located on the firewall"
+            if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
+                setInspectChecked(2, true);
+                try { window.recordSimulationEvent('Fuel filter located successfully on the firewall.'); } catch (e) {}
+                showPrepToast('Fuel filter located on the firewall.');
                 return;
             }
-            // No locking - card stays positioned where it was on hover
-            console.log('Battery clicked:', info);
-        };
+            if (!areBothCapsRemoved()) {
+                showSequenceWarning('Disconnect the fuel line fittings first — remove both caps.');
+            }
+        });
 
         // Unlock and hide battery card
         function unlockAndHideBatteryCard() {
@@ -4061,42 +4370,59 @@
                     break;
 
                 case 'remove':
-                    // Require both caps removed before battery removal
+                    // The fuel filter is only removed during the replacement step
+                    if (typeof currentStepIndex !== 'undefined' && currentStepIndex < 2) {
+                        showSequenceWarning('The fuel filter is removed during the replacement step.');
+                        return;
+                    }
+                    // Require both caps removed before filter removal
                     if (!areBothCapsRemoved()) {
                         showSequenceWarning('Remove negative (-) and then positive (+) caps first!');
                         return;
                     }
-                    const result = window.toggleBattery();
+                    const result = window.toggleFuelFilter();
                     document.getElementById('batteryStatus').textContent = 'Removed';
                     document.getElementById('btnRemoveBattery').style.display = 'none';
                     document.getElementById('btnReplaceBattery').style.display = 'flex';
-                    document.getElementById('btnCheckBattery').style.display = 'none';
 
                     // Add to removed items container
-                    removedItems.set('battery', { type: 'battery', name: 'Battery', removed: true });
+                    removedItems.set('battery', { type: 'battery', name: 'Fuel Filter', removed: true });
                     updateRemovedItemsContainer();
 
-                    // If battery replacement is active, mark instruction 3 (index 2) as done
-                    if (currentStepIndex === 1 && window.batteryNeedsReplacement) {
-                        try { markInstructionDone(1, 2); } catch (e) {}
+                    // Step 3 (index 2): old filter slid out of the bracket
+                    if (currentStepIndex === 2) {
+                        markInstructionDone(2, 1);
+                        try { window.recordSimulationEvent('Old fuel filter slid out successfully from the bracket.'); } catch (e) {}
+                        showPrepToast('Old fuel filter removed — stored in Removed Items.');
                     }
                     break;
 
                 case 'replace':
-                    // Only allow replacing battery if both caps are currently removed
-                    if (!(negativeCapRemoved && positiveCapRemoved)) {
-                        showSequenceWarning('Position the battery first only after both caps are removed.');
+                    // The fuel filter is only refitted during the replacement step
+                    if (typeof currentStepIndex !== 'undefined' && currentStepIndex < 2) {
+                        showSequenceWarning('The fuel filter is refitted during the replacement step.');
                         return;
                     }
-                    window.toggleBattery();
+                    // Only allow installing the new filter while both fittings are still off
+                    if (!(negativeCapRemoved && positiveCapRemoved)) {
+                        showSequenceWarning('Position the new filter only while both fittings are removed.');
+                        return;
+                    }
+                    window.toggleFuelFilter();
                     document.getElementById('batteryStatus').textContent = 'In Position';
                     document.getElementById('btnRemoveBattery').style.display = 'flex';
                     document.getElementById('btnReplaceBattery').style.display = 'none';
-                    document.getElementById('btnCheckBattery').style.display = 'flex';
 
                     // Remove from container
                     removedItems.delete('battery');
                     updateRemovedItemsContainer();
+
+                    // Step 3 (index 2): new filter placed in the bracket
+                    if (currentStepIndex === 2) {
+                        markInstructionDone(2, 2);
+                        try { window.recordSimulationEvent('New fuel filter installed successfully — sits firmly in the bracket.'); } catch (e) {}
+                        showPrepToast('New fuel filter installed and seated firmly.');
+                    }
                     break;
             }
         }
@@ -4126,9 +4452,97 @@
             return false;
         }
 
+        // Step-aware cap verification:
+        //   negative cap = battery negative terminal (off on Step 1, back on Step 4)
+        //   positive cap = top banjo bolt / fuel line hardware (off on Step 2, back on Step 4)
+        function capRemovalAllowed(capType) {
+            if (currentStepIndex === 0) {
+                if (capType === 'positive') {
+                    showSequenceWarning('Only the battery negative terminal is disconnected for this procedure.');
+                    return false;
+                }
+                // Ignition must be confirmed OFF before the terminal comes off
+                const d0 = (window.stepInstrDone && window.stepInstrDone[0]) || [];
+                if (!d0[0]) {
+                    showSequenceWarning('Confirm the ignition is OFF and keys are removed first — check the engine switch.');
+                    return false;
+                }
+                return true;
+            }
+            if (currentStepIndex === 1) {
+                // Negative stays removable — the terminal must remain
+                // disconnected, and re-removing it unblocks restored sessions.
+                if (capType === 'negative') return true;
+                const d = (window.stepInstrDone && window.stepInstrDone[1]) || [];
+                if (!d[0] || !d[1]) {
+                    showSequenceWarning('Loosen the banjo bolt and position the rag/drip pan first.');
+                    return false;
+                }
+                return true;
+            }
+            if (currentStepIndex === 4) {
+                showSequenceWarning(capType === 'negative'
+                    ? 'Keep the battery connected — the engine needs it for testing.'
+                    : 'The fuel lines stay connected during testing.');
+                return false;
+            }
+            showSequenceWarning('The fuel lines are only disconnected during the disconnect step.');
+            return false;
+        }
+
+        function capReplaceAllowed(capType) {
+            if (currentStepIndex !== 3) {
+                showSequenceWarning('Reconnect the fittings and battery during the reconnect step.');
+                return false;
+            }
+            if (capType === 'positive') {
+                const d = (window.stepInstrDone && window.stepInstrDone[3]) || [];
+                if (!d[0]) {
+                    showSequenceWarning('Reconnect the bottom fuel line first (use the Socket Wrench tool).');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Shared cap-replace logic used by the hover card and the Removed
+        // Items container. Returns true when the cap actually went back on.
+        function performCapReplace(capIndex, capInfo) {
+            if (!capReplaceAllowed(capInfo.type)) return false;
+            // Enforce replacement order: positive, then negative
+            if (capInfo.type === 'negative' && positiveCapRemoved) {
+                showSequenceWarning('Replace the positive (+) cap before replacing the negative (-) cap.');
+                return false;
+            }
+
+            window.toggleBatteryCap(capIndex);
+
+            // Update removal state
+            if (capInfo.type === 'negative') negativeCapRemoved = false;
+            if (capInfo.type === 'positive') positiveCapRemoved = false;
+
+            // Remove from container
+            removedItems.delete(capIndex);
+            updateRemovedItemsContainer();
+
+            // Step 4 verification: positive = top banjo bolt reinstalled +
+            // washers back; negative = battery terminal reconnected.
+            if (currentStepIndex === 3) {
+                if (capInfo.type === 'positive') {
+                    markInstructionDone(3, 1);
+                    try { window.recordSimulationEvent('Top banjo bolt reinstalled successfully — washers back in place.'); } catch (e) {}
+                    showPrepToast('Top banjo bolt reinstalled — washers back in place.');
+                } else if (capInfo.type === 'negative') {
+                    markInstructionDone(3, 3);
+                    try { window.recordSimulationEvent('Battery negative terminal reconnected successfully.'); } catch (e) {}
+                    showPrepToast('Battery negative terminal reconnected.');
+                }
+            }
+            return true;
+        }
+
         // Handle actions from hover card
         function hoverCapAction(action) {
-            if (!requireInspectionOrWarn()) return;
             if (hoverCapIndex === null) return;
 
             const capInfo = window.checkBatteryCap(hoverCapIndex);
@@ -4142,6 +4556,7 @@
                         showSequenceWarning('Remove negative (-) cap first!');
                         return;
                     }
+                    if (!capRemovalAllowed(capInfo.type)) return;
 
                     window.toggleBatteryCap(hoverCapIndex);
                     document.getElementById('hoverStatus').textContent = 'Cap Removed';
@@ -4156,62 +4571,29 @@
                     removedItems.set(hoverCapIndex, capInfo);
                     updateRemovedItemsContainer();
 
-                    // If both caps removed, mark the appropriate instruction for the active step
-                    try {
-                        if (negativeCapRemoved && positiveCapRemoved) {
-                            // For Clean Terminals (step 1) mark its instruction
-                            markInstructionDone(1, 1);
-                            // For Check Electrolyte Level (step 2 index=2) mark "Remove battery caps" (instr 0)
-                            if (currentStepIndex === 2) markInstructionDone(2, 0);
-                        }
-                        // Removing caps clears final reconnect instruction (index 4) for the current step
-                        try {
-                            window.stepInstrDone = window.stepInstrDone || {};
-                            window.stepInstrDone[currentStepIndex] = window.stepInstrDone[currentStepIndex] || [];
-                            window.stepInstrDone[currentStepIndex][4] = false;
-                            if (currentStepIndex === currentStepIndex) {
-                                const instrList = document.getElementById('instrList');
-                                if (instrList && instrList.children[4]) instrList.children[4].classList.remove('done');
-                            }
-                        } catch (e) { /* ignore */ }
-                    } catch (err) { console.warn('Failed to update instructions after cap removal', err); }
+                    // Verification: Step 1 negative = battery disconnected;
+                    // Step 2 positive = banjo bolt/fitting removed + washers kept.
+                    if (currentStepIndex === 0 && capInfo.type === 'negative') {
+                        setInspectChecked(1, true);
+                        try { window.recordSimulationEvent('Battery negative terminal disconnected successfully.'); } catch (e) {}
+                        showPrepToast('Battery negative terminal disconnected.');
+                    } else if (currentStepIndex === 1 && capInfo.type === 'positive') {
+                        markInstructionDone(1, 2);
+                        try { window.recordSimulationEvent('Top banjo bolt removed successfully — washers stored safely.'); } catch (e) {}
+                        showPrepToast('Top banjo bolt removed — washers stored in Removed Items.');
+                        if (typeof window.syncBanjoBoltCard === 'function') window.syncBanjoBoltCard();
+                    }
 
                     // Lock position after successful removal
                     isCardLocked = true;
                     break;
 
                 case 'replace':
-                    // Enforce replacement order: positive, then negative
-                    if (capInfo.type === 'negative') {
-                        // Negative replace requires positive cap to already be on
-                        if (positiveCapRemoved) {
-                            showSequenceWarning('Replace the positive (+) cap before replacing the negative (-) cap.');
-                            return;
-                        }
-                    }
+                    if (!performCapReplace(hoverCapIndex, capInfo)) return;
 
-                    window.toggleBatteryCap(hoverCapIndex);
                     document.getElementById('hoverStatus').textContent = 'Cap On';
                     document.getElementById('btnHoverRemove').style.display = 'flex';
                     document.getElementById('btnHoverReplace').style.display = 'none';
-
-                    // Update removal state
-                    if (capInfo.type === 'negative') negativeCapRemoved = false;
-                    if (capInfo.type === 'positive') positiveCapRemoved = false;
-
-                    // Remove from container
-                    removedItems.delete(hoverCapIndex);
-                    updateRemovedItemsContainer();
-
-                    // Keep instruction 2 (both caps removed) marked once checked
-                    // It should remain checked until the overall step completes.
-
-                    // After replacing a cap, check whether both caps are now reattached -> mark instruction 5
-                    try {
-                        if (!negativeCapRemoved && !positiveCapRemoved) {
-                            markInstructionDone(currentStepIndex, 4);
-                        }
-                    } catch (err) { console.warn('Failed to update instruction 5 after cap replace', err); }
 
                     // Lock position after successful replace
                     isCardLocked = true;
@@ -4281,7 +4663,7 @@
                                 <div style="width:16px;height:16px;border-radius:4px;background:#2563eb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                                 </div>
-                                <span style="font-size:0.7rem;font-weight:600;color:#374151;">Battery</span>
+                                <span style="font-size:0.7rem;font-weight:600;color:#374151;">Fuel Filter</span>
                                 <span style="font-size:0.6rem;color:#9ca3af;margin-left:auto;">Click to replace</span>
                             </div>
                         `;
@@ -4291,7 +4673,7 @@
                     return `
                         <div onclick="replaceItemFromContainer(${index})" style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border-radius:8px;border:1.5px solid ${cap.type === 'positive' ? '#fecaca' : '#e5e7eb'};box-shadow:0 1px 3px rgba(0,0,0,0.1);cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';">
                             <div style="width:16px;height:16px;border-radius:50%;background:${cap.type === 'positive' ? '#dc2626' : '#374151'};flex-shrink:0;"></div>
-                            <span style="font-size:0.7rem;font-weight:600;color:#374151;">${cap.type === 'positive' ? 'Pos (+)' : 'Neg (-)'}</span>
+                            <span style="font-size:0.7rem;font-weight:600;color:#374151;">${cap.type === 'positive' ? 'Banjo Bolt' : 'Neg (-)'}</span>
                             <span style="font-size:0.6rem;color:#9ca3af;margin-left:auto;">Click to replace</span>
                         </div>
                     `;
@@ -4299,22 +4681,229 @@
             }
         }
 
+        // Step 2 banjo bolt actions — "Loosen Bolt" relieves fuel pressure and
+        // verifies the first instruction; "Remove Bolt" drives the real 3D cap
+        // removal (positive cap = top banjo bolt) and stores it in Removed Items.
+        const btnLoosenBanjo = document.getElementById('btnLoosenBanjo');
+        const btnRemoveBanjo = document.getElementById('btnRemoveBanjo');
+
+        function findCapIndexByType(type) {
+            for (let i = 0; i < 8; i++) {
+                const info = (typeof window.checkBatteryCap === 'function') ? window.checkBatteryCap(i) : null;
+                if (!info) break;
+                if (info.type === type) return i;
+            }
+            return -1;
+        }
+
+        function findPositiveCapIndex() {
+            return findCapIndexByType('positive');
+        }
+
+        // Snapshot the 3D/UI scene state so a refresh restores every action:
+        // which caps/fittings are off, whether the filter is out, and what is
+        // sitting in the Removed Items container.
+        function collectSceneState() {
+            let fuelFilterRemoved = false;
+            try { fuelFilterRemoved = !!(window.checkFuelFilter && window.checkFuelFilter().removed); } catch (e) {}
+            return {
+                negativeCapRemoved: !!negativeCapRemoved,
+                positiveCapRemoved: !!positiveCapRemoved,
+                fuelFilterRemoved: fuelFilterRemoved,
+                engineOn: (typeof engineSwipeEnabled === 'undefined') ? false : engineSwipeEnabled,
+                removedItems: Array.from(removedItems.entries())
+            };
+        }
+        window.collectSceneState = collectSceneState;
+
+        // Re-apply a saved scene state — caps come off, the filter lifts out,
+        // and the Removed Items container is rebuilt. Called by the progress
+        // loader once the 3D APIs exist.
+        window.applySceneState = function (sceneState) {
+            if (!sceneState) return;
+
+            if (sceneState.negativeCapRemoved && !negativeCapRemoved) {
+                const idx = findCapIndexByType('negative');
+                if (idx >= 0 && typeof window.toggleBatteryCap === 'function') {
+                    window.toggleBatteryCap(idx);
+                    negativeCapRemoved = true;
+                }
+            }
+            if (sceneState.positiveCapRemoved && !positiveCapRemoved) {
+                const idx = findCapIndexByType('positive');
+                if (idx >= 0 && typeof window.toggleBatteryCap === 'function') {
+                    window.toggleBatteryCap(idx);
+                    positiveCapRemoved = true;
+                }
+            }
+            if (sceneState.fuelFilterRemoved
+                && typeof window.checkFuelFilter === 'function'
+                && typeof window.toggleFuelFilter === 'function') {
+                try {
+                    if (!window.checkFuelFilter().removed) window.toggleFuelFilter();
+                } catch (e) { /* scene not ready — leave as-is */ }
+            }
+            if (Array.isArray(sceneState.removedItems)) {
+                sceneState.removedItems.forEach((entry) => {
+                    if (Array.isArray(entry) && entry.length === 2) removedItems.set(entry[0], entry[1]);
+                });
+                updateRemovedItemsContainer();
+            }
+        };
+
+        let loosenInProgress = false;
+
+        function syncBanjoBoltCard() {
+            const d = (window.stepInstrDone && window.stepInstrDone[1]) || [];
+            const loosened = !!d[0];
+            const removed = !!d[2];
+            const stateEl = document.getElementById('banjoBoltState');
+            if (stateEl) {
+                stateEl.textContent = removed ? 'Bolt Removed' : (loosened ? 'Pressure Relieved' : 'Pressurized');
+                stateEl.style.color = removed ? '#16a34a' : (loosened ? '#d97706' : '#dc2626');
+            }
+            if (btnLoosenBanjo) {
+                const labelEl = document.getElementById('loosenBtnText');
+                btnLoosenBanjo.disabled = loosened || loosenInProgress;
+                btnLoosenBanjo.classList.toggle('done', loosened);
+                if (labelEl && !loosenInProgress) labelEl.textContent = loosened ? 'Bolt Loosened' : 'Loosen Bolt';
+            }
+            if (btnRemoveBanjo) {
+                const labelEl = document.getElementById('removeBtnText');
+                btnRemoveBanjo.disabled = !loosened || removed;
+                btnRemoveBanjo.classList.toggle('done', removed);
+                if (labelEl) labelEl.textContent = removed ? 'Bolt Removed' : 'Remove Bolt';
+            }
+        }
+        window.syncBanjoBoltCard = syncBanjoBoltCard;
+
+        if (btnLoosenBanjo) {
+            btnLoosenBanjo.addEventListener('click', () => {
+                if (currentStepIndex !== 1 || loosenInProgress) return;
+                const d = (window.stepInstrDone && window.stepInstrDone[1]) || [];
+                if (d[0]) { showPrepToast('Banjo bolt already loosened — pressure relieved.'); return; }
+
+                // Loosening takes time — animate a progress fill, then verify.
+                loosenInProgress = true;
+                btnLoosenBanjo.disabled = true;
+                const labelEl = document.getElementById('loosenBtnText');
+                if (labelEl) labelEl.textContent = 'Loosening…';
+                const fill = document.getElementById('loosenFill');
+                const start = performance.now();
+                const DURATION = 2600;
+                const tick = (now) => {
+                    const p = Math.min(1, (now - start) / DURATION);
+                    if (fill) fill.style.width = (p * 100).toFixed(1) + '%';
+                    if (p < 1) { requestAnimationFrame(tick); return; }
+                    loosenInProgress = false;
+                    if (fill) fill.style.width = '0%';
+                    markInstructionDone(1, 0);
+                    try { window.recordSimulationEvent('Top banjo bolt loosened slowly — fuel pressure relieved.'); } catch (e) {}
+                    showPrepToast('Banjo bolt loosened slowly — fuel pressure relieved.');
+                    syncBanjoBoltCard();
+                };
+                requestAnimationFrame(tick);
+            });
+        }
+
+        if (btnRemoveBanjo) {
+            btnRemoveBanjo.addEventListener('click', () => {
+                if (currentStepIndex !== 1) return;
+                const posIndex = findPositiveCapIndex();
+                if (posIndex < 0) { showSequenceWarning('Banjo bolt not found in the scene.'); return; }
+                const capInfo = window.checkBatteryCap(posIndex);
+                if (capInfo.removed) { syncBanjoBoltCard(); return; }
+                if (!canRemoveCap('positive') || !capRemovalAllowed('positive')) return;
+
+                const newInfo = window.toggleBatteryCap(posIndex);
+                positiveCapRemoved = true;
+                removedItems.set(posIndex, newInfo || capInfo);
+                updateRemovedItemsContainer();
+                markInstructionDone(1, 2);
+                try { window.recordSimulationEvent('Top banjo bolt removed successfully — stored in Removed Items.'); } catch (e) {}
+                showPrepToast('Top banjo bolt removed — stored in Removed Items.');
+                syncBanjoBoltCard();
+            });
+        }
+
         // Helper to mark an instruction done for a specific step and update UI
+        // (same pattern as practicearea_air.html — numbered instr-list items
+        // get .done instead of manual checkboxes)
         function markInstructionDone(stepIdx, instrIdx) {
             window.stepInstrDone = window.stepInstrDone || {};
             window.stepInstrDone[stepIdx] = window.stepInstrDone[stepIdx] || [];
             window.stepInstrDone[stepIdx][instrIdx] = true;
-            if (currentStepIndex === stepIdx) {
-                const instrList = document.getElementById('instrList');
-                if (instrList && instrList.children[instrIdx]) instrList.children[instrIdx].classList.add('done');
-            }
             const instrList = document.getElementById('instrList');
-            if (instrList && instrList.children[instrIdx]) {
+            if (instrList && instrList.children[instrIdx] && currentStepIndex === stepIdx) {
                 const li = instrList.children[instrIdx];
+                li.classList.add('done');
+                const cb = li.querySelector('input[type="checkbox"]');
+                if (cb) cb.checked = true;
                 const text = (li.querySelector('span') || li).textContent.trim();
-                if (text && window.simulationTracker) window.simulationTracker.addCorrect(text, stepIdx);
+                if (text && typeof simulationTracker !== 'undefined') simulationTracker.addCorrect(text, stepIdx);
             }
         }
+        window.markStepInstructionDone = markInstructionDone;
+
+        // Marks a Step 1 inspection item verified (li.done + persisted state).
+        function setInspectChecked(index, checked) {
+            const li = document.querySelector(`#inspectionList li[data-index="${index}"]`);
+            if (li) li.classList.toggle('done', !!checked);
+            window.stepInstrDone = window.stepInstrDone || {};
+            window.stepInstrDone[0] = window.stepInstrDone[0] || [];
+            window.stepInstrDone[0][index] = !!checked;
+            // Item 1 = "Ignition OFF and keys removed" — while on Step 1 a
+            // checked item must never coexist with a running engine sound.
+            if (index === 0 && checked && (typeof currentStepIndex === 'undefined' || currentStepIndex === 0)) {
+                const engineToggle = document.getElementById('engineSwipeToggle');
+                if (engineToggle && engineToggle.checked) setEngineSwipeEnabled(false);
+            }
+        }
+        window.setInspectChecked = setInspectChecked;
+
+        function showPrepToast(message) {
+            const t = document.createElement('div');
+            t.textContent = message;
+            t.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#166534;color:#fff;padding:8px 14px;border-radius:10px;z-index:100050;font-weight:700;font-family:Nunito,sans-serif;';
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
+        window.showPrepToast = showPrepToast;
+
+        // Shows a small Use/Cancel option card when a tool is clicked
+        function showToolUseCard(title, desc, onUse) {
+            const existing = document.getElementById('toolUseCard');
+            if (existing) existing.remove();
+
+            const card = document.createElement('div');
+            card.id = 'toolUseCard';
+            card.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100000;background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.4);font-family:\'Nunito\',sans-serif;min-width:280px;text-align:center;';
+            card.innerHTML = `
+                <div style="margin-bottom:16px;">
+                    <div style="width:48px;height:48px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;color:#1a1a2e;margin:0;">${title}</h3>
+                    <p style="font-size:0.8rem;color:#6b7280;margin:8px 0 0;">${desc}</p>
+                </div>
+                <div style="display:flex;gap:12px;">
+                    <button id="toolUseConfirm" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border:none;border-radius:10px;background:#16a34a;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Use
+                    </button>
+                    <button id="toolUseCancel" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border:2px solid #e5e7eb;border-radius:10px;background:#fff;color:#374151;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                        Cancel
+                    </button>
+                </div>`;
+            document.body.appendChild(card);
+            document.getElementById('toolUseConfirm').addEventListener('click', () => {
+                card.remove();
+                onUse();
+            });
+            document.getElementById('toolUseCancel').addEventListener('click', () => card.remove());
+        }
+        window.showToolUseCard = showToolUseCard;
 
         // Replace item from container - puts it back
         function replaceItemFromContainer(itemKey) {
@@ -4326,14 +4915,14 @@
                 return null;
             };
 
-            // Handle battery replacement
+            // Handle fuel filter replacement
             if (itemKey === 'battery') {
-                const batteryStatus = (window.checkBattery && typeof window.checkBattery === 'function') ? window.checkBattery() : null;
+                const batteryStatus = (window.checkFuelFilter && typeof window.checkFuelFilter === 'function') ? window.checkFuelFilter() : null;
                 if (!batteryStatus || !batteryStatus.removed) return;
 
-                // Position/install the battery first
-                if (window.installBattery) window.installBattery();
-                else if (window.toggleBattery) window.toggleBattery();
+                // Position/install the new filter first
+                if (window.installFuelFilter) window.installFuelFilter();
+                else if (window.toggleFuelFilter) window.toggleFuelFilter();
 
                 // Remove battery from container
                 removedItems.delete('battery');
@@ -4342,22 +4931,18 @@
                 // Update UI
                 const batteryStatusEl = document.getElementById('batteryStatus');
                 if (batteryStatusEl) batteryStatusEl.textContent = 'In Position';
-                const btnCheckEl = document.getElementById('btnCheckBattery');
                 const btnRemoveEl = document.getElementById('btnRemoveBattery');
                 const btnReplaceEl = document.getElementById('btnReplaceBattery');
-                if (btnCheckEl) btnCheckEl.style.display = 'flex';
                 if (btnRemoveEl) btnRemoveEl.style.display = 'flex';
                 if (btnReplaceEl) btnReplaceEl.style.display = 'none';
 
                 updateRemovedItemsContainer();
-                // Keep instruction 2 (both caps removed) marked once checked
-                // It should remain checked until the overall step completes.
-                // After manual replace, if both caps on, mark instruction 5
-                try {
-                    if (!negativeCapRemoved && !positiveCapRemoved) {
-                        markInstructionDone(currentStepIndex, 4);
-                    }
-                } catch (err) { console.warn('Failed to update instruction 5 after battery replace', err); }
+                // Step 3 (index 2): filter placed in the bracket
+                if (currentStepIndex === 2) {
+                    markInstructionDone(2, 2);
+                    try { window.recordSimulationEvent('New fuel filter placed and seated successfully in the bracket.'); } catch (e) {}
+                    showPrepToast('New fuel filter seated in the bracket.');
+                }
                 return;
             }
 
@@ -4366,46 +4951,7 @@
             const capInfo = (window.checkBatteryCap && typeof window.checkBatteryCap === 'function') ? window.checkBatteryCap(capIndex) : null;
             if (!capInfo || !capInfo.removed) return;
 
-            if (capInfo.type === 'negative') {
-                // Negative replacement requires positive cap to be on first
-                if (positiveCapRemoved) {
-                    showSequenceWarning('Replace the positive (+) cap before replacing the negative (-) cap.');
-                    return;
-                }
-
-                // Now replace negative
-                window.toggleBatteryCap(capIndex);
-                removedItems.delete(capIndex);
-                negativeCapRemoved = false;
-                updateRemovedItemsContainer();
-                // Keep instruction 2 (both caps removed) marked once checked
-                // It should remain checked until the overall step completes.
-
-                try {
-                    if (!negativeCapRemoved && !positiveCapRemoved) {
-                        markInstructionDone(currentStepIndex, 4);
-                    }
-                } catch (err) { console.warn('Failed to update instruction 5 after negative replace (container)', err); }
-                return;
-            }
-
-            if (capInfo.type === 'positive') {
-                // Replace positive
-                window.toggleBatteryCap(capIndex);
-                removedItems.delete(capIndex);
-                positiveCapRemoved = false;
-                updateRemovedItemsContainer();
-                // Keep instruction 2 (both caps removed) marked once checked
-                // It should remain checked until the overall step completes.
-
-                // After replacing positive, check if both caps are now on -> mark instruction 5
-                try {
-                    if (!negativeCapRemoved && !positiveCapRemoved) {
-                        markInstructionDone(currentStepIndex, 4);
-                    }
-                } catch (err) { console.warn('Failed to update instruction 5 after positive replace', err); }
-                return;
-            }
+            performCapReplace(capIndex, capInfo);
         }
 
         function closeBatteryCapModal() {
@@ -4426,10 +4972,12 @@
             isBatteryCardLocked = false;
             
             if (confirm) {
-                const cb = document.querySelector('.inspect-check[data-index="1"]');
-                if (cb && !cb.checked) {
-                    cb.checked = true;
-                    cb.dispatchEvent(new Event('change'));
+                // Step 1: confirming the component location verifies
+                // "Fuel filter located on the firewall"
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
+                    setInspectChecked(2, true);
+                    try { window.recordSimulationEvent('Fuel filter located successfully on the firewall.'); } catch (e) {}
+                    showPrepToast('Fuel filter located on the firewall.');
                 }
             }
         };
@@ -4446,7 +4994,7 @@
             }
             // Initialize 3D battery view
             setTimeout(() => {
-                initBattery3DView();
+                initFuelFilter3DView();
 
                 if (viewer) {
                     const onMeshClick = (event) => {
@@ -4454,11 +5002,11 @@
                         const status = document.getElementById('batteryStatus');
                         if (status) status.textContent = `Selected: ${partName}`;
                     };
-                    if (viewer.__batteryMeshClickHandler) {
-                        viewer.removeEventListener('batteryMeshClicked', viewer.__batteryMeshClickHandler);
+                    if (viewer.__fuelFilterMeshClickHandler) {
+                        viewer.removeEventListener('fuelFilterMeshClicked', viewer.__fuelFilterMeshClickHandler);
                     }
-                    viewer.__batteryMeshClickHandler = onMeshClick;
-                    viewer.addEventListener('batteryMeshClicked', onMeshClick);
+                    viewer.__fuelFilterMeshClickHandler = onMeshClick;
+                    viewer.addEventListener('fuelFilterMeshClicked', onMeshClick);
                 }
             }, 100);
         }
@@ -4471,19 +5019,8 @@
         function batteryCheckAction(action) {
             switch (action) {
                 case 'clean':
-                    showSequenceWarning('Battery cleaned successfully!');
-                    // Mark instruction 3 (apply paste & brush) and 4 (wipe) as done
-                    try {
-                        window.stepInstrDone = window.stepInstrDone || {};
-                        window.stepInstrDone[1] = window.stepInstrDone[1] || [];
-                        window.stepInstrDone[1][2] = true;
-                        window.stepInstrDone[1][3] = true;
-                        if (currentStepIndex === 1) {
-                            const instrList = document.getElementById('instrList');
-                            if (instrList && instrList.children[2]) instrList.children[2].classList.add('done');
-                            if (instrList && instrList.children[3]) instrList.children[3].classList.add('done');
-                        }
-                    } catch (err) { console.warn('Failed to mark instructions 3/4 after clean', err); }
+                    showSequenceWarning('Filter cleaned successfully!');
+                    // Free-play only — not part of the fuel filter procedure
 
                     // Close modal after a delay
                     setTimeout(() => {
@@ -4492,7 +5029,7 @@
                     break;
 
                 case 'throw':
-                    showSequenceWarning('Battery marked for disposal');
+                    showSequenceWarning('Old filter marked for disposal');
                     // Close modal and remove battery from scene
                     setTimeout(() => {
                         closeBatteryCheckModal();
@@ -4505,17 +5042,17 @@
             }
         }
 
-        // Initialize 3D battery view using BatteryViewer module
-        async function initBattery3DView() {
+        // Initialize 3D fuel filter view using FuelFilterViewer module
+        async function initFuelFilter3DView() {
             try {
-                const { initBatteryViewer } = await import('./BatteryViewer.js');
-                initBatteryViewer('battery3DViewer', {
+                const { initFuelFilterViewer } = await import('./FuelFilterViewer.js');
+                initFuelFilterViewer('battery3DViewer', {
                     enableDrag: false,
                     enableRotate: true,
                     enableSelection: true,
                 });
             } catch (err) {
-                console.error('Failed to load battery viewer:', err);
+                console.error('Failed to load fuel filter viewer:', err);
             }
         }
 
@@ -4555,12 +5092,12 @@
             // Initialize 3D battery viewer after modal is visible
             setTimeout(async () => {
                 try {
-                    const mod = await import('./BatteryViewer.js');
-                    if (mod && typeof mod.initBatteryViewer === 'function') {
-                        mod.initBatteryViewer('batteryElectrolyteViewer', { enableDrag: false });
+                    const mod = await import('./FuelFilterViewer.js');
+                    if (mod && typeof mod.initFuelFilterViewer === 'function') {
+                        mod.initFuelFilterViewer('batteryElectrolyteViewer', { enableDrag: false });
                     }
                 } catch (err) {
-                    console.error('Failed to init battery viewer in electrolyte modal:', err);
+                    console.error('Failed to init fuel filter viewer in electrolyte modal:', err);
                 }
             }, 100);
         }
@@ -4652,25 +5189,29 @@
                         updateElectrolyteDisplay(currentBatteryElectrolyteData);
                     }
                     showSequenceWarning('Electrolyte refilled! All cells at 100%');
-                    // Mark electrolyte-related instructions (step index 2 -> instr 1,2,3)
-                    try { markInstructionDone(2, 1); markInstructionDone(2, 2); markInstructionDone(2, 3); } catch (e) { }
                     break;
 
                 case 'replace':
-                    // Remove battery and close modal
+                    // Remove the old filter and close modal
                     closeBatteryElectrolyteModal();
-                    window.toggleBattery();
-                    removedItems.set('battery', { type: 'battery', name: 'Battery', removed: true });
+                    window.toggleFuelFilter();
+                    removedItems.set('battery', { type: 'battery', name: 'Fuel Filter', removed: true });
                     updateRemovedItemsContainer();
-                    showSequenceWarning('Battery removed for replacement!');
+                    showSequenceWarning('Old fuel filter removed for replacement!');
+                    // Step 3 (index 2): old filter slid out of the bracket
+                    if (currentStepIndex === 2) {
+                        markInstructionDone(2, 1);
+                    }
                     break;
 
                 case 'accept':
                     // Just close modal
                     closeBatteryElectrolyteModal();
-                    showSequenceWarning('Battery accepted and installed!');
-                    // Mark electrolyte-related instructions (step index 2 -> instr 1,2,3)
-                    try { markInstructionDone(2, 1); markInstructionDone(2, 2); markInstructionDone(2, 3); } catch (e) { }
+                    showSequenceWarning('New filter accepted and installed!');
+                    if (currentStepIndex === 2) {
+                        try { window.recordSimulationEvent('Filter orientation verified successfully — arrow points toward the engine.'); } catch (e) {}
+                        showPrepToast('Orientation verified — arrow points toward the engine.');
+                    }
                     break;
             }
         }
@@ -4710,10 +5251,11 @@
                 g.innerHTML = `
                     <div style="background:#1e293b;border-radius:10px;padding:12px;border:2px solid #2563eb;box-shadow:0 8px 24px rgba(0,0,0,0.3);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5">
-                            <rect x="3" y="11" width="18" height="11" rx="2" />
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            <path d="M12 2v3" />
+                            <path d="M12 19v3" />
+                            <rect x="8" y="5" width="8" height="14" rx="4" />
                         </svg>
-                        <span style="font-size:0.6rem;font-weight:800;letter-spacing:0.5px;color:#fff;">BATTERY</span>
+                        <span style="font-size:0.6rem;font-weight:800;letter-spacing:0.5px;color:#fff;">FUEL FILTER</span>
                     </div>
                 `;
                 document.body.appendChild(g);
@@ -4730,7 +5272,7 @@
             batteryTool.addEventListener('pointerdown', (e) => {
                 // Restrict battery tool usage on steps 1, 4, and 5 (indices 0,3,4)
                 if (typeof currentStepIndex !== 'undefined' && [0, 3, 4].includes(currentStepIndex)) {
-                    showSequenceWarning('Battery tool is not available during this step.');
+                    showSequenceWarning('Fuel filter tool is not available during this step.');
                     return;
                 }
                 e.preventDefault();
@@ -4782,7 +5324,7 @@
             batteryTool.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (typeof currentStepIndex !== 'undefined' && [0, 3, 4].includes(currentStepIndex)) {
-                    showSequenceWarning('Battery tool is not available during this step.');
+                    showSequenceWarning('Fuel filter tool is not available during this step.');
                     return;
                 }
                 showBatteryUseCard();
@@ -4814,8 +5356,8 @@
                         <div style="width: 48px; height: 48px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         </div>
-                        <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 0;">Use Battery?</h3>
-                        <p style="font-size: 0.8rem; color: #6b7280; margin: 8px 0 0;">Install battery in car engine bay?</p>
+                        <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 0;">Use New Fuel Filter?</h3>
+                        <p style="font-size: 0.8rem; color: #6b7280; margin: 8px 0 0;">Install the new filter in the bracket?</p>
                     </div>
                     <div style="display: flex; gap: 12px;">
                         <button onclick="useBatteryTool()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: none; border-radius: 10px; background: #16a34a; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
@@ -4838,14 +5380,14 @@
 
                 // Check if caps are removed first
                 if (!areBothCapsRemoved()) {
-                    showSequenceWarning('Remove both caps first before installing battery!');
+                    showSequenceWarning('Remove both fittings first before installing the new filter!');
                     return;
                 }
 
-                // Check battery status
-                const batteryStatus = window.checkBattery();
+                // Check filter status
+                const batteryStatus = window.checkFuelFilter();
                 if (!batteryStatus) {
-                    showSequenceWarning('Cannot check battery status!');
+                    showSequenceWarning('Cannot check fuel filter status!');
                     return;
                 }
 
@@ -4854,35 +5396,34 @@
                     return;
                 }
 
-                // Install the battery
-                console.log('Using battery tool - installing...');
-                if (window.installBattery) {
-                    window.installBattery();
+                // Install the new fuel filter
+                console.log('Using fuel filter tool - installing...');
+                if (window.installFuelFilter) {
+                    window.installFuelFilter();
                 } else {
-                    window.toggleBattery();
+                    window.toggleFuelFilter();
                 }
 
                 updateRemovedItemsContainer();
 
                 // Update battery hover card to show options
                 const batteryStatusEl = document.getElementById('batteryStatus');
-                const btnCheckEl = document.getElementById('btnCheckBattery');
                 const btnRemoveEl = document.getElementById('btnRemoveBattery');
                 const btnReplaceEl = document.getElementById('btnReplaceBattery');
 
                 if (batteryStatusEl) batteryStatusEl.textContent = 'In Position';
-                if (btnCheckEl) btnCheckEl.style.display = 'flex';
                 if (btnRemoveEl) btnRemoveEl.style.display = 'flex';
                 if (btnReplaceEl) btnReplaceEl.style.display = 'none';
 
-                // Mark battery replaced in instruction if Step 2 and needs replacement
-                if (currentStepIndex === 1 && window.batteryNeedsReplacement) {
-                    try { markInstructionDone(1, 3); } catch (e) {}
-                    window.recordSimulationEvent('Battery accepted and installed!');
+                // Step 3 (index 2): new filter placed in the bracket
+                if (currentStepIndex === 2) {
+                    markInstructionDone(2, 2);
+                    try { window.recordSimulationEvent('New fuel filter installed successfully — sits firmly in the bracket.'); } catch (e) {}
+                    showPrepToast('New fuel filter installed and seated firmly.');
                     window.batteryNeedsReplacement = false;
                 }
 
-                showSequenceWarning('Battery installed successfully!');
+                showSequenceWarning('New fuel filter installed successfully!');
             };
 
             // Cancel battery tool
@@ -4890,6 +5431,144 @@
                 const card = document.getElementById('batteryUseCard');
                 if (card) card.remove();
             };
+        })();
+    </script>
+
+    <script>
+        // ── ACTION-VERIFIED TOOL WIRING ──
+        // Same pattern as practicearea_air.html / practicearea_brake.html:
+        // instruction items get .done from real sim actions instead of manual
+        // checkboxes. Tool-card clicks open a Use/Cancel card; confirming the
+        // action verifies the matching instruction for the current step.
+        (function () {
+            const prepState = { gloves: false, goggles: false, socket: false, rag: false };
+
+            // Item 2 follows the live engine state: done while the engine is
+            // OFF (ignition off, keys removed). Only synced on Step 1 — later
+            // steps start the engine on purpose and a completed inspection
+            // item must not un-verify.
+            function syncIgnitionOffChecklist() {
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 0) return;
+                const off = (typeof engineSwipeEnabled === 'undefined') ? true : !engineSwipeEnabled;
+                setInspectChecked(0, off);
+            }
+            window.syncIgnitionOffChecklist = syncIgnitionOffChecklist;
+
+            function recordCorrect(message) {
+                try { window.recordSimulationEvent(message); } catch (e) { /* ignore */ }
+            }
+
+            function checkPpeDone() {
+                if (prepState.gloves && prepState.goggles) {
+                    setInspectChecked(3, true);
+                    recordCorrect('Gloves and safety goggles equipped successfully.');
+                    showPrepToast('Gloves and safety goggles equipped.');
+                }
+            }
+
+            function checkToolsPrepared() {
+                if (prepState.socket && prepState.rag) {
+                    setInspectChecked(4, true);
+                    recordCorrect('Wrenches, rag, and new filter prepared successfully.');
+                    showPrepToast('Wrenches, rag, and new filter prepared.');
+                }
+            }
+
+            function wireTool(id, onClick) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    onClick();
+                });
+            }
+
+            // Per-step wrench tasks — each Use verifies the next wrench-driven
+            // instruction that is still unfinished on the current step.
+            const WRENCH_TASKS = {
+                1: [{ idx: 3, title: 'Remove Lower Fuel Line Fitting?', desc: 'Use the socket wrench to remove the lower fuel line fitting.', done: 'Lower fuel line fitting removed successfully.' }],
+                2: [{ idx: 0, title: 'Unscrew Mounting Bracket Bolt?', desc: 'Use the socket wrench to unscrew the fuel filter bracket bolt.', done: 'Mounting bracket bolt unscrewed successfully.' }],
+                3: [
+                    { idx: 0, title: 'Reconnect Bottom Fuel Line?', desc: 'Use the socket wrench to reconnect the bottom fuel line fitting.', done: 'Bottom fuel line reconnected successfully.' },
+                    { idx: 2, title: 'Torque the Fittings?', desc: 'Tighten all fittings firmly — snug, not over-tightened.', done: 'Fittings torqued successfully — firm, not over-tightened.' }
+                ],
+                4: [{ idx: 3, title: 'Retighten the Fittings?', desc: 'Snug up any weeping fittings found during the leak check.', done: 'Leaking fittings retightened successfully.' }]
+            };
+
+            const RAG_TASKS = {
+                1: { idx: 1, title: 'Use Shop Rag?', desc: 'Hold the rag under the fitting to catch fuel spray.', done: 'Shop rag positioned successfully to catch fuel spray.' }
+            };
+
+            window.addEventListener('load', () => {
+                // ── PPE: gloves + goggles verify "Wearing gloves and safety goggles" (Step 1)
+                wireTool('gloves-model', () => {
+                    if (currentStepIndex !== 0) {
+                        showSequenceWarning('Safety gear is equipped during the safety step.');
+                        return;
+                    }
+                    showToolUseCard('Wear Gloves?', 'Put on protective gloves before handling fuel lines.', () => {
+                        prepState.gloves = true;
+                        showPrepToast('Gloves equipped.');
+                        checkPpeDone();
+                    });
+                });
+                wireTool('goggles-model', () => {
+                    if (currentStepIndex !== 0) {
+                        showSequenceWarning('Safety gear is equipped during the safety step.');
+                        return;
+                    }
+                    showToolUseCard('Wear Safety Goggles?', 'Protect your eyes from fuel spray.', () => {
+                        prepState.goggles = true;
+                        showPrepToast('Safety goggles equipped.');
+                        checkPpeDone();
+                    });
+                });
+
+                // ── Socket wrench: prep on Step 1, fitting/bolt work on later steps
+                wireTool('socket-model', () => {
+                    if (currentStepIndex === 0) {
+                        prepState.socket = true;
+                        showPrepToast('Socket wrench prepared.');
+                        checkToolsPrepared();
+                        return;
+                    }
+                    const tasks = WRENCH_TASKS[currentStepIndex] || [];
+                    const task = tasks.find(t => !((window.stepInstrDone && window.stepInstrDone[currentStepIndex]) || [])[t.idx]);
+                    if (!task) {
+                        showPrepToast('Nothing left to do with the wrench on this step.');
+                        return;
+                    }
+                    showToolUseCard(task.title, task.desc, () => {
+                        markInstructionDone(currentStepIndex, task.idx);
+                        recordCorrect(task.done);
+                        showPrepToast(task.done);
+                    });
+                });
+
+                // ── Shop rag: prep on Step 1, catch spray on Step 2, leak check on Step 5
+                wireTool('papertowel-model', () => {
+                    if (currentStepIndex === 0) {
+                        prepState.rag = true;
+                        showPrepToast('Shop rag prepared.');
+                        checkToolsPrepared();
+                        return;
+                    }
+                    const task = RAG_TASKS[currentStepIndex];
+                    if (!task) {
+                        showSequenceWarning('The shop rag is not needed during this step.');
+                        return;
+                    }
+                    if (((window.stepInstrDone && window.stepInstrDone[currentStepIndex]) || [])[task.idx]) {
+                        showPrepToast('Already done on this step.');
+                        return;
+                    }
+                    showToolUseCard(task.title, task.desc, () => {
+                        markInstructionDone(currentStepIndex, task.idx);
+                        recordCorrect(task.done);
+                        showPrepToast(task.done);
+                    });
+                });
+            });
         })();
     </script>
 </body>

@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <script src="js/teacher-notif-badge.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MotoMaster – Analytics</title>
@@ -1199,7 +1200,10 @@
     </main>
 
     <script src="teacher-profile.js"></script>
+    <script src="teacher-live-refresh.js"></script>
     <script>
+        window.TEACHER_REFRESH_FN = 'fetchAnalyticsData';
+
         let studentsList = [];
         let allLogs = {};
 
@@ -1276,7 +1280,7 @@
 
             const filteredPractices = selectedMod === 'all' 
                 ? practices 
-                : practices.filter(att => att.title === selectedMod + ' Simulation');
+                : practices.filter(att => att.title === selectedMod + ' Simulation' || att.title === selectedMod);
 
             if (filteredAssessments.length > 0) {
                 const sum = filteredAssessments.reduce((s, att) => s + att.score, 0);
@@ -1345,7 +1349,7 @@
             });
 
             practices.forEach(att => {
-                const wk = getWeekIndex(att.date_completed);
+                const wk = getWeekIndex(att.date_attempted || att.date_completed);
                 if (wk !== -1) weeklyPractices[wk].push(att.score);
             });
 
@@ -1503,7 +1507,7 @@
             });
             
             practices.forEach(att => {
-                const daysAgo = countDaysAgo(att.date_completed);
+                const daysAgo = countDaysAgo(att.date_attempted || att.date_completed);
                 if (daysAgo >= 0 && daysAgo < 28) {
                     dailyCounts[27 - daysAgo]++;
                 }
@@ -1554,7 +1558,7 @@
                 if (selectedMod === 'all') {
                     practicePoints = studentPractices.reduce((sum, att) => sum + att.score * 10, 0);
                 } else {
-                    const modPractices = studentPractices.filter(att => att.title === selectedMod + ' Simulation');
+                    const modPractices = studentPractices.filter(att => att.title === selectedMod + ' Simulation' || att.title === selectedMod);
                     practicePoints = modPractices.reduce((sum, att) => sum + att.score * 10, 0);
                     
                     const studentAssess = (allLogs.assessments || []).find(att => att.student_id === s.id && att.title === selectedMod + ' Assessment');

@@ -4,11 +4,11 @@
  */
 (function (global) {
     const MODULES = [
-        { key: 'mod_progress_enginemodule', href: 'enginemodule.html', title: 'Engine Oil Change', icon: '⚙️' },
+        { key: 'mod_progress_batterymodule', href: 'batterymodule.html', title: 'Battery Maintenance', icon: '🔋' },
         { key: 'mod_progress_brakemodule', href: 'brakemodule.html', title: 'Brake Pad Replacement', icon: '🔧' },
         { key: 'mod_progress_airmodule', href: 'airmodule.html', title: 'Air Filter Replacement', icon: '💨' },
         { key: 'mod_progress_fuelmodule', href: 'fuelmodule.html', title: 'Fuel Filter Replacement', icon: '🔩' },
-        { key: 'mod_progress_batterymodule', href: 'batterymodule.html', title: 'Battery Maintenance', icon: '🔋' },
+        { key: 'mod_progress_enginemodule', href: 'enginemodule.html', title: 'Engine Oil Change', icon: '⚙️' },
         { key: 'mod_progress_sparkmodule', href: 'sparkmodule.html', title: 'Spark Plug Replacement', icon: '⚡' }
     ];
 
@@ -197,6 +197,40 @@
             }
             if (elCaption) {
                 elCaption.innerHTML = `<strong>${completedModulesCount}/6</strong> Mod | <strong>${completedPracticesCount}/6</strong> Prac | <strong>${completedAssessmentsCount}/6</strong> Assess`;
+            }
+
+            // 3b. Update Current Streak widget
+            // A streak day is any calendar day with learning activity
+            // (module read, practice attempt, or assessment taken).
+            const activityDays = new Set();
+            const dayKey = (d) => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+            const pushDay = (dateStr) => {
+                if (!dateStr) return;
+                const d = new Date(String(dateStr).replace(/-/g, '/'));
+                if (!isNaN(d.getTime())) activityDays.add(dayKey(d));
+            };
+            progressDetails.forEach(d => pushDay(d.date_updated));
+            practices.forEach(p => pushDay(p.date_attempted));
+            assessments.forEach(a => pushDay(a.date_taken));
+
+            let streakDays = 0;
+            const cursor = new Date();
+            // If nothing was done yet today, the streak still counts from yesterday
+            if (!activityDays.has(dayKey(cursor))) {
+                cursor.setDate(cursor.getDate() - 1);
+            }
+            while (activityDays.has(dayKey(cursor))) {
+                streakDays++;
+                cursor.setDate(cursor.getDate() - 1);
+            }
+
+            const elStreakNum = document.getElementById('streakDaysNum');
+            const elStreakSub = document.getElementById('streakSub');
+            if (elStreakNum) elStreakNum.textContent = streakDays;
+            if (elStreakSub) {
+                elStreakSub.textContent = streakDays === 0
+                    ? 'Start learning today to build a streak!'
+                    : (streakDays >= 7 ? "You're on fire!" : 'Keep it up!');
             }
 
             // 4. Construct Chronological Activity Log

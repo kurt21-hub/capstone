@@ -117,3 +117,23 @@ function motoMasterRequireAdminSession(): array
 
     return $_SESSION;
 }
+
+/**
+ * Ensure the given user table has a profile_photo column.
+ * Returns true when the column exists after the call.
+ */
+function motoMasterEnsureProfilePhotoColumn(mysqli $mysqli, string $table): bool
+{
+    $tableEscaped = $mysqli->real_escape_string($table);
+    $result = $mysqli->query("SHOW COLUMNS FROM {$tableEscaped} LIKE 'profile_photo'");
+    $exists = $result && $result->num_rows > 0;
+    if ($result instanceof mysqli_result) {
+        $result->free();
+    }
+    if ($exists) {
+        return true;
+    }
+    return (bool) $mysqli->query(
+        "ALTER TABLE {$tableEscaped} ADD COLUMN profile_photo VARCHAR(255) NULL DEFAULT NULL"
+    );
+}

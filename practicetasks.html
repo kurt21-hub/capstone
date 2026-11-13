@@ -8,6 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
         rel="stylesheet" />
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 <style>
     *,
@@ -1227,7 +1228,7 @@
             </button>
             <div class="nav-user-wrap">
                 <div class="nav-user">
-                    <div class="nav-avatar"><img src="images/bluehumanbg.png" alt="User"></div>
+                    <div class="nav-avatar"><img src="images/userprofile.jpg" alt="User"></div>
                     <div>
                         <div class="nav-user-name" id="studentFullName"></div>
                         <div class="nav-user-role">Student</div>
@@ -1337,10 +1338,10 @@
             <!-- SIMULATION CARDS GRID -->
             <div class="sim-grid">
 
-                <!-- Engine Oil Change — Completed -->
-                <div class="sim-card" data-title="Engine Oil Change" data-practice-completed="true">
+                <!-- Battery Maintenance — Unlocked -->
+                <div class="sim-card" data-title="Battery Maintenance">
                     <div class="sim-card-img-wrap">
-                        <img class="sim-card-img" src="images/enginee.png" alt="Engine Oil Change">
+                        <img class="sim-card-img" src="images/batteryy.png" alt="Battery Maintenance">
                         <div class="sim-card-badge unlocked">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="20 6 9 17 4 12" />
@@ -1349,20 +1350,17 @@
                         </div>
                     </div>
                     <div class="sim-card-body">
-                        <div class="sim-card-title">Engine Oil Change</div>
-                        <div class="sim-card-desc">Learn the proper procedure for changing engine oil.</div>
-                        <div class="sim-card-meta">
-                            <span class="sim-card-score">Score: 92%</span>
-                            <span>Completed</span>
-                        </div>
+                        <div class="sim-card-title">Battery Maintenance</div>
+                        <div class="sim-card-desc">Learn proper battery inspection, cleaning, and maintenance
+                            procedures.</div>
                         <div class="sim-progress-wrap">
                             <div class="sim-progress-bar">
-                                <div class="sim-progress-fill" style="width:100%"></div>
+                                <div class="sim-progress-fill" style="width:0%"></div>
                             </div>
-                            <div class="sim-progress-pct">100%</div>
+                            <div class="sim-progress-pct">0%</div>
                         </div>
-                        <button type="button" class="sim-btn outline" id="engineOilReviewBtn">Review Practice <svg
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <button class="sim-btn">Start Simulation <svg viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2.5">
                                 <line x1="5" y1="12" x2="19" y2="12" />
                                 <polyline points="12 5 19 12 12 19" />
                             </svg></button>
@@ -1460,10 +1458,10 @@
                     </div>
                 </div>
 
-                <!-- Battery Maintenance — Unlocked -->
-                <div class="sim-card" data-title="Battery Maintenance">
+                <!-- Engine Oil Change — Completed -->
+                <div class="sim-card" data-title="Engine Oil Change" data-practice-completed="true">
                     <div class="sim-card-img-wrap">
-                        <img class="sim-card-img" src="images/batteryy.png" alt="Battery Maintenance">
+                        <img class="sim-card-img" src="images/enginee.png" alt="Engine Oil Change">
                         <div class="sim-card-badge unlocked">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="20 6 9 17 4 12" />
@@ -1472,17 +1470,20 @@
                         </div>
                     </div>
                     <div class="sim-card-body">
-                        <div class="sim-card-title">Battery Maintenance</div>
-                        <div class="sim-card-desc">Learn proper battery inspection, cleaning, and maintenance
-                            procedures.</div>
+                        <div class="sim-card-title">Engine Oil Change</div>
+                        <div class="sim-card-desc">Learn the proper procedure for changing engine oil.</div>
+                        <div class="sim-card-meta">
+                            <span class="sim-card-score">Score: 92%</span>
+                            <span>Completed</span>
+                        </div>
                         <div class="sim-progress-wrap">
                             <div class="sim-progress-bar">
-                                <div class="sim-progress-fill" style="width:0%"></div>
+                                <div class="sim-progress-fill" style="width:100%"></div>
                             </div>
-                            <div class="sim-progress-pct">0%</div>
+                            <div class="sim-progress-pct">100%</div>
                         </div>
-                        <button class="sim-btn">Start Simulation <svg viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2.5">
+                        <button type="button" class="sim-btn outline" id="engineOilReviewBtn">Review Practice <svg
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <line x1="5" y1="12" x2="19" y2="12" />
                                 <polyline points="12 5 19 12 12 19" />
                             </svg></button>
@@ -2102,7 +2103,7 @@
             }
         }
 
-        function applyInProgressPracticeCard(card, pct) {
+        function applyInProgressPracticeCard(card, pct, record) {
             card.removeAttribute('data-practice-completed');
             const title = card.dataset.title || '';
             const href = getPracticeAreaHref(title);
@@ -2111,8 +2112,19 @@
             const pctText = card.querySelector('.sim-progress-pct');
             if (pctText) pctText.textContent = `${pct}%`;
 
-            const metaEl = card.querySelector('.sim-card-meta');
-            if (metaEl) {
+            let metaEl = card.querySelector('.sim-card-meta');
+            if (record && typeof record.current_step_index === 'number' && (record.steps || []).length > 0) {
+                if (!metaEl) {
+                    metaEl = document.createElement('div');
+                    metaEl.className = 'sim-card-meta';
+                    const descEl = card.querySelector('.sim-card-desc');
+                    if (descEl) descEl.parentNode.insertBefore(metaEl, descEl.nextSibling);
+                }
+                metaEl.innerHTML = `
+                    <span>In Progress</span>
+                    <span>Step ${record.current_step_index + 1} of ${record.steps.length}</span>
+                `;
+            } else if (metaEl) {
                 metaEl.remove();
             }
 
@@ -2132,6 +2144,115 @@
             card.onclick = () => {
                 window.location.href = href;
             };
+        }
+
+        function unlockPracticeCard(card, title, unlockedDesc) {
+            if (!card || !card.classList.contains('locked-card')) return;
+            card.classList.remove('locked-card');
+            const overlay = card.querySelector('.lock-overlay');
+            if (overlay) overlay.remove();
+            const badge = card.querySelector('.sim-card-badge');
+            if (badge) {
+                badge.className = 'sim-card-badge unlocked';
+                badge.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Unlocked
+                `;
+            }
+            const cardBody = card.querySelector('.sim-card-body');
+            if (cardBody) {
+                const descEl = cardBody.querySelector('.sim-card-desc');
+                if (descEl && unlockedDesc) {
+                    descEl.textContent = unlockedDesc;
+                }
+
+                // Add progress bar if not already present
+                if (!cardBody.querySelector('.sim-progress-wrap')) {
+                    const progressWrap = document.createElement('div');
+                    progressWrap.className = 'sim-progress-wrap';
+                    progressWrap.innerHTML = `
+                        <div class="sim-progress-bar">
+                            <div class="sim-progress-fill" style="width:0%"></div>
+                        </div>
+                        <div class="sim-progress-pct">0%</div>
+                    `;
+                    // Insert before the button
+                    const btn = cardBody.querySelector('.sim-btn') || cardBody.querySelector('a');
+                    if (btn) {
+                        cardBody.insertBefore(progressWrap, btn);
+                    } else {
+                        cardBody.appendChild(progressWrap);
+                    }
+                }
+
+                const linkBtn = cardBody.querySelector('a.sim-btn');
+                if (linkBtn) {
+                    linkBtn.outerHTML = `
+                        <button class="sim-btn">Start Simulation <svg viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2.5">
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                                <polyline points="12 5 19 12 12 19" />
+                            </svg></button>
+                    `;
+                }
+            }
+        }
+
+        function lockPracticeCard(card, title, moduleFile) {
+            if (!card || card.classList.contains('locked-card')) return;
+            card.classList.add('locked-card');
+            card.removeAttribute('data-practice-completed');
+            card.onclick = null;
+            card.style.cursor = 'default';
+
+            // Ensure lock overlay exists
+            const imgWrap = card.querySelector('.sim-card-img-wrap');
+            if (imgWrap && !imgWrap.querySelector('.lock-overlay')) {
+                const overlay = document.createElement('div');
+                overlay.className = 'lock-overlay';
+                overlay.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                `;
+                imgWrap.appendChild(overlay);
+            }
+
+            const badge = card.querySelector('.sim-card-badge');
+            if (badge) {
+                badge.className = 'sim-card-badge locked';
+                badge.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Locked
+                `;
+            }
+
+            const meta = card.querySelector('.sim-card-meta');
+            if (meta) meta.remove();
+            const progressWrap = card.querySelector('.sim-progress-wrap');
+            if (progressWrap) progressWrap.remove();
+
+            const descEl = card.querySelector('.sim-card-desc');
+            if (descEl) {
+                descEl.textContent = `Complete the "${title}" module to unlock this simulation.`;
+            }
+
+            const btn = card.querySelector('.sim-btn');
+            if (btn) {
+                btn.outerHTML = `
+                    <a href="${moduleFile || 'modules.html'}" class="sim-btn outline">Go to Module <svg
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                        </svg></a>
+                `;
+            }
         }
 
         function initCompletedPracticeCards() {
@@ -2186,7 +2307,10 @@
             });
 
             const student = getStudentInfo();
-            if (!student) return;
+            if (!student) {
+                console.warn('No student info found, cannot load progress');
+                return;
+            }
 
             const studentId = student.student_id;
             const email = student.email;
@@ -2228,73 +2352,36 @@
                     'Battery Maintenance': 'mod_progress_batterymodule',
                     'Spark Plug Replacement': 'mod_progress_sparkmodule'
                 };
+                const titleToModuleFile = {
+                    'Engine Oil Change': 'enginemodule.html',
+                    'Brake Pad Replacement': 'brakemodule.html',
+                    'Air Filter Replacement': 'airmodule.html',
+                    'Fuel Filter Replacement': 'fuelmodule.html',
+                    'Battery Maintenance': 'batterymodule.html',
+                    'Spark Plug Replacement': 'sparkmodule.html'
+                };
+                const titleToUnlockedDesc = {
+                    'Engine Oil Change': 'Learn the proper procedure for changing engine oil.',
+                    'Brake Pad Replacement': 'Practice replacing brake pads safely and effectively.',
+                    'Air Filter Replacement': 'Practice air filter inspection, removal, and installation procedures.',
+                    'Fuel Filter Replacement': 'Practice fuel filter inspection, removal, and replacement procedures.',
+                    'Battery Maintenance': 'Learn proper battery inspection, cleaning, and maintenance procedures.',
+                    'Spark Plug Replacement': 'Practice spark plug inspection and replacement procedures.'
+                };
 
                 const cards = document.querySelectorAll('.sim-card');
                 cards.forEach(card => {
                     const title = card.dataset.title;
                     const mKey = titleToModuleKey[title];
-                    if (mKey) {
-                        const progress = moduleProgress[mKey] || 0;
-                        if (progress >= 100) {
-                            // Unlock card
-                            if (card.classList.contains('locked-card')) {
-                                card.classList.remove('locked-card');
-                                const overlay = card.querySelector('.lock-overlay');
-                                if (overlay) overlay.remove();
-                                const badge = card.querySelector('.sim-card-badge');
-                                if (badge) {
-                                    badge.className = 'sim-card-badge unlocked';
-                                    badge.innerHTML = `
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                        Unlocked
-                                    `;
-                                }
-                                const cardBody = card.querySelector('.sim-card-body');
-                                if (cardBody) {
-                                    // Update description
-                                    const descEl = cardBody.querySelector('.sim-card-desc');
-                                    if (descEl) {
-                                        if (title === 'Fuel Filter Replacement') {
-                                            descEl.textContent = 'Practice fuel filter inspection, removal, and replacement procedures.';
-                                        } else if (title === 'Spark Plug Replacement') {
-                                            descEl.textContent = 'Practice spark plug inspection and replacement procedures.';
-                                        }
-                                    }
-
-                                    // Add progress bar if not already present
-                                    if (!cardBody.querySelector('.sim-progress-wrap')) {
-                                        const progressWrap = document.createElement('div');
-                                        progressWrap.className = 'sim-progress-wrap';
-                                        progressWrap.innerHTML = `
-                                            <div class="sim-progress-bar">
-                                                <div class="sim-progress-fill" style="width:0%"></div>
-                                            </div>
-                                            <div class="sim-progress-pct">0%</div>
-                                        `;
-                                        // Insert before the button
-                                        const btn = cardBody.querySelector('.sim-btn') || cardBody.querySelector('a');
-                                        if (btn) {
-                                            cardBody.insertBefore(progressWrap, btn);
-                                        } else {
-                                            cardBody.appendChild(progressWrap);
-                                        }
-                                    }
-
-                                    const linkBtn = cardBody.querySelector('a.sim-btn');
-                                    if (linkBtn) {
-                                        linkBtn.outerHTML = `
-                                            <button class="sim-btn">Start Simulation <svg viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2.5">
-                                                    <line x1="5" y1="12" x2="19" y2="12" />
-                                                    <polyline points="12 5 19 12 12 19" />
-                                                </svg></button>
-                                        `;
-                                    }
-                                }
-                            }
-                        }
+                    if (!mKey) return;
+                    const moduleCompleted = (moduleProgress[mKey] || 0) >= 100;
+                    // A saved practice record means the sim was legitimately unlocked
+                    // before — once unlocked it stays unlocked, even on module re-reads.
+                    const hasPracticeRecord = !!progressMap[title];
+                    if (moduleCompleted || hasPracticeRecord) {
+                        unlockPracticeCard(card, title, titleToUnlockedDesc[title]);
+                    } else {
+                        lockPracticeCard(card, title, titleToModuleFile[title]);
                     }
                 });
 
@@ -2310,9 +2397,13 @@
                             // Calculate percentage of steps completed
                             const steps = record.steps || [];
                             const completedSteps = steps.filter(s => (s.correct_actions || s.correct || []).length > 0).length;
-                            const pct = steps.length > 0 ? Math.round((completedSteps / steps.length) * 100) : 0;
+                            let pct = steps.length > 0 ? Math.round((completedSteps / steps.length) * 100) : 0;
+                            // Prefer the saved step position when available
+                            if (typeof record.current_step_index === 'number' && steps.length > 0) {
+                                pct = Math.max(pct, Math.round((record.current_step_index / steps.length) * 100));
+                            }
 
-                            applyInProgressPracticeCard(card, pct);
+                            applyInProgressPracticeCard(card, pct, record);
                         }
                     } else {
                         // No record in the database - reset unlocked card to 0% and Start Simulation
@@ -2565,6 +2656,7 @@
     </script>
 
     <script src="js/notifications.js"></script>
+    <script src="js/user-avatar.js"></script>
 </body>
 
 </html>

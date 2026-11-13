@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Filter Replacement — Module Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background: #5b6170; color: #1a1a2e; padding: 32px 16px; }
+        .page { width: 210mm; max-width: 100%; margin: 0 auto 24px; background: #fff; padding: 22mm 20mm; box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+        .doc-header { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; border-bottom: 3px solid #2563eb; }
+        .doc-logo { width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 1.35rem; font-weight: 700; flex-shrink: 0; }
+        .doc-brand { font-size: 0.72rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #2563eb; }
+        .doc-title { font-family: 'Rajdhani', sans-serif; font-size: 1.9rem; font-weight: 700; color: #12122b; line-height: 1.1; }
+        .doc-sub { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+        .doc-badge { margin-left: auto; text-align: right; flex-shrink: 0; font-size: 0.7rem; color: #6b7280; line-height: 1.5; }
+        .doc-badge strong { display: block; color: #12122b; font-size: 0.78rem; }
+        .section { margin-top: 26px; }
+        .section-title { display: flex; align-items: center; gap: 10px; font-family: 'Rajdhani', sans-serif; font-size: 1.15rem; font-weight: 700; color: #1d4ed8; margin-bottom: 10px; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+        .section-num { width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; font-size: 0.78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .lead { font-size: 0.85rem; color: #374151; line-height: 1.6; margin-bottom: 10px; }
+        .step { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; page-break-inside: avoid; }
+        .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .step-num { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1d4ed8; font-size: 0.78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .step-name { font-size: 0.92rem; font-weight: 800; color: #12122b; }
+        .step-meta { margin-left: auto; display: flex; gap: 6px; flex-shrink: 0; }
+        .chip { font-size: 0.62rem; font-weight: 800; padding: 3px 9px; border-radius: 20px; background: #f3f4f6; color: #6b7280; }
+        .chip.diff-easy { background: #ecfdf5; color: #16a34a; }
+        .chip.diff-medium { background: #fffbeb; color: #d97706; }
+        .step-desc { font-size: 0.78rem; color: #6b7280; margin: 2px 0 8px 36px; }
+        .step-list { margin-left: 36px; list-style: none; }
+        .step-list li { position: relative; font-size: 0.8rem; color: #374151; line-height: 1.55; padding-left: 18px; margin-bottom: 3px; }
+        .step-list li::before { content: counter(list-item); position: absolute; left: 0; font-size: 0.66rem; font-weight: 800; color: #2563eb; }
+        .safety { display: flex; align-items: flex-start; gap: 8px; margin: 9px 0 0 36px; padding: 8px 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 9px; font-size: 0.74rem; color: #9a3412; line-height: 1.45; }
+        .safety svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+        .safety strong { font-weight: 800; }
+        .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin-left: 4px; }
+        .tool { display: flex; align-items: center; gap: 9px; font-size: 0.82rem; color: #374151; font-weight: 600; }
+        .tool::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); flex-shrink: 0; }
+        .quiz-item { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 9px; margin-bottom: 7px; font-size: 0.82rem; color: #374151; }
+        .q-num { width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0; background: #eef2ff; color: #4f46e5; font-size: 0.72rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .takeaway { display: flex; align-items: flex-start; gap: 10px; font-size: 0.84rem; color: #374151; margin-bottom: 7px; font-weight: 600; }
+        .takeaway svg { width: 17px; height: 17px; color: #16a34a; flex-shrink: 0; margin-top: 1px; }
+        .doc-footer { margin-top: 30px; padding-top: 14px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; font-size: 0.68rem; color: #9ca3af; }
+        .print-hint { position: fixed; bottom: 18px; right: 18px; background: #12122b; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 10px 16px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.3); }
+        @media print { body { background: #fff; padding: 0; } .page { width: auto; margin: 0; box-shadow: none; padding: 0; } .print-hint { display: none; } }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="doc-header">
+        <div class="doc-logo">M</div>
+        <div>
+            <div class="doc-brand">MotoMaster Module Guide</div>
+            <div class="doc-title">Air Filter Replacement</div>
+            <div class="doc-sub">Air filter inspection and replacement — inspection to reinstallation</div>
+        </div>
+        <div class="doc-badge"><strong>12 Lessons</strong>~25 min total · Easy</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">1</span>Overview</div>
+        <p class="lead">This guide covers the complete air filter replacement process from inspection to reinstallation — the same procedure taught in the Air Filter learning module, practice simulation, and assessment simulation.</p>
+        <p class="lead"><strong>What you will learn:</strong></p>
+        <ul class="step-list" style="margin-left:20px;">
+            <li>Why a clean air filter is critical for engine performance and fuel efficiency.</li>
+            <li>The tools and materials needed for an air filter replacement.</li>
+            <li>An 8-step procedure to safely replace the engine air filter.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">2</span>Tools &amp; Materials</div>
+        <div class="tools">
+            <div class="tool">New replacement air filter (check manual for size)</div>
+            <div class="tool">Flathead screwdriver or socket set (housing clips/bolts)</div>
+            <div class="tool">Clean cloth or shop rag</div>
+            <div class="tool">Compressed air or vacuum (optional)</div>
+        </div>
+        <div class="safety" style="margin-left:4px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span><strong>Safety Reminder:</strong> Always work on a cool engine. Never replace an air filter immediately after driving.</span></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">3</span>Procedure — 8 Steps</div>
+
+        <div class="step"><div class="step-head"><span class="step-num">1</span><span class="step-name">Locate the Air Filter Housing</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Find the air filter housing in the engine bay before starting any work.</div>
+            <ol class="step-list">
+                <li>Open the vehicle hood and secure it with the prop rod.</li>
+                <li>Locate the air filter housing — typically a large black plastic box connected to a large rubber intake hose.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Ensure the engine is off and fully cooled</strong> before reaching into the engine bay.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">2</span><span class="step-name">Inspect the Old Filter</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Before removing, assess the condition of the existing air filter.</div>
+            <ol class="step-list">
+                <li>Unclip one side of the housing lid to peek at the filter.</li>
+                <li>Hold the filter up to the light — if you cannot see light through the folds, it must be replaced.</li>
+                <li>Check for oil contamination, insects, or physical damage.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">3</span><span class="step-name">Disconnect the Air Intake Hose</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Loosen the clamp securing the rubber intake hose to the housing.</div>
+            <ol class="step-list">
+                <li>Use a flathead screwdriver or socket to loosen the hose clamp screw.</li>
+                <li>Gently twist and pull the rubber hose away from the housing port.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Do not force or kink the intake hose</strong> — it can crack and cause an air leak affecting engine performance.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">4</span><span class="step-name">Open the Filter Housing</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Unclip or unscrew the air filter housing lid to access the filter inside.</div>
+            <ol class="step-list">
+                <li>Release all spring clips or unscrew the bolts holding the housing lid in place.</li>
+                <li>Lift the lid away carefully and set it aside without straining any attached sensor wires.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">5</span><span class="step-name">Remove the Old Air Filter</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Lift the old filter out of the housing without shaking debris into the intake.</div>
+            <ol class="step-list">
+                <li>Carefully lift the old filter straight up out of the housing.</li>
+                <li>Avoid tilting or shaking it — loose debris can fall into the intake manifold.</li>
+                <li>Place the old filter in a bag immediately for disposal.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Cover the open intake port with a clean cloth</strong> while the housing is open to prevent debris ingestion.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">6</span><span class="step-name">Clean the Housing</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Remove any dirt, dust, or debris from inside the air filter housing before fitting the new filter.</div>
+            <ol class="step-list">
+                <li>Use a clean dry cloth to wipe out the interior of the housing.</li>
+                <li>If available, use compressed air or a vacuum to remove fine dust particles.</li>
+                <li>Inspect the housing for cracks or damage that may cause air leaks.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">7</span><span class="step-name">Install the New Air Filter</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Place the new filter correctly into the housing with the rubber seal facing down.</div>
+            <ol class="step-list">
+                <li>Verify the new filter matches the old one in size and shape.</li>
+                <li>Lower the new filter into the housing, ensuring the rubber gasket seats evenly all the way around.</li>
+                <li>Press down gently to confirm a snug, even fit.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">8</span><span class="step-name">Close and Secure the Housing</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Reattach the housing lid and reconnect the intake hose to complete the installation.</div>
+            <ol class="step-list">
+                <li>Place the housing lid back on and fasten all clips or bolts firmly.</li>
+                <li>Reattach the rubber intake hose to the housing port and tighten the hose clamp.</li>
+                <li>Start the engine and listen for any unusual whistling or air-sucking sounds indicating a leak.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Never run the engine with the air filter housing open</strong> — unfiltered air can damage the engine internals.</span></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">4</span>Knowledge Check</div>
+        <div class="quiz-item"><span class="q-num">Q1</span>How can you tell if an air filter needs replacement without removing it?</div>
+        <div class="quiz-item"><span class="q-num">Q2</span>Why should you cover the intake port while the housing is open?</div>
+        <div class="quiz-item"><span class="q-num">Q3</span>What does a whistling sound after reassembly indicate?</div>
+        <div class="quiz-item"><span class="q-num">Q4</span>Why must the rubber gasket of the new filter seat evenly?</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">5</span>Key Takeaways</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>A clogged air filter reduces engine power and fuel efficiency — replace every 15,000–30,000 km.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Always cover the open intake port when the housing is removed.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Ensure the filter gasket seats evenly to prevent unfiltered air bypass.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Test the engine after reassembly and listen for air leaks.</div>
+    </div>
+
+    <div class="doc-footer"><span>MotoMaster — Automotive Repair Simulation</span><span>Air Filter Replacement Module Guide</span></div>
+</div>
+
+<div class="print-hint">Ctrl + P → Save as PDF</div>
+
+</body>
+</html>

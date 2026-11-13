@@ -164,7 +164,7 @@ const newContainer = `
                     <td style="padding: 15px 10px;">
                         <div style="display: flex; flex-direction: column;">
                             <span>\${t.specialization}</span>
-                            <span style="color: var(--text-secondary); font-size: 10px;">\${t.classes[0] || 'BSMA 2A'}</span>
+                            <span style="color: var(--text-secondary); font-size: 10px;">\${t.classes[0] || 'A'}</span>
                         </div>
                     </td>
                     <td style="padding: 15px 10px; text-align: center;">

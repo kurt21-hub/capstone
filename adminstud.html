@@ -972,14 +972,6 @@
                     
                     <select class="panel-select" id="sectionFilter" style="min-width: 150px;">
                         <option value="all">All Sections</option>
-                        <option value="BSMA 1-A">BSMA 1-A</option>
-                        <option value="BSMA 1-B">BSMA 1-B</option>
-                        <option value="BSMA 2-A">BSMA 2-A</option>
-                        <option value="BSMA 2-B">BSMA 2-B</option>
-                        <option value="BSMA 3-A">BSMA 3-A</option>
-                        <option value="BSMA 3-B">BSMA 3-B</option>
-                        <option value="AT-101">AT-101</option>
-                        <option value="AT-201">AT-201</option>
                     </select>
 
                     <select class="panel-select" id="statusFilter" style="min-width: 130px;">
@@ -1064,15 +1056,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Section</label>
-                                <select id="addSection" class="form-select" required>
-                                    <option value="BSMA 1-A">BSMA 1-A</option>
-                                    <option value="BSMA 1-B">BSMA 1-B</option>
-                                    <option value="BSMA 2-A">BSMA 2-A</option>
-                                    <option value="BSMA 2-B">BSMA 2-B</option>
-                                    <option value="BSMA 3-A">BSMA 3-A</option>
-                                    <option value="BSMA 3-B">BSMA 3-B</option>
-                                    <option value="AT-101">AT-101</option>
-                                    <option value="AT-201">AT-201</option>
+                                <select id="addSection" class="form-select section-picker" data-placeholder="Select section">
                                 </select>
                             </div>
                             <div class="form-group">
@@ -1143,15 +1127,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Section</label>
-                                <select id="editSection" class="form-select" required>
-                                    <option value="BSMA 1-A">BSMA 1-A</option>
-                                    <option value="BSMA 1-B">BSMA 1-B</option>
-                                    <option value="BSMA 2-A">BSMA 2-A</option>
-                                    <option value="BSMA 2-B">BSMA 2-B</option>
-                                    <option value="BSMA 3-A">BSMA 3-A</option>
-                                    <option value="BSMA 3-B">BSMA 3-B</option>
-                                    <option value="AT-101">AT-101</option>
-                                    <option value="AT-201">AT-201</option>
+                                <select id="editSection" class="form-select section-picker" data-placeholder="Select section">
                                 </select>
                             </div>
                             <div class="form-group">
@@ -1227,11 +1203,13 @@
     <script>
         // State
         let allStudents = [];
+        let teacherAssignedSections = new Set();
+        let sectionTeacherMap = {}; // section letter -> teacher display name
         let filteredStudents = [];
         let currentPage = 1;
         const pageSize = 8;
 
-        // API Configuration - connects directly to motomasterdb via PHP backend
+        // API Configuration - connects directly to motomaster via PHP backend
         const API_BASE = (window.location.protocol === 'http:' || window.location.protocol === 'https:')
             ? 'admin_data_api.php'
             : 'http://localhost/motomaster/admin_data_api.php';
@@ -1243,7 +1221,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="9" style="padding: 36px; text-align: center; color: var(--text-secondary);">
-                            <i class="fa-solid fa-circle-notch fa-spin" style="margin-right: 8px; color: var(--accent);"></i> Loading registered students from motomasterdb...
+                            <i class="fa-solid fa-circle-notch fa-spin" style="margin-right: 8px; color: var(--accent);"></i> Loading registered students from motomaster...
                         </td>
                     </tr>
                 `;
@@ -1265,11 +1243,12 @@
                         allStudents = [];
                     }
                     populateSectionFilter();
+                    populateSectionSelects();
                     calculateKPIs(data && data.kpis ? data.kpis : null);
                     filterAndRender();
                 })
                 .catch(err => {
-                    console.error('Failed to load registered students from motomasterdb:', err);
+                    console.error('Failed to load registered students from motomaster:', err);
                     allStudents = [];
                     calculateKPIs(null);
                     filterAndRender();
@@ -1285,7 +1264,7 @@
                 last_name: s.last_name || '',
                 email: s.email || '',
                 contact_number: s.contact_number || '—',
-                section: s.section || 'BSMA 1-A',
+                section: s.section || '—',
                 strand: s.strand || 'Automotive Servicing NC II',
                 teacher_name: s.teacher_name || 'Prof. Roberto Santos',
                 progress: typeof s.progress === 'number' ? s.progress : 0,
@@ -1303,28 +1282,61 @@
             };
         }
 
+        // Sections in use: on student records or assigned to a teacher
+        function registeredSections() {
+            const sections = new Set(teacherAssignedSections);
+            allStudents.forEach(s => {
+                if (s.section) sections.add(s.section);
+            });
+            return Array.from(sections).sort();
+        }
+
+        // Fill the Add/Edit student section dropdowns with registered sections only
+        function populateSectionSelects() {
+            const sections = registeredSections();
+            ['addSection', 'editSection'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                const current = sel.value;
+                sel.innerHTML = '';
+                sections.forEach(sec => {
+                    const opt = document.createElement('option');
+                    opt.value = sec;
+                    opt.textContent = sec.length === 1 ? 'Section ' + sec : sec;
+                    sel.appendChild(opt);
+                });
+                sel.value = sections.includes(current) ? current : '';
+                sel.dispatchEvent(new Event('change'));
+            });
+        }
+
         function populateSectionFilter() {
             const select = document.getElementById('sectionFilter');
             if (!select) return;
             const currentVal = select.value;
-            const sections = new Set();
-            ['BSMA 1-A', 'BSMA 1-B', 'BSMA 2-A', 'BSMA 2-B', 'BSMA 3-A', 'BSMA 3-B', 'AT-101', 'AT-201'].forEach(sec => sections.add(sec));
-            allStudents.forEach(s => {
-                if (s.section) sections.add(s.section);
-            });
+            const sections = registeredSections();
 
             select.innerHTML = '<option value="all">All Sections</option>';
-            Array.from(sections).sort().forEach(sec => {
+            sections.forEach(sec => {
                 const opt = document.createElement('option');
                 opt.value = sec;
-                opt.textContent = sec;
+                opt.textContent = sec.length === 1 ? 'Section ' + sec : sec;
                 select.appendChild(opt);
             });
 
-            if (currentVal && Array.from(sections).includes(currentVal)) {
+            if (currentVal && sections.includes(currentVal)) {
                 select.value = currentVal;
             } else {
                 select.value = 'all';
+            }
+        }
+
+        // Auto-assign the teacher field based on the chosen section
+        function syncTeacherForSection(sectionSelId, teacherSelId) {
+            const sec = document.getElementById(sectionSelId).value;
+            const name = sectionTeacherMap[sec];
+            if (name) {
+                document.getElementById(teacherSelId).value = name;
             }
         }
 
@@ -1627,6 +1639,8 @@
             document.getElementById('editContact').value = student.contact_number || '';
             document.getElementById('editSection').value = student.section;
             document.getElementById('editTeacher').value = student.teacher_name;
+            // Let the section's assigned teacher take precedence (dispatched last)
+            document.getElementById('editSection').dispatchEvent(new Event('change'));
             document.getElementById('editProgress').value = student.progress || 0;
             document.getElementById('editStatus').value = student.status;
 
@@ -1805,6 +1819,20 @@
                         const opts = data.teachers.map(t => `<option value="Prof. ${t.first_name} ${t.last_name}">Prof. ${t.first_name} ${t.last_name}</option>`).join('');
                         if (addSel) addSel.innerHTML = opts;
                         if (editSel) editSel.innerHTML = opts;
+
+                        // Sections assigned to teachers also count as registered sections
+                        teacherAssignedSections = new Set();
+                        sectionTeacherMap = {};
+                        data.teachers.forEach(t => {
+                            const teacherName = `Prof. ${t.first_name} ${t.last_name}`;
+                            (Array.isArray(t.classes) ? t.classes : []).forEach(sec => {
+                                if (!sec) return;
+                                teacherAssignedSections.add(sec);
+                                if (!sectionTeacherMap[sec]) sectionTeacherMap[sec] = teacherName;
+                            });
+                        });
+                        populateSectionFilter();
+                        populateSectionSelects();
                     }
                 })
                 .catch(() => {});
@@ -1885,10 +1913,15 @@
 
         // Initialize on DOM load
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('addSection').addEventListener('change', () => syncTeacherForSection('addSection', 'addTeacher'));
+            document.getElementById('editSection').addEventListener('change', () => syncTeacherForSection('editSection', 'editTeacher'));
             loadAdminStudents();
             loadInstructorsDropdown();
         });
     </script>
+    <script src="js/section-picker.js"></script>
+    <script src="admin-live-refresh.js"></script>
+    <script>window.ADMIN_REFRESH_FN = 'loadAdminStudents';</script>
 </body>
 
 </html>

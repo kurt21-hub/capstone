@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Filter Replacement — Service Checklist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background: #5b6170; color: #1a1a2e; padding: 32px 16px; }
+        .page { width: 210mm; max-width: 100%; margin: 0 auto 24px; background: #fff; padding: 20mm 18mm; box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+        .doc-header { display: flex; align-items: center; gap: 14px; padding-bottom: 16px; border-bottom: 3px solid #2563eb; }
+        .doc-logo { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 700; flex-shrink: 0; }
+        .doc-brand { font-size: 0.7rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #2563eb; }
+        .doc-title { font-family: 'Rajdhani', sans-serif; font-size: 1.75rem; font-weight: 700; color: #12122b; line-height: 1.1; }
+        .doc-sub { font-size: 0.78rem; color: #6b7280; margin-top: 2px; }
+        .doc-badge { margin-left: auto; text-align: right; flex-shrink: 0; font-size: 0.7rem; color: #6b7280; line-height: 1.5; }
+        .doc-badge strong { display: block; color: #12122b; font-size: 0.78rem; }
+        .meta-row { display: flex; gap: 24px; margin-top: 12px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.74rem; color: #6b7280; }
+        .meta-row span { flex: 1; }
+        .meta-row strong { display: block; border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; margin-top: 2px; min-height: 1em; }
+        .group { margin-top: 18px; page-break-inside: avoid; }
+        .group-title { display: flex; align-items: center; gap: 9px; font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700; color: #1d4ed8; margin-bottom: 7px; }
+        .group-title::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+        .chk { display: flex; align-items: flex-start; gap: 10px; padding: 5px 8px; border-radius: 7px; font-size: 0.83rem; color: #374151; line-height: 1.5; page-break-inside: avoid; }
+        .chk:hover { background: #f8fafc; }
+        .chk .box { width: 15px; height: 15px; border: 1.8px solid #94a3b8; border-radius: 4px; flex-shrink: 0; margin-top: 2px; background: #fff; }
+        .warn { display: flex; align-items: flex-start; gap: 8px; margin: 8px 0 0 30px; padding: 7px 11px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; font-size: 0.73rem; color: #9a3412; line-height: 1.45; }
+        .doc-footer { margin-top: 26px; padding-top: 12px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; font-size: 0.68rem; color: #9ca3af; }
+        .print-hint { position: fixed; bottom: 18px; right: 18px; background: #12122b; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 10px 16px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.3); }
+        @media print { body { background: #fff; padding: 0; } .page { width: auto; margin: 0; box-shadow: none; padding: 0; } .print-hint { display: none; } .chk:hover { background: none; } }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="doc-header">
+        <div class="doc-logo">M</div>
+        <div>
+            <div class="doc-brand">MotoMaster Service Checklist</div>
+            <div class="doc-title">Fuel Filter Replacement</div>
+            <div class="doc-sub">Matches the practice simulation — tick each action as you perform it</div>
+        </div>
+        <div class="doc-badge"><strong>5 Steps</strong>Same order as the simulation</div>
+    </div>
+
+    <div class="meta-row">
+        <span>Student<strong></strong></span>
+        <span>Vehicle<strong></strong></span>
+        <span>Date<strong></strong></span>
+        <span>Filter loc.<strong></strong></span>
+    </div>
+
+    <div class="group"><div class="group-title">Step 1 · Safety &amp; Locate the Filter</div>
+        <div class="chk"><span class="box"></span>Confirm ignition is OFF and keys are removed</div>
+        <div class="chk"><span class="box"></span>Disconnect the battery negative terminal first</div>
+        <div class="chk"><span class="box"></span>Locate the fuel filter mounted on the firewall</div>
+        <div class="chk"><span class="box"></span>Wear gloves and safety goggles</div>
+        <div class="chk"><span class="box"></span>Prepare wrenches, rag, and the new filter</div>
+        <div class="warn">Disconnect the battery first — a single spark near fuel vapor can ignite a fire.</div>
+    </div>
+
+    <div class="group"><div class="group-title">Step 2 · Relieve Pressure &amp; Disconnect Lines</div>
+        <div class="chk"><span class="box"></span>Loosen the top banjo bolt slowly to relieve fuel pressure</div>
+        <div class="chk"><span class="box"></span>Use a rag to catch any fuel spray</div>
+        <div class="chk"><span class="box"></span>Remove the top banjo bolt completely</div>
+        <div class="chk"><span class="box"></span>Remove the lower fuel line fitting with a wrench</div>
+        <div class="warn">Relieve pressure slowly — pressurized fuel sprays and is highly flammable.</div>
+    </div>
+
+    <div class="group"><div class="group-title">Step 3 · Replace the Fuel Filter</div>
+        <div class="chk"><span class="box"></span>Unscrew the mounting bracket bolt</div>
+        <div class="chk"><span class="box"></span>Slide the old fuel filter out of the bracket</div>
+        <div class="chk"><span class="box"></span>Place the new filter in the bracket</div>
+        <div class="warn">Never lose the washers — missing washers cause fuel leaks.</div>
+    </div>
+
+    <div class="group"><div class="group-title">Step 4 · Reconnect Lines &amp; Tighten</div>
+        <div class="chk"><span class="box"></span>Reconnect the bottom fuel line first</div>
+        <div class="chk"><span class="box"></span>Then reinstall the top banjo bolt</div>
+        <div class="chk"><span class="box"></span>Tighten fittings to proper torque — firm, not over-tightened</div>
+        <div class="chk"><span class="box"></span>Reconnect the battery negative terminal</div>
+        <div class="warn">Bottom line first, then the banjo bolt — wrong order complicates reassembly.</div>
+    </div>
+
+    <div class="group"><div class="group-title">Step 5 · Prime &amp; Test the Engine</div>
+        <div class="chk"><span class="box"></span>Turn the key to ON to build fuel pressure — do not start yet</div>
+        <div class="chk"><span class="box"></span>Start the engine and let it run</div>
+        <div class="chk"><span class="box"></span>Confirm the engine runs smoothly</div>
+        <div class="chk"><span class="box"></span>Retighten any leaking fittings if needed</div>
+        <div class="warn">Check for leaks before driving — a fuel leak is a serious fire hazard.</div>
+    </div>
+
+    <div class="doc-footer"><span>MotoMaster — Automotive Repair Simulation</span><span>Fuel Filter Replacement Checklist</span></div>
+</div>
+
+<div class="print-hint">Ctrl + P → Save as PDF</div>
+
+</body>
+</html>

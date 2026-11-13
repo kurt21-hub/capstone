@@ -1146,7 +1146,7 @@
                         <div class="kpi-title">Total Today</div>
                     </div>
                     <div class="kpi-value" id="kpiTotalToday">24</div>
-                    <div class="kpi-foot"><span>All types</span><span style="color:var(--accent)">+12 vs yesterday</span></div>
+                    <div class="kpi-foot"><span>All types</span><span style="color:var(--accent)" id="kpiTodayDelta">+0 vs yesterday</span></div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-header">
@@ -1203,7 +1203,7 @@
 
                     <!-- Notifications list -->
                     <div id="notifList">
-                        <!-- Notifications dynamically populated from motomasterdb -->
+                        <!-- Notifications dynamically populated from motomaster -->
                     </div>
                     <div class="empty-state" id="emptyState">
                         <i class="fa-regular fa-bell-slash"></i>
@@ -1367,10 +1367,10 @@
                 <div class="form-group">
                     <label class="form-label">Recipient</label>
                     <select class="form-control" id="sendRecipient">
-                        <option value="All Admins" selected>All Admins</option>
+                        <option value="All Users" selected>All Users</option>
                         <option value="All Teachers">All Teachers</option>
                         <option value="All Students">All Students</option>
-                        <option value="All Users">All Users</option>
+                        <option value="All Admins">All Admins</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1459,6 +1459,11 @@
                         if (document.getElementById('unreadBadge')) document.getElementById('unreadBadge').textContent = res.kpis.unread;
                         if (document.getElementById('kpiCritical')) document.getElementById('kpiCritical').textContent = res.kpis.critical_unread + ' critical';
                         if (document.getElementById('kpiTotalToday')) document.getElementById('kpiTotalToday').textContent = res.kpis.total_today;
+                        const deltaEl = document.getElementById('kpiTodayDelta');
+                        if (deltaEl) {
+                            const d = (res.kpis.total_today || 0) - (res.kpis.total_yesterday || 0);
+                            deltaEl.textContent = (d >= 0 ? '+' : '') + d + ' vs yesterday';
+                        }
                         if (document.getElementById('kpiSentMonth')) document.getElementById('kpiSentMonth').textContent = res.kpis.sent_this_month;
                         if (document.getElementById('kpiSystemAlerts')) document.getElementById('kpiSystemAlerts').textContent = res.kpis.system_alerts;
                         if (document.getElementById('kpiHighPriority')) document.getElementById('kpiHighPriority').textContent = res.kpis.high_priority + ' high priority';
@@ -1663,7 +1668,7 @@
                     if (document.getElementById('unreadBadge')) document.getElementById('unreadBadge').textContent = '0';
                     checkEmpty();
                     refreshCategoryCounts();
-                    showNotifToast('All notifications cleared from motomasterdb.');
+                    showNotifToast('All notifications cleared from motomaster.');
                 }
             })
             .catch(err => console.error('Error clearing notifications:', err));
@@ -1769,7 +1774,7 @@
             .then(r => r.json())
             .then(res => {
                 if (res.success) {
-                    showNotifToast(res.message || 'Notification preferences saved to motomasterdb.');
+                    showNotifToast(res.message || 'Notification preferences saved to motomaster.');
                 } else {
                     alert(res.message || 'Error saving preferences.');
                 }
@@ -1818,6 +1823,8 @@
         })();
     </script>
 
+    <script src="admin-live-refresh.js"></script>
+    <script>window.ADMIN_REFRESH_FN = 'loadNotificationsData';</script>
 </body>
 
 </html>

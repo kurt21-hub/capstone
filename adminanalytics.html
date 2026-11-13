@@ -762,7 +762,7 @@
             }
         });
 
-        /* ── Fetch & Apply Live Data from motomasterdb ── */
+        /* ── Fetch & Apply Live Data from motomaster ── */
         async function loadAnalyticsData() {
             try {
                 const res = await fetch('/motomaster/admin_data_api.php?action=get_analytics_data&t=' + Date.now());
@@ -951,6 +951,8 @@
         loadAnalyticsData();
     </script>
 
+    <script src="admin-live-refresh.js"></script>
+    <script>window.ADMIN_REFRESH_FN = 'loadAnalyticsData';</script>
 </body>
 
 </html>

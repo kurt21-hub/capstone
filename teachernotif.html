@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <script src="js/teacher-notif-badge.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MotoMaster – Notifications</title>
@@ -1247,10 +1248,14 @@
     </div>
 
     <script src="teacher-profile.js"></script>
+    <script src="teacher-live-refresh.js"></script>
     <script>
+        window.TEACHER_REFRESH_FN = 'fetchNotificationsData';
+
         let notifications = [];
         let studentsList = [];
         let allLogs = {};
+        let adminMessages = [];
         let activeFilter = 'all';
 
         async function fetchNotificationsData() {
@@ -1275,15 +1280,55 @@
                 }
                 allLogs = logsData;
 
+                // Admin broadcast announcements addressed to teachers / all users
+                try {
+                    const msgResponse = await fetch('student_messages.php');
+                    const msgData = await msgResponse.json();
+                    if (msgData.success) {
+                        adminMessages = (msgData.messages || []).filter(m =>
+                            m.direction === 'incoming' && m.sender_role === 'Admin');
+                    }
+                } catch (e) {
+                    adminMessages = [];
+                }
+
                 generateNotifications();
             } catch (error) {
                 console.error('Error fetching notifications:', error);
             }
         }
 
+        function formatNotifTime(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(String(dateStr).replace(/-/g, '/'));
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' +
+                d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+
         function generateNotifications() {
             const rawNotifications = [];
             const readIds = JSON.parse(localStorage.getItem('read_notifications') || '[]');
+
+            // 0. Admin broadcast announcements (stored in messages table)
+            adminMessages.forEach(m => {
+                rawNotifications.push({
+                    id: `adminmsg_${m.message_id}`,
+                    type: 'system',
+                    category: 'system',
+                    icon: 'fa-bullhorn',
+                    iconBg: '#eff6ff',
+                    iconColor: '#2563eb',
+                    title: `Admin Announcement: ${m.subject || 'Notification'}`,
+                    desc: m.message_text || '',
+                    time: formatNotifTime(m.created_at),
+                    badge: 'announcement',
+                    badgeClass: 'badge-blue',
+                    action: 'View Message',
+                    link: '#',
+                    meta: { From: m.sender_name || 'Administrator', 'Sent To': m.recipient_name || m.recipient_role, Sent: formatNotifTime(m.created_at) }
+                });
+            });
 
             // 1. At-Risk Alerts
             studentsList.forEach(s => {
@@ -1331,10 +1376,10 @@
 
             // 3. New Submissions (Recent 5 assessment attempts)
             const assessments = allLogs.assessments || [];
-            const sortedAssessments = [...assessments].sort((a, b) => b.id - a.id).slice(0, 5);
+            const sortedAssessments = [...assessments].sort((a, b) => b.assessment_id - a.assessment_id).slice(0, 5);
             sortedAssessments.forEach(att => {
                 rawNotifications.push({
-                    id: `submission_${att.id}`,
+                    id: `submission_${att.assessment_id}`,
                     type: 'submission',
                     category: 'submission',
                     icon: 'fa-clipboard-check',
@@ -1347,16 +1392,16 @@
                     badgeClass: 'badge-orange',
                     action: 'Review Submission',
                     link: 'teacherassess.html',
-                    meta: { Student: att.student_name, Assessment: att.title, Score: att.score + '%', Date: att.created_at }
+                    meta: { Student: att.student_name, Assessment: att.title, Score: att.score + '%', Date: att.date_formatted || att.date_taken }
                 });
             });
 
             // 4. Leaderboard Milestones (Practice runs with high scores >= 80)
             const practices = allLogs.practice_sessions || [];
-            const sortedPractices = [...practices].filter(p => p.score >= 80).sort((a, b) => b.id - a.id).slice(0, 3);
+            const sortedPractices = [...practices].filter(p => p.score >= 80).sort((a, b) => b.session_id - a.session_id).slice(0, 3);
             sortedPractices.forEach(p => {
                 rawNotifications.push({
-                    id: `practice_${p.id}`,
+                    id: `practice_${p.session_id}`,
                     type: 'leaderboard',
                     category: 'leaderboard',
                     icon: 'fa-trophy',

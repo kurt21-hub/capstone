@@ -5,18 +5,44 @@ require_once __DIR__ . '/auth_session.php';
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 if ($mysqli->connect_errno) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+    echo json_encode(['success' => false, 'message' => 'Database connection failed: ' . $mysqli->connect_error]);
     exit;
 }
 
 // Get parameters
-$studentId = motoMasterRequireStudentId();
+// Try to get student_id from PHP session first
+motoMasterStartSession();
+$studentId = null;
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'Student' && !empty($_SESSION['student_id'])) {
+    $studentId = (int) $_SESSION['student_id'];
+    error_log("Got student_id from session: " . $studentId);
+}
+
+// Fallback: student_id from query params or JSON body (used when PHP session is unavailable)
+if (!$studentId) {
+    $studentId = isset($_GET['student_id']) ? (int) $_GET['student_id'] : null;
+
+    if (!$studentId) {
+        $input = json_decode(file_get_contents('php://input'), true);
+        if ($input && isset($input['student_id'])) {
+            $studentId = (int) $input['student_id'];
+        }
+    }
+}
+
+if (!$studentId) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Authentication required - no student ID found']);
+    exit;
+}
+
 $title = isset($_GET['title']) ? trim($_GET['title']) : 'Battery Maintenance';
+error_log("Loading progress - student_id: $studentId, title: $title");
 
 if ($title === 'all') {
     $stmt = $mysqli->prepare(
@@ -45,7 +71,11 @@ if ($title === 'all') {
             'date_attempted' => $row['date_attempted'],
             'steps' => $description['steps'] ?? [],
             'time_elapsed_seconds' => $description['time_elapsed_seconds'] ?? 0,
-            'saved_at' => $description['saved_at'] ?? null
+            'saved_at' => $description['saved_at'] ?? null,
+            'current_step_index' => $description['current_step_index'] ?? null,
+            'step_instr_done' => $description['step_instr_done'] ?? null,
+            'battery_needs_replacement' => $description['battery_needs_replacement'] ?? null,
+            'scene_state' => $description['scene_state'] ?? null
         ];
     }
     $stmt->close();
@@ -64,7 +94,7 @@ $stmt = $mysqli->prepare(
     "SELECT simulation_id, description, score, completion_status, date_attempted 
      FROM simulation 
      WHERE student_id = ? AND title = ? 
-     ORDER BY date_attempted DESC LIMIT 1"
+     ORDER BY simulation_id DESC LIMIT 1"
 );
 $stmt->bind_param('is', $studentId, $title);
 $stmt->execute();
@@ -82,7 +112,11 @@ if ($row = $result->fetch_assoc()) {
         'date_attempted' => $row['date_attempted'],
         'steps' => $description['steps'] ?? [],
         'time_elapsed_seconds' => $description['time_elapsed_seconds'] ?? 0,
-        'saved_at' => $description['saved_at'] ?? null
+        'saved_at' => $description['saved_at'] ?? null,
+        'current_step_index' => $description['current_step_index'] ?? null,
+        'step_instr_done' => $description['step_instr_done'] ?? null,
+        'battery_needs_replacement' => $description['battery_needs_replacement'] ?? null,
+        'scene_state' => $description['scene_state'] ?? null
     ];
 }
 $stmt->close();

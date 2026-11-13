@@ -470,6 +470,7 @@
             background: #1d4ed8;
         }
     </style>
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 
 <body>
@@ -489,7 +490,7 @@
             </button>
             <div class="nav-user-wrap">
                 <div class="nav-user">
-                    <div class="nav-avatar"><img src="images/unknown-avatar.svg" alt="User"></div>
+                    <div class="nav-avatar"><img src="images/userprofile.jpg" alt="User"></div>
                     <div>
                         <div class="nav-user-name" id="studentFullName"></div>
                         <div class="nav-user-role">Student</div>
@@ -527,13 +528,14 @@
         <div class="profile-card">
             <div class="profile-card-header">
                 <div class="profile-avatar-wrap">
-                    <img src="images/unknown-avatar.svg" alt="Profile Photo">
-                    <div class="avatar-edit-btn">
+                    <img src="images/userprofile.jpg" alt="Profile Photo" id="profileAvatarImg" data-user-avatar>
+                    <div class="avatar-edit-btn" id="avatarEditBtn" title="Change profile photo">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="M12 20h9" />
                             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                         </svg>
                     </div>
+                    <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
                 </div>
                 <div>
                     <div class="profile-card-title">Edit Profile</div>
@@ -581,7 +583,7 @@
 
             <div class="form-actions">
                 <a href="feature.html" class="btn btn-outline">Cancel</a>
-                <button class="btn btn-primary" onclick="showSaveSuccess()">
+                <button class="btn btn-primary" id="saveProfileBtn" onclick="saveProfile()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14"
                         height="14">
                         <path d="M20 6L9 17l-5-5" />
@@ -614,6 +616,86 @@
             window.location.href = 'feature.html';
         }
 
+        // ── Profile photo upload ──
+        let pendingAvatarFile = null;
+        const avatarFileInput = document.getElementById('avatarFileInput');
+        const profileAvatarImg = document.getElementById('profileAvatarImg');
+
+        document.getElementById('avatarEditBtn').addEventListener('click', () => {
+            avatarFileInput.click();
+        });
+
+        avatarFileInput.addEventListener('change', () => {
+            const file = avatarFileInput.files && avatarFileInput.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                alert('Please choose an image file (JPG, PNG, GIF, or WebP).');
+                avatarFileInput.value = '';
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Photo is too large. Please choose an image under 5 MB.');
+                avatarFileInput.value = '';
+                return;
+            }
+            pendingAvatarFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (profileAvatarImg) profileAvatarImg.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        async function uploadAvatar() {
+            const formData = new FormData();
+            formData.append('photo', pendingAvatarFile);
+            const res = await fetch('profile_photo.php', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!data.success) {
+                throw new Error(data.message || 'Photo upload failed');
+            }
+
+            // Keep the stored student object in sync for other pages
+            try {
+                const stored = localStorage.getItem('motomasterStudent') || sessionStorage.getItem('motomasterStudent');
+                if (stored) {
+                    const student = JSON.parse(stored);
+                    student.profile_photo = data.profile_photo;
+                    if (localStorage.getItem('motomasterStudent')) {
+                        localStorage.setItem('motomasterStudent', JSON.stringify(student));
+                    }
+                    if (sessionStorage.getItem('motomasterStudent')) {
+                        sessionStorage.setItem('motomasterStudent', JSON.stringify(student));
+                    }
+                }
+            } catch (e) {
+                // Non-fatal — the next page load re-syncs from the database.
+            }
+
+            if (window.MotoMasterAvatar) {
+                window.MotoMasterAvatar.applyAvatars(data.profile_photo);
+            }
+            return data.profile_photo;
+        }
+
+        async function saveProfile() {
+            const saveBtn = document.getElementById('saveProfileBtn');
+            if (pendingAvatarFile) {
+                try {
+                    if (saveBtn) saveBtn.disabled = true;
+                    await uploadAvatar();
+                    pendingAvatarFile = null;
+                    avatarFileInput.value = '';
+                } catch (err) {
+                    alert(err.message || 'Could not upload your photo. Please try again.');
+                    if (saveBtn) saveBtn.disabled = false;
+                    return;
+                }
+            }
+            if (saveBtn) saveBtn.disabled = false;
+            showSaveSuccess();
+        }
+
         function applyStudentProfile() {
             const stored = localStorage.getItem('motomasterStudent') || sessionStorage.getItem('motomasterStudent');
             if (!stored) return;
@@ -640,6 +722,7 @@
         document.addEventListener('DOMContentLoaded', applyStudentProfile);
         window.addEventListener('pageshow', applyStudentProfile);
     </script>
+    <script src="js/user-avatar.js"></script>
 
 </body>
 

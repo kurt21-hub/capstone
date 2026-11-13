@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Maintenance — Service Checklist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background: #5b6170; color: #1a1a2e; padding: 32px 16px; }
+        .page { width: 210mm; max-width: 100%; margin: 0 auto 24px; background: #fff; padding: 20mm 18mm; box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+        .doc-header { display: flex; align-items: center; gap: 14px; padding-bottom: 16px; border-bottom: 3px solid #2563eb; }
+        .doc-logo { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 700; flex-shrink: 0; }
+        .doc-brand { font-size: 0.7rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #2563eb; }
+        .doc-title { font-family: 'Rajdhani', sans-serif; font-size: 1.75rem; font-weight: 700; color: #12122b; line-height: 1.1; }
+        .doc-sub { font-size: 0.78rem; color: #6b7280; margin-top: 2px; }
+        .doc-badge { margin-left: auto; text-align: right; flex-shrink: 0; font-size: 0.7rem; color: #6b7280; line-height: 1.5; }
+        .doc-badge strong { display: block; color: #12122b; font-size: 0.78rem; }
+        .meta-row { display: flex; gap: 24px; margin-top: 12px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.74rem; color: #6b7280; }
+        .meta-row span { flex: 1; }
+        .meta-row strong { display: block; border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; margin-top: 2px; min-height: 1em; }
+        .group { margin-top: 18px; page-break-inside: avoid; }
+        .group-title { display: flex; align-items: center; gap: 9px; font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700; color: #1d4ed8; margin-bottom: 7px; }
+        .group-title::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+        .chk { display: flex; align-items: flex-start; gap: 10px; padding: 5px 8px; border-radius: 7px; font-size: 0.83rem; color: #374151; line-height: 1.5; page-break-inside: avoid; }
+        .chk:hover { background: #f8fafc; }
+        .chk .box { width: 15px; height: 15px; border: 1.8px solid #94a3b8; border-radius: 4px; flex-shrink: 0; margin-top: 2px; background: #fff; }
+        .warn { display: flex; align-items: flex-start; gap: 8px; margin: 8px 0 0 30px; padding: 7px 11px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; font-size: 0.73rem; color: #9a3412; line-height: 1.45; }
+        .doc-footer { margin-top: 26px; padding-top: 12px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; font-size: 0.68rem; color: #9ca3af; }
+        .print-hint { position: fixed; bottom: 18px; right: 18px; background: #12122b; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 10px 16px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.3); }
+        @media print { body { background: #fff; padding: 0; } .page { width: auto; margin: 0; box-shadow: none; padding: 0; } .print-hint { display: none; } .chk:hover { background: none; } }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="doc-header">
+        <div class="doc-logo">M</div>
+        <div>
+            <div class="doc-brand">MotoMaster Service Checklist</div>
+            <div class="doc-title">Battery Maintenance</div>
+            <div class="doc-sub">Matches the practice simulation — tick each action as you perform it</div>
+        </div>
+        <div class="doc-badge"><strong>5 Steps</strong>Same order as the simulation</div>
+    </div>
+
+    <div class="meta-row">
+        <span>Student<strong></strong></span>
+        <span>Vehicle<strong></strong></span>
+        <span>Date<strong></strong></span>
+        <span>Battery V<strong></strong></span>
+    </div>
+
+    <div class="group"><div class="group-title">Step 1 · Inspect Battery Condition</div>
+        <div class="chk"><span class="box"></span>Ensure ignition is off and keys are removed</div>
+        <div class="chk"><span class="box"></span>Visually inspect the battery for cracks, bulging, or leaks</div>
+        <div class="warn">Always wear safety goggles and gloves — battery acid can cause burns.</div>
+    </div>
+
+    <div class="group"><div class="group-title">Step 2 · Clean Battery Terminals</div>
+        <div class="chk"><span class="box"></span>Mix baking soda with water to create cleaning paste</div>
+        <div class="chk"><span class="box"></span>Disconnect negative (−) terminal first, then positive (+)</div>
+        <div class="chk"><span class="box"></span>Apply paste to terminals and use wire brush to remove corrosion</div>
+        <div class="chk"><span class="box"></span>Wipe terminals clean with a damp cloth and dry thoroughly</div>
+        <div class="chk"><span class="box"></span>Reconnect positive (+) first, then negative (−) terminal</div>
+        <div class="warn">Disconnect negative terminal first to avoid short circuits.</div>
+    </div>
+
+    <div class="group"><div class="group-title">Step 3 · Test Battery Health</div>
+        <div class="chk"><span class="box"></span>Remove the terminal caps to access the battery posts</div>
+        <div class="chk"><span class="box"></span>Connect the tester leads — red to positive (+), black to negative (−)</div>
+        <div class="chk"><span class="box"></span>Run the battery test and read the voltage result</div>
+        <div class="chk"><span class="box"></span>Verify the battery passes — 12.4V or higher under load</div>
+        <div class="chk"><span class="box"></span>Remove the tester leads and replace the terminal caps</div>
+        <div class="warn">Always connect tester leads to the correct terminals — reversed leads can damage the tester and battery electronics.</div>
+    </div>
+
+    <div class="group"><div class="group-title">Step 4 · Secure Battery Mount</div>
+        <div class="chk"><span class="box"></span>Check battery hold-down bracket for tightness</div>
+        <div class="chk"><span class="box"></span>Inspect bracket bolts for corrosion and tightness</div>
+        <div class="chk"><span class="box"></span>Tighten bracket evenly — do not over-tighten</div>
+        <div class="warn">Do not overtighten hold-down bracket — it can crack the battery case.</div>
+    </div>
+
+    <div class="group"><div class="group-title">Step 5 · Test Electrical System</div>
+        <div class="chk"><span class="box"></span>Listen for smooth starter motor operation</div>
+        <div class="chk"><span class="box"></span>Record battery test results and service date in log</div>
+        <div class="warn">If battery is hot, wait for it to cool before opening caps.</div>
+    </div>
+
+    <div class="doc-footer"><span>MotoMaster — Automotive Repair Simulation</span><span>Battery Maintenance Checklist</span></div>
+</div>
+
+<div class="print-hint">Ctrl + P → Save as PDF</div>
+
+</body>
+</html>

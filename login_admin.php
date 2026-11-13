@@ -7,7 +7,7 @@ motoMasterStartSession();
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 if ($mysqli->connect_errno) {
@@ -30,7 +30,9 @@ if (!$email || !$password) {
     exit;
 }
 
-$stmt = $mysqli->prepare('SELECT admin_id, first_name, last_name, email, password FROM admin WHERE email = ? LIMIT 1');
+motoMasterEnsureProfilePhotoColumn($mysqli, 'admin');
+
+$stmt = $mysqli->prepare('SELECT admin_id, first_name, last_name, email, password, profile_photo FROM admin WHERE email = ? LIMIT 1');
 $stmt->bind_param('s', $email);
 $stmt->execute();
 $stmt->store_result();
@@ -41,7 +43,7 @@ if ($stmt->num_rows === 0) {
     exit;
 }
 
-$stmt->bind_result($adminId, $firstName, $lastName, $storedEmail, $hash);
+$stmt->bind_result($adminId, $firstName, $lastName, $storedEmail, $hash, $profilePhoto);
 $stmt->fetch();
 $stmt->close();
 
@@ -60,6 +62,7 @@ if (password_verify($password, $hash)) {
             'first_name' => $firstName,
             'last_name' => $lastName,
             'email' => $storedEmail,
+            'profile_photo' => $profilePhoto ?: 'images/userprofile.jpg',
             'role' => 'Admin'
         ]
     ]);

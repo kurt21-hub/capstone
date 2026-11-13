@@ -20,7 +20,7 @@ export function initGlovesViewer(containerId) {
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setPixelRatio(window.devicePixelRatio || 1);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
         renderer.setSize(w, h);
         renderer.setClearColor(0x000000, 0);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -52,11 +52,24 @@ export function initGlovesViewer(containerId) {
         fill.position.set(-2, 1, -1);
         scene.add(fill);
 
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
+        let isRunning = false;
+        function requestRender() {
+            if (!isRunning) {
+                isRunning = true;
+                requestAnimationFrame(renderLoop);
+            }
         }
+
+        function renderLoop() {
+            const needMore = controls ? controls.update() : false;
+            renderer.render(scene, camera);
+            if (needMore) {
+                requestAnimationFrame(renderLoop);
+            } else {
+                isRunning = false;
+            }
+        }
+        controls.addEventListener('change', requestRender);
 
         const loader = new GLTFLoader();
         console.log('GlovesViewer: loading model');
@@ -88,9 +101,12 @@ export function initGlovesViewer(containerId) {
                 // frame camera for consistent view
                 const size2 = box2.getSize(new THREE.Vector3());
                 const md = Math.max(size2.x, size2.y, size2.z);
+                // the gloves' visual mass sits above the bounding-box center,
+                // so shift the model down to center it in the card
+                model.position.y -= md * 0.38;
                 if (md > 0) {
-                    const distance = md * 1.6 + 0.4;
-                    camera.position.set(center2.x, center2.y + md * 0.45, center2.z + distance);
+                    const distance = md * 0.55;
+                    camera.position.set(center2.x, center2.y + md * 0.15, center2.z + distance);
                     camera.lookAt(center2);
                     controls.target.copy(center2);
                     controls.update();
@@ -109,7 +125,7 @@ export function initGlovesViewer(containerId) {
                     });
                 });
 
-                animate();
+                requestRender();
             },
             undefined,
             (err) => console.error('Failed to load Gloves:', err)
@@ -122,6 +138,7 @@ export function initGlovesViewer(containerId) {
                 camera.aspect = cw / ch;
                 camera.updateProjectionMatrix();
                 renderer.setSize(cw, ch);
+                requestRender();
             });
             ro.observe(container);
         }

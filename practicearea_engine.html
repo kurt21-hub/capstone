@@ -8,6 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
         rel="stylesheet" />
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 <style>
     *,
@@ -257,7 +258,8 @@
         font-weight: 700;
         color: #2563eb;
         text-decoration: none;
-        margin-top: 4px;
+        margin-top: auto;
+        flex-shrink: 0;
     }
 
     .view-all-btn svg {
@@ -796,6 +798,13 @@
                     <div class="timer-val" id="timer">00:00:00</div>
                 </div>
             </div>
+            <button class="end-btn" onclick="restartSimulation()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 4v6h6" />
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+                Restart
+            </button>
             <button class="end-btn" onclick="endSimulationAndSave()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10" />
@@ -818,21 +827,21 @@
                     <div class="tool-3d-placeholder" id="gloves-model"></div>
                     <div class="tool-label">Gloves</div>
                 </div>
-                <div class="tool-card" id="batteryToolCard">
+                <div class="tool-card" id="batteryToolCard" style="display:none;">
                     <div class="tool-3d-placeholder" id="battery-model" style="cursor:pointer;user-select:none;"></div>
                     <div class="tool-label">Battery (Click to use)</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="water-model"></div>
-                    <div class="tool-label">Water</div>
+                    <div class="tool-label">Engine Oil</div>
                 </div>
-                <div class="tool-card">
-                    <div class="tool-3d-placeholder" id="baking-model"></div>
-                    <div class="tool-label">Baking Soda</div>
+                <div class="tool-card" style="display:none;">
+                    <div class="tool-3d-placeholder" id="baking-model" style="display:none;"></div>
+                    <div class="tool-label" style="display:none;">Baking Soda</div>
                 </div>
-                <div class="tool-card">
-                    <div class="tool-3d-placeholder" id="wire-model"></div>
-                    <div class="tool-label">Wire Brush</div>
+                <div class="tool-card" style="display:none;">
+                    <div class="tool-3d-placeholder" id="wire-model" style="display:none;"></div>
+                    <div class="tool-label" style="display:none;">Wire Brush</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="socket-model"></div>
@@ -844,11 +853,23 @@
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="bowl-model"></div>
-                    <div class="tool-label">Bowl</div>
+                    <div class="tool-label">Drain Pan</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="papertowel-model"></div>
-                    <div class="tool-label">Paper Towel</div>
+                    <div class="tool-label">Shop Rag</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-3d-placeholder" id="jackstand-model"></div>
+                    <div class="tool-label">Jack Stand</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-3d-placeholder" id="socketset-model"></div>
+                    <div class="tool-label">Socket Set</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-3d-placeholder" id="oilfilter-model"></div>
+                    <div class="tool-label">Oil Filter</div>
                 </div>
             </div>
             <a href="#" class="view-all-btn">
@@ -872,27 +893,27 @@
                 <div class="step-bar">
                     <div class="step-node">
                         <div class="step-circle active">1</div>
-                        <div class="step-name active">Inspect Battery</div>
+                        <div class="step-name active">Prepare & Safety</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">2</div>
-                        <div class="step-name">Clean Terminals</div>
+                        <div class="step-name">Drain Oil</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">3</div>
-                        <div class="step-name">Check Electrolyte</div>
+                        <div class="step-name">Plug & Filter</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">4</div>
-                        <div class="step-name">Secure Battery</div>
+                        <div class="step-name">Refill Oil</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">5</div>
-                        <div class="step-name">Test System</div>
+                        <div class="step-name">Test & Clean Up</div>
                     </div>
                 </div>
             </div>
@@ -908,12 +929,12 @@
                     </div>
                     <!-- Bowl mix drop zone (moved to right panel) -->
                     <div id="mixDropZone"
-                        style="position:absolute;right:18px;top:50%;transform:translateY(-50%);width:220px;height:160px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(2,6,23,0.08);z-index:50;">
+                        style="position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:220px;height:160px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(2,6,23,0.08);z-index:50;">
                         <div
                             style="width:94%;height:86%;border-radius:10px;border:2px dashed rgba(99,102,241,0.18);display:flex;align-items:center;justify-content:center;padding:6px;background:transparent;">
-                            <div
+                            <div id="mixDropLabel"
                                 style="text-align:center;color:rgba(99,102,241,0.95);font-weight:800;font-size:0.82rem;">
-                                Mix Here</div>
+                                Drain Pan Area</div>
                         </div>
                     </div>
                 </div>
@@ -933,40 +954,105 @@
                     </svg>
                     Current Task
                 </div>
-                <div class="rp-task-title">Inspect Battery Condition</div>
-                <div class="rp-task-desc">Check the battery body, terminals, and cables for cracks, leaks, swelling,
-                    or damage.</div>
+                <div class="rp-task-title">Prepare Tools & Safety Check</div>
+                <div class="rp-task-desc">Prepare tools and materials, position the vehicle safely, and complete
+                    all safety checks before starting.</div>
             </div>
 
             <div class="rp-section">
-                <div class="sound-toggle-card">
+                <div class="sound-toggle-card" id="engineSwipeCard">
                     <div class="sound-toggle-copy">
                         <div class="sound-toggle-label">Engine Swipe</div>
                         <strong>Engine sound</strong>
-                        <span>Turn ON to play the engine audio loop.</span>
-                        <span class="sound-state" id="engineSoundState">OFF</span>
+                        <span>Starts ON — switch OFF to service safely.</span>
+                        <span class="sound-state" id="engineSoundState">ON</span>
                     </div>
                     <label class="sound-switch" for="engineSwipeToggle" aria-label="Engine sound toggle">
                         <input type="checkbox" id="engineSwipeToggle">
                         <span class="sound-slider"></span>
                     </label>
                 </div>
+                <div class="sound-toggle-card" id="drainPlugCard" style="display:none;flex-direction:column;align-items:stretch;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                        <div class="sound-toggle-copy">
+                            <div class="sound-toggle-label">Drain Plug</div>
+                            <strong>Loosen and remove the drain plug slowly</strong>
+                            <span class="sound-state" id="drainPlugState">OFF</span>
+                        </div>
+                        <label class="sound-switch" for="drainPlugToggle" aria-label="Drain plug toggle">
+                            <input type="checkbox" id="drainPlugToggle">
+                            <span class="sound-slider"></span>
+                        </label>
+                    </div>
+                    <div id="drainProgressWrap" style="margin-top:10px;">
+                        <div class="rp-prog-label">
+                            <span>Draining oil</span>
+                            <span id="drainProgressText">0%</span>
+                        </div>
+                        <div class="rp-prog-bar">
+                            <div class="rp-prog-fill" id="drainProgressFill" style="transition:width 0.12s linear;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sound-toggle-card" id="reinstallPlugCard" style="display:none;flex-direction:column;align-items:stretch;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                        <div class="sound-toggle-copy">
+                            <div class="sound-toggle-label">Drain Plug</div>
+                            <strong>Reinstall the drain plug and tighten to the correct torque</strong>
+                            <span class="sound-state" id="reinstallPlugState">OFF</span>
+                        </div>
+                        <label class="sound-switch" for="reinstallPlugToggle" aria-label="Reinstall plug toggle">
+                            <input type="checkbox" id="reinstallPlugToggle">
+                            <span class="sound-slider"></span>
+                        </label>
+                    </div>
+                    <div id="reinstallProgressWrap" style="margin-top:10px;">
+                        <div class="rp-prog-label">
+                            <span id="reinstallProgressLabel">Reinstalling plug</span>
+                            <span id="reinstallProgressText">0%</span>
+                        </div>
+                        <div class="rp-prog-bar">
+                            <div class="rp-prog-fill" id="reinstallProgressFill" style="transition:width 0.12s linear;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sound-toggle-card" id="pourOilCard" style="display:none;flex-direction:column;align-items:stretch;">
+                    <div class="sound-toggle-copy">
+                        <div class="sound-toggle-label">Engine Oil</div>
+                        <strong>Pour the recommended oil type slowly</strong>
+                        <span>Drag the Engine Oil onto the oil filler cap to pour.</span>
+                        <span class="sound-state" id="pourOilState">WAITING</span>
+                    </div>
+                    <div id="pourProgressWrap" style="margin-top:10px;">
+                        <div class="rp-prog-label">
+                            <span id="pourProgressLabel">Pouring oil</span>
+                            <span id="pourProgressText">0%</span>
+                        </div>
+                        <div class="rp-prog-bar">
+                            <div class="rp-prog-fill" id="pourProgressFill" style="transition:width 0.12s linear;"></div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding-top:12px;border-top:1.5px solid #dbe7ff;">
+                        <div class="sound-toggle-copy">
+                            <div class="sound-toggle-label">Dipstick</div>
+                            <strong>Wipe the dipstick and check the oil level</strong>
+                            <span class="sound-state" id="dipstickState">LOCKED</span>
+                        </div>
+                        <button id="useDipstickBtn" type="button"
+                            style="flex-shrink:0;padding:10px 14px;border:none;border-radius:10px;background:#2563eb;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.72rem;font-weight:800;">
+                            Use Dipstick
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Progress -->
-            <div class="rp-section">
-                <div class="rp-prog-label">
-                    <span>Progress</span>
-                    <span id="progressText">0%</span>
-                </div>
-                <div class="rp-prog-bar">
-                    <div class="rp-prog-fill" id="progressFill"></div>
-                </div>
-            </div>
+            <!-- Progress (removed: draining bar lives inside the Drain Plug card) -->
+            <span id="progressText" style="display:none;">0%</span>
+            <div class="rp-prog-fill" id="progressFill" style="display:none;"></div>
 
             <!-- Battery Diagnostic Status Indicator -->
             <div id="batteryStatusIndicator" style="display:none;margin-bottom:15px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.05);border:1.5px solid #e5e7eb;">
-                <div style="font-size:0.75rem;color:#6b7280;font-weight:700;margin-bottom:4px;">BATTERY DIAGNOSTIC STATUS</div>
+                <div style="font-size:0.75rem;color:#6b7280;font-weight:700;margin-bottom:4px;">ENGINE OIL STATUS</div>
                 <div id="batteryStatusValue" style="font-size:0.9rem;font-weight:800;display:flex;align-items:center;gap:6px;">
                     <!-- Filled dynamically -->
                 </div>
@@ -986,10 +1072,10 @@
                     Instructions
                 </div>
                 <ol class="instr-list" id="instrList">
-                    <li>Ensure ignition is off and keys are removed</li>
-                    <li>Visually inspect the battery for cracks, bulging, or leaks</li>
-                    <li>Check terminal connections are tight and corrosion-free</li>
-                    <li>Inspect battery cables for fraying or damage</li>
+                    <li>Verify the engine is completely OFF</li>
+                    <li>Ensure the engine has cooled to avoid burns</li>
+                    <li>Confirm parking brake is engaged on a level surface</li>
+                    <li>Wear gloves, goggles, and protective gear</li>
                 </ol>
             </div>
 
@@ -1000,23 +1086,14 @@
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M9 11l3 3L22 4" />
                     </svg>
-                    Inspection Checklist
+                    Preparation & Safety Checklist
                 </div>
-                <div id="inspectionList" style="display:flex;flex-direction:column;gap:10px;">
-                    <label
-                        style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:8px;cursor:pointer;transition:all 0.2s;">
-                        <input type="checkbox" class="inspect-check" data-index="0"
-                            style="width:18px;height:18px;accent-color:#2563eb;cursor:pointer;">
-                        <span style="font-size:0.75rem;color:#374151;flex:1;">Ignition off and keys removed</span>
-                    </label>
-                    <label
-                        style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:8px;cursor:pointer;transition:all 0.2s;">
-                        <input type="checkbox" class="inspect-check" data-index="1"
-                            style="width:18px;height:18px;accent-color:#2563eb;cursor:pointer;">
-                        <span style="font-size:0.75rem;color:#374151;flex:1;">Battery has no cracks, bulging,
-                            or leaks</span>
-                    </label>
-                </div>
+                <ol class="instr-list" id="inspectionList">
+                    <li data-index="0">Engine is completely OFF and keys are removed</li>
+                    <li data-index="1">Engine has cooled down to avoid burns</li>
+                    <li data-index="2">Vehicle parked on a level surface with parking brake engaged</li>
+                    <li data-index="3">Wearing gloves, goggles, and protective gear</li>
+                </ol>
                 <div
                     style="margin-top:12px;padding:10px 12px;background:#f1f5f9;border-radius:8px;border-left:3px solid #2563eb;">
                     <span style="font-size:0.75rem;color:#64748b;">✓ Complete all inspections, then click <strong>Next
@@ -1033,7 +1110,7 @@
                         </svg>
                         Safety Reminder
                     </div>
-                    <p id="safetyText">Always wear safety goggles and gloves — battery acid can cause burns.</p>
+                    <p id="safetyText">Engine must be cool and completely OFF — hot oil and parts cause serious burns.</p>
                 </div>
             </div>
 
@@ -1053,7 +1130,7 @@
                         <!-- Removed items will appear here -->
                     </div>
                     <div id="noItemsMessage" style="text-align:center;color:#9ca3af;font-size:0.7rem;padding:10px 0;">
-                        No items removed yet. Hover over battery caps to remove them.
+                        No items removed yet. Items you remove during the procedure appear here.
                     </div>
                 </div>
             </div>
@@ -1095,6 +1172,11 @@
     </div>
 
     <script src="js/practice_progress.js"></script>
+    <script>
+        // Flag that a practice simulation is open — an assessment running in
+        // another tab watches this key and finalizes itself immediately.
+        try { localStorage.setItem('motomasterActiveSim', 'practice:' + document.title); } catch (e) {}
+    </script>
     <script>
         const toggleBtn = document.getElementById('toggleBtn');
         const panel = document.querySelector('.panel');
@@ -1233,10 +1315,10 @@
         });
     </script>
     <script type="module">
-        import { initWaterViewer } from './WaterBottleViewer.js';
+        import { initOilEngineViewer } from './OilEngineViewer.js';
 
         window.addEventListener('load', () => {
-            initWaterViewer('water-model');
+            initOilEngineViewer('water-model');
         });
     </script>
     <script type="module">
@@ -1272,6 +1354,26 @@
 
         window.addEventListener('load', () => {
             initBowlViewer('bowl-model');
+        });
+    </script>
+    <script type="module">
+        import { initCarJackStandViewer } from './CarJackStandViewer.js';
+
+        window.addEventListener('load', () => {
+            initCarJackStandViewer('jackstand-model');
+        });
+    </script>
+    <script type="module">
+        import { initWrenchSocketsetViewer } from './WrenchSocketsetViewer.js';
+
+        window.addEventListener('load', () => {
+            initWrenchSocketsetViewer('socketset-model');
+        });
+    </script>
+    <script type="module">
+        import { initOilFilterViewer } from './OilFilterViewer.js';
+        window.addEventListener('load', () => {
+            initOilFilterViewer('oilfilter-model');
         });
     </script>
     <script>
@@ -1408,7 +1510,7 @@
                 dragging = true;
                 draggingItemType = type;
                 if (ghost) ghost.remove();
-                ghost = createItemGhost(type === 'soda' ? 'Baking Soda' : 'Water');
+                ghost = createItemGhost(type === 'soda' ? 'Baking Soda' : 'Engine Oil');
                 moveGhost(e.clientX, e.clientY);
                 window.addEventListener('pointermove', onItemPointerMove);
                 window.addEventListener('pointerup', onItemPointerUp, { once: true });
@@ -1436,9 +1538,23 @@
                 ghost.remove();
                 ghost = null;
 
+                // Refill step: dropping engine oil on the filler cap spot (or the Oil Fill Area) pours oil
+                if (draggingItemType === 'water' && currentStepIndex === 3) {
+                    let nearCap = false;
+                    if (typeof window.getOilCapScreenPos === 'function') {
+                        const p = window.getOilCapScreenPos();
+                        nearCap = p && !p.behind && Math.hypot(e.clientX - p.x, e.clientY - p.y) < 120;
+                    }
+                    if (nearCap || hit) {
+                        try { startOilPour(); } catch (err) { console.warn('startOilPour failed', err); }
+                        draggingItemType = null;
+                        return;
+                    }
+                }
+
                 if (hit) {
                     if (!bowlPlaced) {
-                        showSequenceWarning('Please place the bowl in the mixing area first.');
+                        showSequenceWarning('Please place the drain pan in the Drain Pan Area first.');
                         draggingItemType = null;
                         return;
                     }
@@ -1488,6 +1604,12 @@
                         viewerDiv.style.justifyContent = 'center';
                         dropInner.appendChild(viewerDiv);
                         bowlPlaced = true;
+                        window.bowlPlaced = true;
+
+                        // Drain step: placing the pan verifies item 2 (position the pan)
+                        try {
+                            markInstructionDone(1, 1);
+                        } catch (e) { console.warn('Failed to mark drain pan instructions', e); }
 
                         // initialize a fresh BowlViewer instance inside the placed container with retries
                         (async function tryInitPlacedViewer(attempts = 0) {
@@ -1583,13 +1705,21 @@
             if (btnWaterConfirm) btnWaterConfirm.addEventListener('click', () => {
                 waterAmount = Number(waterInput.value) || 0;
                 waterModal.style.display = 'none';
+
+                // Pouring the oil verifies the refill step's instructions
+                try {
+                    if (currentStepIndex === 3) {
+                        // Refill step: pour, dipstick, level checks (item 1 is the filler cap)
+                        for (let i = 1; i < 5; i++) markInstructionDone(3, i);
+                    }
+                } catch (e) { console.warn('Failed to mark oil instructions', e); }
                 
                 // If both are now added, show the mix modal
                 if (sodaAmount > 0 && waterAmount > 0) {
                     showMixModal();
                 } else {
                     const t = document.createElement('div');
-                    t.textContent = 'Water added to bowl. Now drag and drop Baking Soda into the bowl.';
+                    t.textContent = 'Engine oil poured into the engine.';
                     t.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 14px;border-radius:10px;z-index:100050;font-weight:700;';
                     document.body.appendChild(t);
                     setTimeout(() => t.remove(), 2500);
@@ -2298,18 +2428,89 @@
     </div>
 
     <script>
+        // Engine oil simulation: battery maintenance interactions are disabled in the 3D scene
+        window.__disableBatteryInteractions = true;
+
         // ── STEP REVIEW DATA (tracked from user actions during simulation) ───
         const STEP_REVIEW_TITLES = [
-            'Step 1: Inspect Battery Condition',
-            'Step 2: Clean Battery Terminals',
-            'Step 3: Check Electrolyte Level',
-            'Step 4: Secure Battery Mount',
-            'Step 5: Test Electrical System'
+            'Step 1: Prepare Tools & Safety Check',
+            'Step 2: Drain the Old Oil',
+            'Step 3: Reinstall Plug & Replace Filter',
+            'Step 4: Refill Engine Oil',
+            'Step 5: Test Engine & Clean Up'
         ];
 
         function getRecommendationForMistake(message) {
             const m = (message || '').toLowerCase();
-            
+
+            // Engine oil change checklist feedback
+            if (m.includes('engine is completely off') || m.includes('engine has cooled')) {
+                return 'Tip: Always switch the engine OFF and let it cool before working — hot oil and engine parts cause serious burns.';
+            }
+            if (m.includes('level surface') || m.includes('parking brake')) {
+                return 'Tip: Park on a level surface and engage the parking brake so the oil drains evenly and the vehicle cannot roll.';
+            }
+            if (m.includes('gloves') || m.includes('goggles') || m.includes('protective gear')) {
+                return 'Tip: Wear gloves and goggles — used oil irritates skin and eyes.';
+            }
+            if (m.includes('correct oil type') || m.includes('recommended oil type')) {
+                return 'Tip: Check the owner manual for the correct oil grade and quantity before refilling.';
+            }
+            if (m.includes('locate the oil drain plug')) {
+                return 'Tip: The drain plug is at the lowest point of the oil pan under the engine — do not confuse it with the transmission plug.';
+            }
+            if (m.includes('position the drain pan')) {
+                return 'Tip: Place the drain pan directly under the drain plug before loosening it to catch all the used oil.';
+            }
+            if (m.includes('loosen and remove the drain plug')) {
+                return 'Tip: Loosen the plug counterclockwise and pull it away quickly so the draining oil does not run down your arm.';
+            }
+            if (m.includes('drain completely')) {
+                return 'Tip: Let the oil drain fully — remaining old oil contaminates the fresh refill.';
+            }
+            if (m.includes('drain plug and gasket')) {
+                return 'Tip: Inspect the plug threads and replace a worn gasket — a damaged gasket causes slow leaks.';
+            }
+            if (m.includes('reinstall the drain plug')) {
+                return 'Tip: Reinstall the plug and tighten to the specified torque — overtightening strips the oil pan threads.';
+            }
+            if (m.includes('old oil filter')) {
+                return 'Tip: Turn the filter counterclockwise to remove it; expect some residual oil to spill — keep the pan underneath.';
+            }
+            if (m.includes('lubricate the new filter gasket')) {
+                return 'Tip: Coat the new filter gasket with a thin film of fresh oil so it seals properly and removes easily next service.';
+            }
+            if (m.includes('hand-tight')) {
+                return 'Tip: Tighten the new filter by hand only — wrench-tightening crushes the gasket and causes leaks.';
+            }
+            if (m.includes('old gasket')) {
+                return 'Tip: Check the mounting surface for the old gasket — double-gasketing guarantees a leak.';
+            }
+            if (m.includes('oil filler cap')) {
+                return 'Tip: Remove the oil filler cap on top of the engine before pouring new oil.';
+            }
+            if (m.includes('prevent spills')) {
+                return 'Tip: Pour oil slowly to avoid overflow and spills on hot engine surfaces.';
+            }
+            if (m.includes('dipstick')) {
+                return 'Tip: Pull the dipstick, wipe it clean, reinsert fully, then read the level between MIN and MAX marks.';
+            }
+            if (m.includes('within the safe range') || m.includes('recheck the level')) {
+                return 'Tip: Keep the level between MIN and MAX — too little starves the engine, too much causes foaming and seal damage.';
+            }
+            if (m.includes('run briefly')) {
+                return 'Tip: Run the engine for about 30 seconds so oil circulates through the new filter, then switch off before rechecking.';
+            }
+            if (m.includes('for leaks')) {
+                return 'Tip: Check around the drain plug and filter while the engine runs — any drip means something needs retightening.';
+            }
+            if (m.includes('immediately if leaks')) {
+                return 'Tip: If you spot a leak, switch off immediately and retighten the plug or filter before continuing.';
+            }
+            if (m.includes('sealed container') || m.includes('dispose of oil')) {
+                return 'Tip: Pour used oil into a sealed container and take it to a recycling center — never dump it on the ground or in drains.';
+            }
+
             // Critical battery feedback
             if (m.includes('critical battery condition') || m.includes('critical battery not replaced')) {
                 return 'CRITICAL WARNING: A damaged battery with cracks, bulging, or leaks must be replaced immediately. If you continue without replacement: (1) The vehicle will likely not start due to insufficient voltage, (2) Acid leaks can corrode surrounding components and the engine bay, (3) A damaged battery may explode during charging or operation, causing injury. Always replace batteries showing physical damage.';
@@ -2420,6 +2621,50 @@
             if (m.includes('battery tool is not available')) {
                 return 'Tip: Only use tools relevant to the active step instruction.';
             }
+
+            // Engine oil change tips
+            if (m.includes('engine is completely off')) {
+                return 'Tip: Always verify the engine is completely OFF before starting an oil change to prevent accidents and injuries.';
+            }
+            if (m.includes('cooled down') || m.includes('cooled to avoid')) {
+                return 'Tip: Let the engine cool before draining — hot oil and components can cause severe burns.';
+            }
+            if (m.includes('parking brake') || m.includes('level surface')) {
+                return 'Tip: Park on a flat, level surface and engage the parking brake so the vehicle cannot move during service.';
+            }
+            if (m.includes('gloves') || m.includes('protective gear') || m.includes('goggles')) {
+                return 'Tip: Always wear gloves, goggles, and protective gear when handling engine oil and components.';
+            }
+            if (m.includes('correct oil type') || m.includes('recommended oil')) {
+                return 'Tip: Use only the oil type recommended for the vehicle — wrong viscosity can cause engine damage.';
+            }
+            if (m.includes('drain plug') && m.includes('locate')) {
+                return 'Tip: Locate the correct drain plug under the chassis carefully — confusing it with other plugs causes damage.';
+            }
+            if (m.includes('drain pan')) {
+                return 'Tip: Position a wide, stable drain pan directly under the plug before loosening to catch all the oil.';
+            }
+            if (m.includes('drain completely') || m.includes('used oil to drain')) {
+                return 'Tip: Let the old oil drain fully before reinstalling the plug — residual old oil contaminates the new fill.';
+            }
+            if (m.includes('gasket') || m.includes('torque') || m.includes('hand-tight')) {
+                return 'Tip: Hand-tighten the plug and filter to the correct torque — overtightening damages threads and gaskets, causing leaks.';
+            }
+            if (m.includes('oil filter')) {
+                return 'Tip: Remove the old filter carefully, make sure the old gasket came off, and lubricate the new gasket before installing.';
+            }
+            if (m.includes('funnel') || m.includes('pour')) {
+                return 'Tip: Use a funnel and pour slowly to prevent spills and overfilling.';
+            }
+            if (m.includes('dipstick') || m.includes('oil level') || m.includes('safe range')) {
+                return 'Tip: Wipe the dipstick first, then confirm the oil level sits within the MIN/MAX range on level ground.';
+            }
+            if (m.includes('leaks') || m.includes('run briefly')) {
+                return 'Tip: Run the engine briefly then inspect the plug and filter area — stop immediately if you see any leaks.';
+            }
+            if (m.includes('sealed container') || m.includes('dispose')) {
+                return 'Tip: Store used oil in a sealed container and bring it to a recycling center — never dump it.';
+            }
             return 'Tip: Carefully follow the instruction steps and order of operations to ensure safety and precision.';
         }
 
@@ -2465,10 +2710,30 @@
                 if (saved.completion_status === 'Completed') {
                     // Starting a new attempt - reset tracker and status to In Progress
                     console.log('PracticeArea: Previous attempt was completed. Starting new attempt.');
+                    applyStartupEngineState();
                     await saveCurrentProgress('In Progress');
                 } else {
                     // Restore tracker data
                     PracticeProgress.restoreProgress(saved, simulationTracker);
+
+                    // Restore step position and in-page UI state so the student
+                    // lands back on the step they were working on
+                    if (typeof saved.current_step_index === 'number' && !isNaN(saved.current_step_index)) {
+                        currentStepIndex = Math.max(0, Math.min(saved.current_step_index, totalSteps - 1));
+                    }
+                    if (saved.time_elapsed_seconds) {
+                        window.__practiceElapsedSeconds = saved.time_elapsed_seconds;
+                        if (typeof startPracticeTimer === 'function') {
+                            startPracticeTimer();
+                        }
+                    }
+                    // Instruction items are verified by simulation actions now, so
+                    // stale saved done-states (e.g. old checkbox ticks) must not be
+                    // restored — the student re-verifies each item by doing the action.
+                    window.stepInstrDone = {};
+                    applyStartupEngineState();
+                    updateStepUI();
+                    console.log('PracticeArea: Resumed at step', currentStepIndex + 1, 'of', totalSteps);
                 }
 
                 // Show welcome back notification with previous score
@@ -2523,6 +2788,7 @@
                 __progressLoaded = true;
             } else {
                 console.log('PracticeArea: No saved progress found');
+                applyStartupEngineState();
             }
         }
 
@@ -2535,19 +2801,37 @@
         }
 
         /**
-         * Save current progress to database
+         * Build the progress payload used for both periodic saves and unload beacons
          */
-        async function saveCurrentProgress(status = 'In Progress') {
+        function buildProgressPayload(status) {
             const summary = PracticeProgress.getSummary(simulationTracker);
-            if (!summary) return;
+            if (!summary) return null;
 
+            const student = getLoggedInStudent();
             const payload = {
                 title: 'Engine Oil Change',
                 score: summary.overall_score,
                 completion_status: status,
                 time_elapsed_seconds: window.__practiceElapsedSeconds || 0,
+                current_step_index: currentStepIndex,
+                step_instr_done: window.stepInstrDone || {},
                 steps: PracticeProgress.transformTrackerData(simulationTracker, STEP_REVIEW_TITLES)
             };
+            if (student && student.student_id) {
+                payload.student_id = student.student_id;
+            }
+            if (student) {
+                payload.student = student;
+            }
+            return payload;
+        }
+
+        /**
+         * Save current progress to database
+         */
+        async function saveCurrentProgress(status = 'In Progress') {
+            const payload = buildProgressPayload(status);
+            if (!payload) return;
 
             const result = await PracticeProgress.saveProgress(payload);
             if (result.success) {
@@ -2565,6 +2849,40 @@
             window.location.href = 'practicetasks.html';
         }
         window.endSimulationAndSave = endSimulationAndSave;
+
+        // Restart the simulation from Step 1 — stores the steps completed so
+        // far, clears the current attempt, then reloads to a fresh state.
+        window.restartSimulation = function () {
+            const doRestart = async () => {
+                try { await saveCurrentProgress('In Progress'); } catch (e) { console.warn('Save before reset failed:', e); }
+                try {
+                    const res = await fetch('reset_practice.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: 'Engine Oil Change' })
+                    });
+                    const data = await res.json();
+                    if (!data || !data.success) throw new Error((data && data.message) || 'Reset failed');
+                } catch (e) {
+                    console.warn('Reset request failed:', e);
+                    try {
+                        if (typeof window.showSequenceWarning === 'function') {
+                            window.showSequenceWarning('Restart failed — the attempt could not be reset.');
+                        } else {
+                            console.warn('Restart failed — the attempt could not be reset.');
+                        }
+                    } catch (e2) { console.warn('Restart failed — the attempt could not be reset.'); }
+                    return;
+                }
+                window.__practiceCompleted = true;
+                window.location.reload();
+            };
+            if (typeof window.showToolUseCard === 'function') {
+                window.showToolUseCard('Restart Simulation?', 'Your progress is saved first, then the simulation starts over from Step 1.', doRestart);
+            } else if (window.confirm('Restart simulation? Your progress will be saved and the simulation will start over from Step 1.')) {
+                doRestart();
+            }
+        };
 
         /**
          * Start auto-save interval (saves every 30 seconds)
@@ -2592,10 +2910,25 @@
             startAutoSave();
         });
 
-        // Save on page unload
+        // Save on page unload - sendBeacon survives the unload, unlike async fetch
         window.addEventListener('beforeunload', () => {
             if (window.__practiceCompleted) return;
-            saveCurrentProgress('In Progress');
+            const payload = buildProgressPayload('In Progress');
+            if (!payload) return;
+            try {
+                const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain' });
+                const sent = navigator.sendBeacon('save_practice_simulation.php', blob);
+                if (!sent) {
+                    fetch('save_practice_simulation.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        keepalive: true
+                    });
+                }
+            } catch (e) {
+                saveCurrentProgress('In Progress');
+            }
         });
 
         const engineSwipeAudio = new Audio('music/notstarting.mp3');
@@ -2621,13 +2954,41 @@
                     await engineSwipeAudio.play();
                 } catch (error) {
                     console.warn('Engine swipe audio could not start:', error);
-                    engineSwipeEnabled = false;
-                    if (stateLabel) stateLabel.textContent = 'OFF';
-                    if (toggle) toggle.checked = false;
+                    // Browsers block autoplay before the first user gesture.
+                    // Keep the engine ON and keep retrying on every user
+                    // interaction until the audio actually starts playing.
+                    const startEvents = ['pointerdown', 'keydown', 'touchstart', 'click'];
+                    const stopRetrying = () => {
+                        startEvents.forEach((evt) => document.removeEventListener(evt, retryPlay));
+                    };
+                    function retryPlay() {
+                        if (!engineSwipeEnabled) {
+                            stopRetrying();
+                            return;
+                        }
+                        engineSwipeAudio.play()
+                            .then(stopRetrying)
+                            .catch(() => { /* still blocked — try again on the next gesture */ });
+                    }
+                    startEvents.forEach((evt) => document.addEventListener(evt, retryPlay));
                 }
             } else {
                 engineSwipeAudio.pause();
                 engineSwipeAudio.currentTime = 0;
+            }
+
+            // Keep Step 1 "engine off / cooled" checklist items in sync with the engine state
+            if (typeof syncEngineOffChecklist === 'function') {
+                syncEngineOffChecklist();
+            }
+
+            // Step 5 (Test & Clean Up): starting the engine verifies item 1 and
+            // triggers the leak inspection — "No leaks found" verifies items 2-3
+            if (typeof markInstructionDone === 'function' && currentStepIndex === 4) {
+                if (enabled) {
+                    markInstructionDone(4, 0);
+                    try { showNoLeaksInfo(); } catch (e) { console.warn('showNoLeaksInfo failed', e); }
+                }
             }
         }
 
@@ -2640,6 +3001,17 @@
             window.practiceStepIndex = currentStepIndex;
         }
         syncPracticeStepIndex();
+
+        // Engine sound policy on (re)load: Step 1 starts with the engine ON
+        // — the student switches it OFF via the toggle to verify the
+        // "engine is completely OFF" inspection items. A refreshed page
+        // landing on a later step stays silent.
+        function applyStartupEngineState() {
+            const shouldBeOn = currentStepIndex === 0;
+            if (shouldBeOn !== engineSwipeEnabled) setEngineSwipeEnabled(shouldBeOn);
+        }
+        window.applyStartupEngineState = applyStartupEngineState;
+        applyStartupEngineState();
 
         function classifySequenceMessage(message) {
             const text = (message || '').toLowerCase();
@@ -2680,25 +3052,12 @@
             data.title = STEP_REVIEW_TITLES[stepIdx];
 
             // Clear previous correct items for checklists to prevent carryover of unchecked/previous states
-            if (stepIdx === 0 || stepIdx === 3 || stepIdx === 4) {
-                data.correct = [];
-            } else if (stepIdx === 1 || stepIdx === 2) {
-                // Remove list-item instructions from correct array to re-evaluate them cleanly
-                const instructionsList = [
-                    ['Mix baking soda', 'Disconnect negative', 'Apply paste', 'Wipe terminals', 'Reconnect positive', 'Remove the old battery', 'Drag and drop the new battery'],
-                    ['Remove battery caps', 'Check electrolyte', 'Top up', 'Do not overfill', 'Replace caps']
-                ];
-                const activeInstrs = instructionsList[stepIdx - 1];
-                data.correct = data.correct.filter(c => {
-                    const text = c.toLowerCase();
-                    return !activeInstrs.some(pattern => text.includes(pattern.toLowerCase()));
-                });
-            }
+            data.correct = [];
 
             if (stepIdx === 0) {
-                document.querySelectorAll('.inspect-check').forEach((cb) => {
-                    const label = cb.closest('label')?.querySelector('span')?.textContent?.trim();
-                    if (cb.checked && label) simulationTracker.addCorrect(label, 0);
+                document.querySelectorAll('#inspectionList li').forEach((li) => {
+                    const label = li.textContent.trim();
+                    if (li.classList.contains('done') && label) simulationTracker.addCorrect(label, 0);
                 });
             } else {
                 const done = window.stepInstrDone?.[stepIdx] || [];
@@ -2750,7 +3109,9 @@
                         score: overallScore,
                         completion_status: 'Completed',
                         time_elapsed_seconds: window.__practiceElapsedSeconds || 0,
-                        steps: stepsPayload
+                        steps: stepsPayload,
+                        student_id: student.student_id,
+                        student: student
                     })
                 });
                 const data = await res.json();
@@ -2893,10 +3254,10 @@
 
         // Return true if the user can proceed from the given step index
         function canProceedFromStep(stepIdx) {
-            // Step 0 uses the inspection checklist
+            // Step 0 uses the inspection list — every item must be verified done
             if (stepIdx === 0) {
-                const checkboxes = document.querySelectorAll('.inspect-check');
-                return Array.from(checkboxes).every(cb => cb.checked);
+                const items = document.querySelectorAll('#inspectionList li');
+                return items.length > 0 && Array.from(items).every(li => li.classList.contains('done'));
             }
 
             // For other steps, ensure every instruction list item is marked done
@@ -2971,6 +3332,14 @@
                 }
             }
 
+            // Steps 2–4 (indices 1–3): the engine must stay OFF — force it off
+            // whenever one of those steps becomes active. The sound card is
+            // hidden on these steps, so audio left running could not be
+            // switched off by the student.
+            if (currentStepIndex >= 1 && currentStepIndex <= 3 && engineSwipeEnabled) {
+                setEngineSwipeEnabled(false);
+            }
+
             // Update step bar circles
             document.querySelectorAll('.step-circle').forEach((el, i) => {
                 el.classList.remove('active', 'done');
@@ -2983,69 +3352,39 @@
             });
 
             // Update right panel task title & desc
-            const titles = ['Inspect Battery Condition', 'Clean Battery Terminals', 'Check Electrolyte Level', 'Secure Battery Mount', 'Test Electrical System'];
+            const titles = ['Prepare Tools & Safety Check', 'Drain the Old Oil', 'Reinstall Plug & Replace Filter', 'Refill Engine Oil', 'Test Engine & Clean Up'];
             const descs = [
-                'Check battery casing for cracks, leaks, or swelling. Verify terminal connections.',
-                'Remove corrosion from terminals using a wire brush and baking soda solution.',
-                'Check electrolyte levels in each cell and top up with distilled water if needed.',
-                'Ensure battery hold-down bracket is tight and battery does not move.',
-                'Start engine and verify charging system voltage. Check all electrical functions.'
+                'Prepare tools and materials, position the vehicle safely, and complete all safety checks.',
+                'Locate the drain plug, position the drain pan, remove the plug, and drain the used oil completely.',
+                'Inspect and reinstall the drain plug, then remove the old oil filter and install a new one.',
+                'Fill the engine with the correct oil type and verify the level using the dipstick.',
+                'Start the engine, check for leaks, and dispose of the used oil properly.'
             ];
             document.querySelector('.rp-task-title').textContent = titles[currentStepIndex] || titles[titles.length - 1];
             document.querySelector('.rp-task-desc').textContent = descs[currentStepIndex] || descs[descs.length - 1];
 
             // Update instructions list
             const instructions = [
-                ['Ensure ignition is off and keys are removed', 'Visually inspect the battery for cracks, bulging, or leaks'],
-                window.batteryNeedsReplacement ?
-                    ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Remove the old battery from the car engine bay', 'Drag and drop the new battery from the tools area to install it', 'Reconnect positive (+) first, then negative (-) terminal'] :
-                    ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Apply paste to terminals and use wire brush to remove corrosion', 'Wipe terminals clean with a damp cloth and dry thoroughly', 'Reconnect positive (+) first, then negative (-) terminal'],
-                ['Remove battery caps carefully — wear safety goggles', 'Check electrolyte level in each cell against MIN/MAX marks', 'Top up ONLY with distilled water if below minimum', 'Do not overfill — leave space for expansion', 'Replace caps securely and wipe any spills'],
-                ['Check battery hold-down bracket for tightness', 'Inspect bracket bolts for corrosion and tightness', 'Ensure battery sits level and does not shift when pushed', 'Check that battery tray is not rusted through', 'Tighten bracket evenly — do not over-tighten'],
-                ['Reconnect all terminals and start the engine', 'Listen for smooth starter motor operation', 'Record battery test results and service date in log']
+                ['Verify the engine is completely OFF', 'Ensure the engine has cooled to avoid burns', 'Confirm parking brake is engaged on a level surface', 'Wear gloves, goggles, and protective gear', 'Prepare the correct oil type and tools'],
+                ['Locate the oil drain plug under the chassis', 'Position the drain pan directly under the plug', 'Loosen and remove the drain plug slowly', 'Allow the used oil to drain completely'],
+                ['Reinstall the drain plug and tighten to the correct torque', 'Remove the old oil filter carefully', 'Lubricate the new filter gasket with fresh oil', 'Install the new oil filter hand-tight only', 'Check that the old gasket is fully removed'],
+                ['Remove the oil filler cap', 'Pour the recommended oil type slowly to prevent spills', 'Wipe the dipstick before checking the level', 'Check that the oil level is within the safe range'],
+                ['Start the engine and let it run briefly', 'Inspect the drain plug and filter area for leaks', 'Stop the engine immediately if leaks appear']
             ];
             const safetyNotes = [
-                'Always wear safety goggles and gloves — battery acid can cause burns.',
-                'Disconnect negative terminal first to avoid short circuits.',
-                'Never smoke or create sparks near a battery — hydrogen gas is explosive.',
-                'Do not overtighten hold-down bracket — it can crack the battery case.',
-                'If battery is hot, wait for it to cool before opening caps.'
+                'Engine must be cool and completely OFF — hot oil and parts cause serious burns.',
+                'Avoid direct contact with used oil — wear gloves and keep the drain pan stable.',
+                'Hand-tighten the filter only — overtightening damages the gasket and causes leaks.',
+                'Use only the recommended oil type — wrong viscosity can damage the engine.',
+                'Never dump used oil — store it sealed and bring it to a recycling center.'
             ];
             const instrList = document.getElementById('instrList');
             if (instrList) {
-                const checklistMode = currentStepIndex === 3 || currentStepIndex === 4;
-                instrList.classList.toggle('checklist-mode', checklistMode);
                 window.stepInstrDone = window.stepInstrDone || {};
                 const doneArray = window.stepInstrDone[currentStepIndex] || [];
                 instrList.innerHTML = (instructions[currentStepIndex] || instructions[0])
-                    .map((item, index) => {
-                        const done = doneArray[index] ? 'done' : '';
-                        if (!checklistMode) {
-                            return `<li class="${done}">${item}</li>`;
-                        }
-                        const checkedAttr = doneArray[index] ? 'checked' : '';
-                        return `
-                            <li class="${done}">
-                                <label class="instr-check-row">
-                                    <input type="checkbox" ${checkedAttr} data-step="${currentStepIndex}" data-idx="${index}" />
-                                    <span>${item}</span>
-                                </label>
-                            </li>`;
-                    }).join('');
-
-                // wire checkbox change for checklist mode to persist done state
-                setTimeout(() => {
-                    const checkboxes = instrList.querySelectorAll('input[type="checkbox"]');
-                    checkboxes.forEach(cb => {
-                        cb.addEventListener('change', (e) => {
-                            const idx = parseInt(cb.getAttribute('data-idx') || '0', 10);
-                            window.stepInstrDone[currentStepIndex] = window.stepInstrDone[currentStepIndex] || [];
-                            window.stepInstrDone[currentStepIndex][idx] = !!cb.checked;
-                            const li = cb.closest('li');
-                            if (li) li.classList.toggle('done', !!cb.checked);
-                        });
-                    });
-                }, 30);
+                    .map((item, index) => `<li class="${doneArray[index] ? 'done' : ''}">${item}</li>`)
+                    .join('');
             }
             const safetyEl = document.getElementById('safetyText');
             if (safetyEl) safetyEl.textContent = safetyNotes[currentStepIndex] || safetyNotes[0];
@@ -3068,22 +3407,36 @@
                 }
             }
 
-            // Show mix area only on step 2 (index 1)
+            // Show drop area on the drain step (index 1) and the refill step (index 3)
             const mixDrop = document.getElementById('mixDropZone');
-            if (mixDrop) mixDrop.style.display = (currentStepIndex === 1) ? 'flex' : 'none';
+            if (mixDrop) {
+                const showDrop = currentStepIndex === 1 || currentStepIndex === 3;
+                mixDrop.style.display = showDrop ? 'flex' : 'none';
+                const dropLabel = document.getElementById('mixDropLabel');
+                if (dropLabel) dropLabel.textContent = (currentStepIndex === 3) ? 'Oil Fill Area' : 'Drain Pan Area';
+            }
 
-            // Show/hide Step 2 Battery Replacement Diagnostic Status indicator
+            // Swap the engine sound card for the drain/reinstall plug cards on steps 2-3
+            const engineSwipeCard = document.getElementById('engineSwipeCard');
+            const drainPlugCard = document.getElementById('drainPlugCard');
+            const reinstallPlugCard = document.getElementById('reinstallPlugCard');
+            const pourOilCard = document.getElementById('pourOilCard');
+            const onDrainStep = currentStepIndex === 1;
+            const onReinstallStep = currentStepIndex === 2;
+            const onRefillStep = currentStepIndex === 3;
+            if (engineSwipeCard) engineSwipeCard.style.display = (onDrainStep || onReinstallStep || onRefillStep) ? 'none' : 'flex';
+            if (drainPlugCard) drainPlugCard.style.display = onDrainStep ? 'flex' : 'none';
+            if (reinstallPlugCard) reinstallPlugCard.style.display = onReinstallStep ? 'flex' : 'none';
+            if (pourOilCard) pourOilCard.style.display = onRefillStep ? 'flex' : 'none';
+
+            // Show/hide Engine Oil Status indicator on the drain step
             const statusIndicator = document.getElementById('batteryStatusIndicator');
             if (statusIndicator) {
                 if (currentStepIndex === 1) {
                     statusIndicator.style.display = 'block';
                     const valueEl = document.getElementById('batteryStatusValue');
                     if (valueEl) {
-                        if (window.batteryNeedsReplacement) {
-                            valueEl.innerHTML = '<span style="color:#dc2626;">REPLACE BATTERY (Health: 42%)</span>';
-                        } else {
-                            valueEl.innerHTML = '<span style="color:#22c55e;">GOOD (Health: 88%)</span>';
-                        }
+                        valueEl.innerHTML = '<span style="color:#dc2626;">DUE FOR CHANGE (Level: Low)</span>';
                     }
                 } else {
                     statusIndicator.style.display = 'none';
@@ -3115,20 +3468,572 @@
 
         }
 
-        // Handle checkbox changes for visual feedback
-        document.querySelectorAll('.inspect-check').forEach(cb => {
-            cb.addEventListener('change', () => {
-                // Visual feedback
-                const label = cb.closest('label');
-                if (cb.checked) {
-                    label.style.background = '#dbeafe';
-                    label.style.border = '1px solid #93c5fd';
+        // --- Step 1 checklist automation driven by simulation state ---
+        const safetyToolState = { jackstand: false, gloves: false, goggles: false, socket: false, rag: false };
+        const SAFETY_TOOL_IDS = { jackstand: 'jackstand-model', gloves: 'gloves-model', goggles: 'goggles-model', socket: 'socket-model', rag: 'papertowel-model', oilfilter: 'oilfilter-model', engineoil: 'water-model' };
+
+        function setInspectChecked(index, checked) {
+            const li = document.querySelector(`#inspectionList li[data-index="${index}"]`);
+            if (li) li.classList.toggle('done', !!checked);
+            // Items 0-1 follow the live engine state and get unchecked when the
+            // engine runs, so once the whole checklist has been completed we
+            // treat Step 1 as permanently done (used by the Step 5 leak check).
+            const items = document.querySelectorAll('#inspectionList li');
+            if (items.length > 0 && Array.from(items).every((el) => el.classList.contains('done'))) {
+                window.__step1AllDone = true;
+            }
+        }
+
+        // Boxes 1 & 2 follow the engine state: checked when the engine sound is OFF
+        function syncEngineOffChecklist() {
+            const off = !engineSwipeEnabled;
+            setInspectChecked(0, off);
+            setInspectChecked(1, off);
+        }
+
+        // Generic "Use tool?" card, same style as the battery use card
+        function showToolUseCard(toolKey, title, desc) {
+            let existingCard = document.getElementById('toolUseCard');
+            if (existingCard) existingCard.remove();
+
+            const card = document.createElement('div');
+            card.id = 'toolUseCard';
+            card.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 100000;
+                background: #fff;
+                border-radius: 16px;
+                padding: 24px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+                font-family: 'Nunito', sans-serif;
+                min-width: 280px;
+                text-align: center;
+            `;
+            card.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14.7 6.3a5 5 0 0 0-7.07 7.07l-4 4 2.83 2.83 4-4a5 5 0 0 0 7.07-7.07l-2.83 2.83-2.12-2.12 2.83-2.83z"/></svg>
+                    </div>
+                    <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 0;">Use ${title}?</h3>
+                    <p style="font-size: 0.8rem; color: #6b7280; margin: 8px 0 0;">${desc}</p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button id="toolUseConfirmBtn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: none; border-radius: 10px; background: #16a34a; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Use
+                    </button>
+                    <button id="toolUseCancelBtn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; background: #fff; color: #374151; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                        Cancel
+                    </button>
+                </div>
+            `;
+            card.querySelector('#toolUseConfirmBtn').addEventListener('click', () => {
+                card.remove();
+                useSafetyTool(toolKey);
+            });
+            card.querySelector('#toolUseCancelBtn').addEventListener('click', () => card.remove());
+            document.body.appendChild(card);
+        }
+
+        function useSafetyTool(key) {
+            safetyToolState[key] = true;
+            const el = document.getElementById(SAFETY_TOOL_IDS[key]);
+            const card = el ? el.closest('.tool-card') : null;
+            if (card) card.style.borderColor = '#16a34a';
+
+            // Step 1 item 3: vehicle secured via jack stand (card only — no 3D placement)
+            if (key === 'jackstand') {
+                setInspectChecked(2, true);
+            }
+            // Step 1 item 4: gloves AND goggles both in use
+            if (safetyToolState.gloves && safetyToolState.goggles) setInspectChecked(3, true);
+            // Step 3 (Plug & Filter): socket wrench services the filter (items 2-5)
+            if (key === 'socket' && currentStepIndex === 2) {
+                for (let i = 1; i < 5; i++) markInstructionDone(2, i);
+            }
+            // Step 4: using the Engine Oil tool starts the pour (cap must be removed)
+            if (key === 'engineoil' && currentStepIndex === 3) {
+                startOilPour();
+            }
+            // Step 3: using the Oil Filter tool reinstalls the filter on the car
+            if (key === 'oilfilter' && currentStepIndex === 2) {
+                const st = (window.checkOilFilter && window.checkOilFilter()) || null;
+                if (!st || !st.removed) {
+                    showSequenceWarning('Remove the old oil filter first.');
+                    return;
+                }
+                window.setOilFilterRemoved(false);
+                markInstructionDone(2, 3);
+            }
+            // Step 5 (Test & Clean Up): shop rag has no instruction items anymore
+            if (key === 'rag' && currentStepIndex === 4) {
+            }
+        }
+
+        // Click a tool card to get the "Use?" option; ignore rotate-drags.
+        // requiredStep gates the option to the step where the tool is used.
+        function wireSafetyToolClick(elId, toolKey, title, desc, requiredStep) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            let downX = 0, downY = 0;
+            el.addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; });
+            el.addEventListener('click', (e) => {
+                if (Math.hypot(e.clientX - downX, e.clientY - downY) > 8) return;
+                if (typeof requiredStep === 'number' && currentStepIndex !== requiredStep) {
+                    showSequenceWarning(`${title} is used during Step ${requiredStep + 1}.`);
+                    return;
+                }
+                showToolUseCard(toolKey, title, desc);
+            });
+        }
+
+        wireSafetyToolClick('jackstand-model', 'jackstand', 'Jack Stand', 'Use the jack stand to secure the vehicle on a level surface?', 0);
+        wireSafetyToolClick('gloves-model', 'gloves', 'Gloves', 'Put on protective gloves?', 0);
+        wireSafetyToolClick('goggles-model', 'goggles', 'Safety Goggles', 'Put on safety goggles?', 0);
+        wireSafetyToolClick('socket-model', 'socket', 'Socket Wrench', 'Use the socket wrench to reinstall the drain plug and service the oil filter?', 2);
+        wireSafetyToolClick('papertowel-model', 'rag', 'Shop Rag', 'Use the shop rag to store the used oil and clean the workspace?', 4);
+        wireSafetyToolClick('oilfilter-model', 'oilfilter', 'Oil Filter', 'Install the new oil filter on the engine?', 2);
+        wireSafetyToolClick('water-model', 'engineoil', 'Engine Oil', 'Pour the engine oil into the filler neck?', 3);
+
+        // Step 2 item 1: clicking the car's underchassis verifies locating the drain plug
+        window.addEventListener('underchassisClicked', () => {
+            try { markInstructionDone(1, 0); } catch (e) { console.warn('Failed to mark underchassis instruction', e); }
+        });
+
+        // Step 2: Drain plug switch ON -> marks item 3, then drains oil to 100% -> item 4
+        let drainPlugRemoved = false;
+        const drainPlugToggle = document.getElementById('drainPlugToggle');
+        if (drainPlugToggle) {
+            drainPlugToggle.addEventListener('change', () => {
+                if (!drainPlugToggle.checked) return;
+                if (drainPlugRemoved) return;
+                if (!window.bowlPlaced) {
+                    drainPlugToggle.checked = false;
+                    showSequenceWarning('Position the drain pan in the Drain Pan Area first.');
+                    return;
+                }
+                drainPlugRemoved = true;
+                markInstructionDone(1, 2);
+                drainPlugToggle.disabled = true;
+                const drainState = document.getElementById('drainPlugState');
+                if (drainState) drainState.textContent = 'PLUG REMOVED';
+                const wrap = document.getElementById('drainProgressWrap');
+                const fill = document.getElementById('drainProgressFill');
+                const label = document.getElementById('drainProgressText');
+                if (wrap) wrap.style.display = 'block';
+                let pct = 0;
+                const timer = setInterval(() => {
+                    pct = Math.min(100, pct + 2);
+                    if (fill) fill.style.width = pct + '%';
+                    if (label) label.textContent = pct + '%';
+                    if (pct >= 100) {
+                        clearInterval(timer);
+                        markInstructionDone(1, 3);
+                        if (drainState) drainState.textContent = 'OIL DRAINED';
+                        const valueEl = document.getElementById('batteryStatusValue');
+                        if (valueEl) valueEl.innerHTML = '<span style="color:#16a34a;">DRAINED (Level: Empty)</span>';
+                    }
+                }, 100);
+            });
+        }
+
+        // Step 3: clicking the oil filter in the 3D scene offers Remove / Reinstall
+        function showOilFilterCard() {
+            let existing = document.getElementById('oilFilterCard');
+            if (existing) existing.remove();
+            const removed = (window.checkOilFilter && window.checkOilFilter().removed) || false;
+            const card = document.createElement('div');
+            card.id = 'oilFilterCard';
+            card.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 100000;
+                background: #fff;
+                border-radius: 16px;
+                padding: 24px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+                font-family: 'Nunito', sans-serif;
+                min-width: 280px;
+                text-align: center;
+            `;
+            card.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14.7 6.3a5 5 0 0 0-7.07 7.07l-4 4 2.83 2.83 4-4a5 5 0 0 0 7.07-7.07l-2.83 2.83-2.12-2.12 2.83-2.83z"/></svg>
+                    </div>
+                    <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 0;">Oil Filter</h3>
+                    <p style="font-size: 0.8rem; color: #6b7280; margin: 8px 0 0;">Status: ${removed ? 'Removed' : 'Installed'}</p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    ${removed ? `
+                    <button id="oilFilterLubeBtn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: none; border-radius: 10px; background: #2563eb; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                        Lubricate Gasket
+                    </button>` : ''}
+                    <button id="oilFilterActionBtn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: none; border-radius: 10px; background: ${removed ? '#16a34a' : '#dc2626'}; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                        ${removed ? 'Reinstall' : 'Remove'}
+                    </button>
+                    <button id="oilFilterCancelBtn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; background: #fff; color: #374151; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                        Cancel
+                    </button>
+                </div>
+            `;
+            const lubeBtn = card.querySelector('#oilFilterLubeBtn');
+            if (lubeBtn) {
+                lubeBtn.addEventListener('click', () => {
+                    card.remove();
+                    markInstructionDone(2, 2); // Lubricate the new filter gasket with fresh oil
+                    markInstructionDone(2, 4); // Check that the old gasket is fully removed
+                });
+            }
+            card.querySelector('#oilFilterActionBtn').addEventListener('click', () => {
+                card.remove();
+                if (typeof window.setOilFilterRemoved !== 'function') return;
+                if (removed) {
+                    window.setOilFilterRemoved(false);
+                    markInstructionDone(2, 3); // Install the new oil filter hand-tight only
                 } else {
-                    label.style.background = '#f9fafb';
-                    label.style.border = 'none';
+                    window.setOilFilterRemoved(true);
+                    markInstructionDone(2, 1); // Remove the old oil filter carefully
                 }
             });
+            card.querySelector('#oilFilterCancelBtn').addEventListener('click', () => card.remove());
+            document.body.appendChild(card);
+        }
+
+        window.addEventListener('oilFilterClicked', () => {
+            if (currentStepIndex !== 2) {
+                showSequenceWarning('The oil filter is serviced during Step 3.');
+                return;
+            }
+            showOilFilterCard();
         });
+
+        // Step 3: clicking the gasket ring (visible while the filter is removed)
+        // offers to lubricate it — also verifies the old gasket check
+        window.addEventListener('oilFilterGasketClicked', () => {
+            if (currentStepIndex !== 2) return;
+            let existing = document.getElementById('gasketCard');
+            if (existing) existing.remove();
+            const card = document.createElement('div');
+            card.id = 'gasketCard';
+            card.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 100000;
+                background: #fff;
+                border-radius: 16px;
+                padding: 24px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+                font-family: 'Nunito', sans-serif;
+                min-width: 280px;
+                text-align: center;
+            `;
+            card.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                    </div>
+                    <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 0;">Filter Gasket</h3>
+                    <p style="font-size: 0.8rem; color: #6b7280; margin: 8px 0 0;">Lubricate the new filter gasket with fresh oil?</p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button id="gasketActionBtn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: none; border-radius: 10px; background: #16a34a; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                        Lubricate
+                    </button>
+                    <button id="gasketCancelBtn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; background: #fff; color: #374151; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                        Cancel
+                    </button>
+                </div>
+            `;
+            card.querySelector('#gasketActionBtn').addEventListener('click', () => {
+                card.remove();
+                markInstructionDone(2, 2); // Lubricate the new filter gasket with fresh oil
+                markInstructionDone(2, 4); // Check that the old gasket is fully removed
+            });
+            card.querySelector('#gasketCancelBtn').addEventListener('click', () => card.remove());
+            document.body.appendChild(card);
+        });
+
+        // Step 4: clicking the oil filler cap offers Remove / Reinstall
+        window.addEventListener('oilCapClicked', () => {
+            if (currentStepIndex !== 3) {
+                showSequenceWarning('The oil filler cap is removed during Step 4.');
+                return;
+            }
+            let existing = document.getElementById('oilCapCard');
+            if (existing) existing.remove();
+            const removed = (window.checkOilCap && window.checkOilCap().removed) || false;
+            const card = document.createElement('div');
+            card.id = 'oilCapCard';
+            card.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 100000;
+                background: #fff;
+                border-radius: 16px;
+                padding: 24px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+                font-family: 'Nunito', sans-serif;
+                min-width: 280px;
+                text-align: center;
+            `;
+            card.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+                    </div>
+                    <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 0;">Oil Filler Cap</h3>
+                    <p style="font-size: 0.8rem; color: #6b7280; margin: 8px 0 0;">Status: ${removed ? 'Removed' : 'Installed'}</p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button id="oilCapActionBtn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: none; border-radius: 10px; background: ${removed ? '#16a34a' : '#dc2626'}; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                        ${removed ? 'Reinstall' : 'Remove'}
+                    </button>
+                    <button id="oilCapCancelBtn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; background: #fff; color: #374151; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all 0.2s;">
+                        Cancel
+                    </button>
+                </div>
+            `;
+            card.querySelector('#oilCapActionBtn').addEventListener('click', () => {
+                card.remove();
+                if (typeof window.setOilCapRemoved !== 'function') {
+                    showSequenceWarning('Oil cap is not available yet — wait for the 3D scene to finish loading.');
+                    return;
+                }
+                try {
+                    window.setOilCapRemoved(!removed);
+                } catch (e) {
+                    console.warn('setOilCapRemoved failed', e);
+                    return;
+                }
+                if (!removed) markInstructionDone(3, 0); // Remove the oil filler cap
+            });
+            card.querySelector('#oilCapCancelBtn').addEventListener('click', () => card.remove());
+            document.body.appendChild(card);
+        });
+
+        // Step 3: Reinstall plug switch ON -> reinstalling progress to 100% -> item 1
+        let reinstallPlugDone = false;
+        const reinstallPlugToggle = document.getElementById('reinstallPlugToggle');
+        if (reinstallPlugToggle) {
+            reinstallPlugToggle.addEventListener('change', () => {
+                if (!reinstallPlugToggle.checked) return;
+                if (reinstallPlugDone) return;
+                reinstallPlugDone = true;
+                reinstallPlugToggle.disabled = true;
+                const reState = document.getElementById('reinstallPlugState');
+                if (reState) reState.textContent = 'REINSTALLING';
+                const reFill = document.getElementById('reinstallProgressFill');
+                const reLabel = document.getElementById('reinstallProgressText');
+                let pct = 0;
+                const timer = setInterval(() => {
+                    pct = Math.min(100, pct + 2);
+                    if (reFill) reFill.style.width = pct + '%';
+                    if (reLabel) reLabel.textContent = pct + '%';
+                    if (pct >= 100) {
+                        clearInterval(timer);
+                        markInstructionDone(2, 0);
+                        if (reState) reState.textContent = 'REINSTALLED';
+                        const reProgressLabel = document.getElementById('reinstallProgressLabel');
+                        if (reProgressLabel) reProgressLabel.textContent = 'Reinstalling successful';
+                    }
+                }, 100);
+            });
+        }
+
+        // Step 4: pouring engine oil runs a progress bar; at 100% items 2-5 verify
+        let oilPouringDone = false;
+        function startOilPour() {
+            if (oilPouringDone) return;
+            // Instruction 1 (remove the oil filler cap) must be done first
+            const capDone = !!(window.stepInstrDone && window.stepInstrDone[3] && window.stepInstrDone[3][0]);
+            if (!capDone) {
+                showSequenceWarning('Remove the oil filler cap first.');
+                return;
+            }
+            oilPouringDone = true;
+            const pourState = document.getElementById('pourOilState');
+            if (pourState) pourState.textContent = 'POURING';
+            const fill = document.getElementById('pourProgressFill');
+            const label = document.getElementById('pourProgressText');
+            const name = document.getElementById('pourProgressLabel');
+            let pct = 0;
+            const timer = setInterval(() => {
+                pct = Math.min(100, pct + 2);
+                if (fill) fill.style.width = pct + '%';
+                if (label) label.textContent = pct + '%';
+                if (pct >= 100) {
+                    clearInterval(timer);
+                    markInstructionDone(3, 1); // Pour the recommended oil type slowly
+                    if (pourState) pourState.textContent = 'REFILLED';
+                    if (name) name.textContent = 'Pouring successful';
+                    const dipState = document.getElementById('dipstickState');
+                    if (dipState) dipState.textContent = 'READY';
+                    const valueEl = document.getElementById('batteryStatusValue');
+                    if (valueEl) valueEl.innerHTML = '<span style="color:#16a34a;">REFILLED (Level: Good)</span>';
+                }
+            }, 100);
+        }
+
+        // Step 4: Use Dipstick -> verifies item 3, shows the level result -> OK verifies item 4
+        const useDipstickBtn = document.getElementById('useDipstickBtn');
+        if (useDipstickBtn) {
+            useDipstickBtn.addEventListener('click', () => {
+                if (!oilPouringDone) {
+                    showSequenceWarning('Pour the engine oil first.');
+                    return;
+                }
+                markInstructionDone(3, 2); // Wipe the dipstick before checking the level
+                const dipState = document.getElementById('dipstickState');
+                if (dipState) dipState.textContent = 'CHECKED';
+                let existing = document.getElementById('dipstickResultCard');
+                if (existing) existing.remove();
+                const card = document.createElement('div');
+                card.id = 'dipstickResultCard';
+                card.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    z-index: 100000;
+                    background: #fff;
+                    border-radius: 16px;
+                    padding: 24px;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+                    font-family: 'Nunito', sans-serif;
+                    min-width: 280px;
+                    text-align: center;
+                `;
+                card.innerHTML = `
+                    <div style="margin-bottom: 16px;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 0;">Dipstick Result</h3>
+                        <p style="font-size: 0.85rem; font-weight: 800; color: #16a34a; margin: 8px 0 0;">OIL LEVEL: GOOD — within the safe range</p>
+                    </div>
+                    <button id="dipstickOkBtn" style="width: 100%; padding: 12px; border: none; border-radius: 10px; background: #16a34a; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700;">
+                        OK
+                    </button>
+                `;
+                card.querySelector('#dipstickOkBtn').addEventListener('click', () => {
+                    card.remove();
+                    markInstructionDone(3, 3); // Check that the oil level is within the safe range
+                });
+                document.body.appendChild(card);
+            });
+        }
+
+        // Count instruction items left undone in steps 1-4 (step 5 is in progress)
+        function countMissedInstructions() {
+            let missed = 0;
+            // Step 1 uses the inspection checklist's .done class. Items 0-1
+            // uncheck themselves while the engine runs, so count live state
+            // only if the checklist was never fully completed.
+            if (!window.__step1AllDone) {
+                missed += document.querySelectorAll('#inspectionList li:not(.done)').length;
+            }
+            // Steps 2-4 use window.stepInstrDone (items: 4, 5, 4)
+            const counts = { 1: 4, 2: 5, 3: 4 };
+            [1, 2, 3].forEach((s) => {
+                const arr = (window.stepInstrDone && window.stepInstrDone[s]) || [];
+                for (let i = 0; i < counts[s]; i++) if (!arr[i]) missed++;
+            });
+            return missed;
+        }
+
+        // Step 5: after the engine starts, run a "Checking for leaks" progress bar;
+        // at 100% show NO LEAKS FOUND, or LEAK FOUND if earlier items were skipped.
+        // OK verifies items 2 (inspect for leaks) and 3 (stop if leaks appear).
+        function showNoLeaksInfo() {
+            let existing = document.getElementById('noLeaksCard');
+            if (existing) existing.remove();
+            const card = document.createElement('div');
+            card.id = 'noLeaksCard';
+            card.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 100000;
+                background: #fff;
+                border-radius: 16px;
+                padding: 24px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+                font-family: 'Nunito', sans-serif;
+                min-width: 280px;
+                text-align: center;
+            `;
+            card.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <h3 style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 0;">Leak Inspection</h3>
+                    <p style="font-size: 0.8rem; color: #6b7280; margin: 8px 0 0;">Checking the drain plug and filter area for leaks…</p>
+                </div>
+                <div class="rp-prog-label" id="leakCheckLabelWrap">
+                    <span id="leakCheckLabel">Checking for leaks</span>
+                    <span id="leakCheckText">0%</span>
+                </div>
+                <div class="rp-prog-bar">
+                    <div class="rp-prog-fill" id="leakCheckFill" style="transition:width 0.12s linear;"></div>
+                </div>
+                <div id="leakResultWrap" style="display:none;margin-top:14px;"></div>
+            `;
+            document.body.appendChild(card);
+
+            const fill = card.querySelector('#leakCheckFill');
+            const label = card.querySelector('#leakCheckText');
+            const nameEl = card.querySelector('#leakCheckLabel');
+            const resultWrap = card.querySelector('#leakResultWrap');
+            let pct = 0;
+            const timer = setInterval(() => {
+                pct = Math.min(100, pct + 2.5);
+                if (fill) fill.style.width = pct + '%';
+                if (label) label.textContent = Math.round(pct) + '%';
+                if (pct >= 100) {
+                    clearInterval(timer);
+                    const missed = countMissedInstructions();
+                    if (missed > 0) {
+                        resultWrap.innerHTML = `
+                            <p style="font-size: 0.85rem; font-weight: 800; color: #dc2626; margin: 0 0 12px;">LEAK FOUND — ${missed} instruction(s) were missed earlier</p>
+                            <button id="noLeaksOkBtn" style="width: 100%; padding: 12px; border: none; border-radius: 10px; background: #dc2626; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700;">OK</button>
+                        `;
+                    } else {
+                        resultWrap.innerHTML = `
+                            <p style="font-size: 0.85rem; font-weight: 800; color: #16a34a; margin: 0 0 12px;">NO LEAKS FOUND — drain plug and filter area are clean</p>
+                            <button id="noLeaksOkBtn" style="width: 100%; padding: 12px; border: none; border-radius: 10px; background: #16a34a; color: #fff; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700;">OK</button>
+                        `;
+                    }
+                    resultWrap.style.display = 'block';
+                    if (nameEl) nameEl.textContent = 'Inspection complete';
+                    const missedCount = missed;
+                    card.querySelector('#noLeaksOkBtn').addEventListener('click', () => {
+                        card.remove();
+                        if (missedCount === 0) {
+                            markInstructionDone(4, 1); // Inspect the drain plug and filter area for leaks
+                            markInstructionDone(4, 2); // Stop the engine immediately if leaks appear
+                        } else {
+                            // Leak found — shut the engine off and send the user
+                            // back to Step 1 to redo the missed instructions
+                            const engToggle = document.getElementById('engineSwipeToggle');
+                            if (engToggle) engToggle.checked = false;
+                            setEngineSwipeEnabled(false);
+                            currentStepIndex = 0;
+                            updateStepUI();
+                        }
+                    });
+                }
+            }, 100);
+        }
 
         // Wire Next Step button
         document.getElementById('nextStepBtn').addEventListener('click', () => {
@@ -3136,55 +4041,17 @@
             if (currentStepIndex === 0) {
                 // Clear all mistakes for Step 1
                 simulationTracker.steps[0].mistakes = [];
-                const checkboxes = document.querySelectorAll('.inspect-check');
-                checkboxes.forEach(cb => {
-                    if (!cb.checked) {
-                        const labelText = cb.closest('label').querySelector('span').textContent.trim();
-                        simulationTracker.addMistake(`Missed inspection: ${labelText}`, 0);
+                document.querySelectorAll('#inspectionList li').forEach(li => {
+                    if (!li.classList.contains('done')) {
+                        simulationTracker.addMistake(`Missed inspection: ${li.textContent.trim()}`, 0);
                     }
                 });
-                
-                // Check if battery is critical but user didn't mark it for replacement
-                if (window.batteryNeedsReplacement) {
-                    const cracksChecked = document.querySelector('.inspect-check[data-index="1"]')?.checked;
-                    if (!cracksChecked) {
-                        simulationTracker.addMistake('Critical battery condition not addressed: Battery has cracks/bulging/leaks and needs replacement. If not replaced, the battery may fail to start the vehicle, cause electrical system issues, or pose safety risks from acid leaks.', 0);
-                    }
-                }
-            } else if (currentStepIndex === 1 || currentStepIndex === 2) {
-                // Clear only previous unfinished task mistakes so we don't duplicate them
-                simulationTracker.steps[currentStepIndex].mistakes = simulationTracker.steps[currentStepIndex].mistakes.filter(
-                    m => !m.startsWith('Unfinished task:')
-                );
-                const instrList = document.getElementById('instrList');
-                if (instrList) {
-                    const items = instrList.querySelectorAll('li');
-                    items.forEach(li => {
-                        if (!li.classList.contains('done')) {
-                            const labelText = li.textContent.trim();
-                            simulationTracker.addMistake(`Unfinished task: ${labelText}`, currentStepIndex);
-                        }
-                    });
-                }
-                
-                // Check if battery needs replacement but wasn't replaced in Step 2
-                if (currentStepIndex === 1 && window.batteryNeedsReplacement) {
-                    const instructionsDone = window.stepInstrDone?.[1] || [];
-                    const batteryRemoved = instructionsDone[2]; // Index 2 is "Remove the old battery"
-                    const batteryInstalled = instructionsDone[3]; // Index 3 is "Drag and drop the new battery"
-                    
-                    if (!batteryRemoved || !batteryInstalled) {
-                        simulationTracker.addMistake('Critical battery not replaced: The battery has critical damage (cracks/bulging/leaks) and must be replaced. Continuing with a damaged battery will result in the vehicle not starting, unreliable electrical performance, and potential safety hazards from acid leakage or battery explosion.', 1);
-                    }
-                }
-            } else if (currentStepIndex === 3 || currentStepIndex === 4) {
-                // Clear all mistakes for checklist steps (Step 4 & 5)
+            } else if (currentStepIndex >= 1) {
+                // Re-evaluate unfinished instructions
                 simulationTracker.steps[currentStepIndex].mistakes = [];
-                const checkboxes = document.querySelectorAll('#instrList input[type="checkbox"]');
-                checkboxes.forEach(cb => {
-                    if (!cb.checked) {
-                        const labelText = cb.closest('label').querySelector('span').textContent.trim();
-                        simulationTracker.addMistake(`Missed instruction: ${labelText}`, currentStepIndex);
+                document.querySelectorAll('#instrList li').forEach(li => {
+                    if (!li.classList.contains('done')) {
+                        simulationTracker.addMistake(`Missed instruction: ${li.textContent.trim()}`, currentStepIndex);
                     }
                 });
             }
@@ -3223,8 +4090,8 @@
                 return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             };
 
-            let elapsedSeconds = 0;
-            window.__practiceElapsedSeconds = 0;
+            let elapsedSeconds = window.__practiceElapsedSeconds || 0;
+            window.__practiceElapsedSeconds = elapsedSeconds;
             timerEl.textContent = formatTime(elapsedSeconds);
 
             if (window.__practiceTimerInterval) {
@@ -3786,15 +4653,15 @@
             style="background:#fff;border-radius:12px;padding:18px;width:340px;box-shadow:0 18px 40px rgba(0,0,0,0.25);">
             <div
                 style="font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700;color:#111827;margin-bottom:8px;">
-                Add Water</div>
-            <div style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">Enter amount of water (ml) to add to the
-                bowl.</div>
+                Add Engine Oil</div>
+            <div style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">Enter amount of engine oil (ml) to pour
+                into the engine.</div>
             <input id="waterAmountInput" type="number" min="0" value="30"
                 style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;">
             <div style="display:flex;gap:10px;">
                 <button id="btnWaterConfirm"
-                    style="flex:1;padding:10px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer;">Add
-                    Water</button>
+                    style="flex:1;padding:10px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer;">Pour
+                    Oil</button>
                 <button id="btnWaterCancel"
                     style="flex:1;padding:10px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;color:#374151;cursor:pointer;">Cancel</button>
             </div>
@@ -4164,16 +5031,7 @@
                             // For Check Electrolyte Level (step 2 index=2) mark "Remove battery caps" (instr 0)
                             if (currentStepIndex === 2) markInstructionDone(2, 0);
                         }
-                        // Removing caps clears final reconnect instruction (index 4) for the current step
-                        try {
-                            window.stepInstrDone = window.stepInstrDone || {};
-                            window.stepInstrDone[currentStepIndex] = window.stepInstrDone[currentStepIndex] || [];
-                            window.stepInstrDone[currentStepIndex][4] = false;
-                            if (currentStepIndex === currentStepIndex) {
-                                const instrList = document.getElementById('instrList');
-                                if (instrList && instrList.children[4]) instrList.children[4].classList.remove('done');
-                            }
-                        } catch (e) { /* ignore */ }
+                        // Instruction state is checklist-driven — cap removal does not alter it
                     } catch (err) { console.warn('Failed to update instructions after cap removal', err); }
 
                     // Lock position after successful removal
@@ -4304,15 +5162,9 @@
             window.stepInstrDone = window.stepInstrDone || {};
             window.stepInstrDone[stepIdx] = window.stepInstrDone[stepIdx] || [];
             window.stepInstrDone[stepIdx][instrIdx] = true;
-            if (currentStepIndex === stepIdx) {
-                const instrList = document.getElementById('instrList');
-                if (instrList && instrList.children[instrIdx]) instrList.children[instrIdx].classList.add('done');
-            }
-            const instrList = document.getElementById('instrList');
-            if (instrList && instrList.children[instrIdx]) {
-                const li = instrList.children[instrIdx];
-                const text = (li.querySelector('span') || li).textContent.trim();
-                if (text && window.simulationTracker) window.simulationTracker.addCorrect(text, stepIdx);
+            if (stepIdx === currentStepIndex) {
+                const li = document.querySelectorAll('#instrList li')[instrIdx];
+                if (li) li.classList.add('done');
             }
         }
 
@@ -4472,18 +5324,7 @@
             switch (action) {
                 case 'clean':
                     showSequenceWarning('Battery cleaned successfully!');
-                    // Mark instruction 3 (apply paste & brush) and 4 (wipe) as done
-                    try {
-                        window.stepInstrDone = window.stepInstrDone || {};
-                        window.stepInstrDone[1] = window.stepInstrDone[1] || [];
-                        window.stepInstrDone[1][2] = true;
-                        window.stepInstrDone[1][3] = true;
-                        if (currentStepIndex === 1) {
-                            const instrList = document.getElementById('instrList');
-                            if (instrList && instrList.children[2]) instrList.children[2].classList.add('done');
-                            if (instrList && instrList.children[3]) instrList.children[3].classList.add('done');
-                        }
-                    } catch (err) { console.warn('Failed to mark instructions 3/4 after clean', err); }
+                    // Instruction state is checklist-driven — scene actions do not mark it
 
                     // Close modal after a delay
                     setTimeout(() => {

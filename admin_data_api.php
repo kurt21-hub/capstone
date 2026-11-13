@@ -1,5 +1,5 @@
 <?php
-// admin_data_api.php - MotoMaster Admin API connecting directly to motomasterdb
+// admin_data_api.php - MotoMaster Admin API connecting directly to motomaster
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
@@ -13,7 +13,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 if ($mysqli->connect_errno) {
@@ -39,10 +39,300 @@ function getRequestInput() {
     return $_POST;
 }
 
+// Ensure instructors table can store section assignments
+function mmEnsureInstructorSections(mysqli $mysqli) {
+    $res = $mysqli->query("SHOW COLUMNS FROM instructors LIKE 'assigned_sections'");
+    $exists = $res && $res->num_rows > 0;
+    if ($res instanceof mysqli_result) {
+        $res->free();
+    }
+    if (!$exists) {
+        $mysqli->query("ALTER TABLE instructors ADD COLUMN assigned_sections VARCHAR(255) NULL DEFAULT NULL");
+    }
+}
+
+// Normalize a classes input (array or comma-separated string) into a clean section list.
+// Sections are single letters A-Z to match the values students pick at registration.
+function mmParseSections($raw) {
+    $parts = is_array($raw) ? $raw : explode(',', (string)$raw);
+    $sections = [];
+    foreach ($parts as $p) {
+        $p = strtoupper(trim((string)$p));
+        if (preg_match('/^[A-Z]$/', $p) && !in_array($p, $sections, true)) {
+            $sections[] = $p;
+        }
+    }
+    return $sections;
+}
+
+// Count students whose section is in the given list
+function mmCountStudentsInSections(mysqli $mysqli, array $sections) {
+    if (empty($sections)) return 0;
+    $escaped = array_map(function ($s) use ($mysqli) {
+        return "'" . $mysqli->real_escape_string($s) . "'";
+    }, $sections);
+    $res = $mysqli->query("SELECT COUNT(*) AS total FROM students WHERE section IN (" . implode(',', $escaped) . ")");
+    if ($res && $row = $res->fetch_assoc()) {
+        return (int)$row['total'];
+    }
+    return 0;
+}
+
+// Helper: relative "x ago" label for dashboard cards
+function mmRelTime($dateStr) {
+    if (!$dateStr) return '—';
+    $t = strtotime($dateStr);
+    if (!$t) return '—';
+    $diff = time() - $t;
+    if ($diff < 60) return 'Just now';
+    if ($diff < 3600) return round($diff / 60) . ' min ago';
+    if ($diff < 86400) return round($diff / 3600) . ' hr ago';
+    if ($diff < 172800) return 'Yesterday';
+    return date('M d, Y', $t);
+}
+
+// Helper: "Today, 08:42 AM" style timestamp label for log tables
+function mmLogTime($dateStr) {
+    if (!$dateStr) return '—';
+    $t = strtotime($dateStr);
+    if (!$t) return '—';
+    if (date('Y-m-d', $t) === date('Y-m-d')) return 'Today, ' . date('h:i A', $t);
+    if (date('Y-m-d', $t) === date('Y-m-d', strtotime('-1 day'))) return 'Yesterday, ' . date('h:i A', $t);
+    return date('M d, h:i A', $t);
+}
+
+// Helper: human readable byte size
+function mmHumanSize($bytes) {
+    $bytes = (float)$bytes;
+    if ($bytes >= 1073741824) return round($bytes / 1073741824, 1) . ' GB';
+    if ($bytes >= 1048576) return round($bytes / 1048576, 1) . ' MB';
+    if ($bytes >= 1024) return round($bytes / 1024, 1) . ' KB';
+    return round($bytes) . ' B';
+}
+
+// Helper: recursive directory size in bytes
+function mmDirSize($dir) {
+    $size = 0;
+    if (!is_dir($dir)) return 0;
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS));
+    foreach ($it as $f) {
+        if ($f->isFile()) $size += $f->getSize();
+    }
+    return $size;
+}
+
+function mmBuildReportDataset($mysqli, $reportType, $dateFrom, $dateTo, $moduleFilter) {
+    $from = $mysqli->real_escape_string($dateFrom . ' 00:00:00');
+    $to   = $mysqli->real_escape_string($dateTo . ' 23:59:59');
+
+    $moduleCond = '';
+    if ($moduleFilter && $moduleFilter !== 'All Modules') {
+        $words = preg_split('/\s+/', trim($moduleFilter));
+        $key = $mysqli->real_escape_string(implode(' ', array_slice($words, 0, 2)));
+        $moduleCond = " AND sim.title LIKE '{$key}%'";
+    }
+
+    $columns = ['Metric', 'Value'];
+    $rows = [];
+
+    switch ($reportType) {
+        case 'Student Progress':
+            $columns = ['Student ID', 'Name', 'Section', 'Avg Module Progress (%)', 'Avg Practice Score'];
+            $res = $mysqli->query("SELECT s.student_id,
+                    CONCAT(s.first_name, ' ', s.last_name) AS name, s.section,
+                    COALESCE(ROUND(AVG(p.progress_percent)), 0) AS avg_progress,
+                    COALESCE(ROUND((SELECT AVG(sim.score) FROM simulation sim WHERE sim.student_id = s.student_id), 1), 0) AS avg_score
+                    FROM students s LEFT JOIN student_module_progress p ON p.student_id = s.student_id
+                    GROUP BY s.student_id ORDER BY s.student_id");
+            if ($res) while ($r = $res->fetch_assoc()) {
+                $rows[] = [$r['student_id'], $r['name'], $r['section'] !== '' ? $r['section'] : '-', $r['avg_progress'], $r['avg_score']];
+            }
+            break;
+
+        case 'Module Performance':
+            $columns = ['Module', 'Attempts', 'Avg Score', 'Completion Rate (%)'];
+            $res = $mysqli->query("SELECT sim.title, COUNT(*) AS attempts,
+                    ROUND(AVG(sim.score), 1) AS avg_score,
+                    ROUND(SUM(CASE WHEN sim.completion_status = 'Completed' THEN 1 ELSE 0 END) / COUNT(*) * 100) AS completion_pct
+                    FROM simulation sim
+                    WHERE sim.date_attempted BETWEEN '$from' AND '$to'$moduleCond
+                    GROUP BY sim.title ORDER BY attempts DESC");
+            if ($res) while ($r = $res->fetch_assoc()) {
+                $rows[] = [$r['title'], $r['attempts'], $r['avg_score'], $r['completion_pct']];
+            }
+            break;
+
+        case 'Assessment Results':
+            $columns = ['ID', 'Student', 'Assessment', 'Type', 'Score', 'Remarks', 'Date'];
+            $res = $mysqli->query("SELECT a.assessment_id,
+                    CONCAT(s.first_name, ' ', s.last_name) AS student,
+                    a.title, a.type, a.score, a.remarks,
+                    DATE_FORMAT(a.date_taken, '%Y-%m-%d') AS dt
+                    FROM assessment a LEFT JOIN students s ON s.student_id = a.student_id
+                    WHERE a.date_taken BETWEEN '$from' AND '$to'
+                    ORDER BY a.date_taken DESC");
+            if ($res) while ($r = $res->fetch_assoc()) {
+                $rows[] = [$r['assessment_id'], $r['student'], $r['title'], $r['type'], $r['score'], $r['remarks'], $r['dt']];
+            }
+            break;
+
+        case 'Teacher Activity':
+            $columns = ['ID', 'Name', 'Email', 'Specialization', 'Messages Sent', 'Joined'];
+            $res = $mysqli->query("SELECT i.instructor_id,
+                    CONCAT(i.first_name, ' ', i.last_name) AS name,
+                    i.email, i.specialization,
+                    (SELECT COUNT(*) FROM messages m WHERE m.sender_role = 'Instructor' AND m.sender_id = i.instructor_id) AS msgs,
+                    DATE_FORMAT(i.created_at, '%Y-%m-%d') AS joined
+                    FROM instructors i ORDER BY i.instructor_id");
+            if ($res) while ($r = $res->fetch_assoc()) {
+                $rows[] = [$r['instructor_id'], $r['name'], $r['email'], $r['specialization'], $r['msgs'], $r['joined']];
+            }
+            break;
+
+        case 'Engagement & Retention':
+            $columns = ['Student ID', 'Name', 'Section', 'Total Attempts', 'Last Active', 'Enrolled'];
+            $res = $mysqli->query("SELECT s.student_id,
+                    CONCAT(s.first_name, ' ', s.last_name) AS name, s.section,
+                    (SELECT COUNT(*) FROM simulation sim WHERE sim.student_id = s.student_id) AS attempts,
+                    COALESCE(DATE_FORMAT((SELECT MAX(sim.date_attempted) FROM simulation sim WHERE sim.student_id = s.student_id), '%Y-%m-%d'), 'Never') AS last_active,
+                    DATE_FORMAT(s.created_at, '%Y-%m-%d') AS enrolled
+                    FROM students s ORDER BY attempts DESC, s.student_id");
+            if ($res) while ($r = $res->fetch_assoc()) {
+                $rows[] = [$r['student_id'], $r['name'], $r['section'] !== '' ? $r['section'] : '-', $r['attempts'], $r['last_active'], $r['enrolled']];
+            }
+            break;
+
+        case 'Practice Session':
+            $columns = ['Sim ID', 'Student', 'Module', 'Status', 'Score', 'Date'];
+            $res = $mysqli->query("SELECT sim.simulation_id,
+                    CONCAT(s.first_name, ' ', s.last_name) AS student,
+                    sim.title, sim.completion_status, sim.score,
+                    DATE_FORMAT(sim.date_attempted, '%Y-%m-%d %H:%i') AS dt
+                    FROM simulation sim LEFT JOIN students s ON s.student_id = sim.student_id
+                    WHERE sim.date_attempted BETWEEN '$from' AND '$to'$moduleCond
+                    ORDER BY sim.date_attempted DESC");
+            if ($res) while ($r = $res->fetch_assoc()) {
+                $rows[] = [$r['simulation_id'], $r['student'], $r['title'], $r['completion_status'], $r['score'], $r['dt']];
+            }
+            break;
+
+        default:
+            $res = $mysqli->query("SELECT
+                    (SELECT COUNT(*) FROM students) AS students,
+                    (SELECT COUNT(*) FROM instructors) AS instructors,
+                    (SELECT COUNT(*) FROM simulation) AS simulations,
+                    (SELECT COUNT(*) FROM assessment) AS assessments,
+                    (SELECT COUNT(*) FROM reports) AS reports");
+            if ($res && $r = $res->fetch_assoc()) {
+                foreach ($r as $k => $v) $rows[] = [ucfirst($k), $v];
+            }
+            break;
+    }
+
+    return ['columns' => $columns, 'rows' => $rows];
+}
+
+function mmPdfEscape($s) {
+    $s = str_replace(array('\\', '(', ')'), array('\\\\', '\\(', '\\)'), (string)$s);
+    return preg_replace('/[^\x20-\x7E]/', '', $s);
+}
+
+function mmGenerateReportPdf($title, $metaLines, $columns, $rows) {
+    $mx = 46;
+    $tableW = 612 - 2 * $mx;
+    $ncols = max(1, count($columns));
+    $colW = $tableW / $ncols;
+    $maxChars = max(3, (int)floor($colW / 4.7));
+    $rowH = 15;
+    $tableRight = $mx + $tableW;
+
+    $pages = array();
+    $pageOps = '';
+    $y = 0;
+
+    $startPage = function () use (&$pageOps, &$y, $title, $metaLines, $columns, $mx, $colW, $maxChars, $tableW, $tableRight) {
+        $y = 752;
+        $ops = "BT /F2 15 Tf {$mx} {$y} Td (" . mmPdfEscape($title) . ") Tj ET\n";
+        $y -= 17;
+        foreach ($metaLines as $m) {
+            $ops .= "BT /F1 9 Tf {$mx} {$y} Td (" . mmPdfEscape($m) . ") Tj ET\n";
+            $y -= 13;
+        }
+        $y -= 6;
+        $ops .= "0.7 w 0 G {$mx} {$y} m {$tableRight} {$y} l S\n";
+        $y -= 6;
+        $ops .= "0.93 g {$mx} " . ($y - 11) . " {$tableW} 15 re f\n0 g\n";
+        $x = $mx + 4;
+        foreach ($columns as $c) {
+            $ops .= "BT /F2 8 Tf {$x} {$y} Td (" . mmPdfEscape(substr($c, 0, $maxChars)) . ") Tj ET\n";
+            $x += $colW;
+        }
+        $y -= 18;
+        $pageOps = $ops;
+    };
+
+    $startPage();
+    foreach ($rows as $row) {
+        if ($y < 55) {
+            $pages[] = $pageOps;
+            $startPage();
+        }
+        $x = $mx + 4;
+        foreach ($columns as $i => $c) {
+            $val = isset($row[$i]) ? $row[$i] : '';
+            $pageOps .= "BT /F1 8.5 Tf {$x} {$y} Td (" . mmPdfEscape(substr((string)$val, 0, $maxChars)) . ") Tj ET\n";
+            $x += $colW;
+        }
+        $pageOps .= "0.2 w 0.9 G {$mx} " . ($y - 4) . " m {$tableRight} " . ($y - 4) . " l S\n0 G\n";
+        $y -= $rowH;
+    }
+    if ($pageOps !== '') $pages[] = $pageOps;
+
+    $total = count($pages);
+    foreach ($pages as $i => &$p) {
+        $pn = $i + 1;
+        $p .= "BT /F1 8 Tf {$mx} 26 Td (" . mmPdfEscape('MotoMaster Admin Portal - generated from live motomaster database') . ") Tj ET\n";
+        $p .= "BT /F1 8 Tf 500 26 Td (Page {$pn} of {$total}) Tj ET\n";
+    }
+    unset($p);
+
+    $numPages = count($pages);
+    $fontF1 = 3 + 2 * $numPages;
+    $fontF2 = $fontF1 + 1;
+    $objs = array();
+    $objs[1] = '<< /Type /Catalog /Pages 2 0 R >>';
+    $kids = '';
+    for ($i = 0; $i < $numPages; $i++) $kids .= (3 + 2 * $i) . ' 0 R ';
+    $objs[2] = '<< /Type /Pages /Kids [' . trim($kids) . '] /Count ' . $numPages . ' >>';
+    for ($i = 0; $i < $numPages; $i++) {
+        $pageObj = 3 + 2 * $i;
+        $objs[$pageObj] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 {$fontF1} 0 R /F2 {$fontF2} 0 R >> >> /Contents " . ($pageObj + 1) . " 0 R >>";
+        $objs[$pageObj + 1] = "<< /Length " . strlen($pages[$i]) . " >>\nstream\n" . $pages[$i] . "endstream";
+    }
+    $objs[$fontF1] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+    $objs[$fontF2] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>';
+
+    $pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
+    $offsets = array();
+    for ($i = 1; $i <= $fontF2; $i++) {
+        $offsets[$i] = strlen($pdf);
+        $pdf .= $i . " 0 obj\n" . $objs[$i] . "\nendobj\n";
+    }
+    $xrefPos = strlen($pdf);
+    $pdf .= "xref\n0 " . ($fontF2 + 1) . "\n0000000000 65535 f \n";
+    for ($i = 1; $i <= $fontF2; $i++) {
+        $pdf .= sprintf("%010d 00000 n \n", $offsets[$i]);
+    }
+    $pdf .= "trailer\n<< /Size " . ($fontF2 + 1) . " /Root 1 0 R >>\nstartxref\n" . $xrefPos . "\n%%EOF\n";
+    return $pdf;
+}
+
 switch ($action) {
     case 'get_teachers_data':
+        mmEnsureInstructorSections($mysqli);
+
         // Fetch registered teachers from instructors table
-        $sql = "SELECT instructor_id, first_name, last_name, email, specialization, contact_number FROM instructors ORDER BY instructor_id ASC";
+        $sql = "SELECT instructor_id, first_name, last_name, email, specialization, contact_number, assigned_sections FROM instructors ORDER BY instructor_id ASC";
         $result = $mysqli->query($sql);
         
         if (!$result) {
@@ -51,38 +341,32 @@ switch ($action) {
             exit;
         }
 
-        // Fetch overall student count from database
-        $studentCountRes = $mysqli->query("SELECT COUNT(*) AS total FROM students");
-        $totalStudents = 0;
-        if ($studentCountRes && $sRow = $studentCountRes->fetch_assoc()) {
-            $totalStudents = (int)$sRow['total'];
-        }
-
-        // Fetch overall average assessment pass rate from database
-        $assessRes = $mysqli->query("SELECT AVG(score) AS avg_score FROM assessment");
-        $avgScore = 90;
-        if ($assessRes && $aRow = $assessRes->fetch_assoc()) {
-            if ($aRow['avg_score'] !== null) {
-                $avgScore = round((float)$aRow['avg_score']);
-            }
-        }
-
         $teachers = [];
         while ($row = $result->fetch_assoc()) {
             $id = (int)$row['instructor_id'];
             $code = 'MM-T' . str_pad($id, 3, '0', STR_PAD_LEFT);
-            
-            // Map cohorts/classes depending on specialization or ID
             $spec = !empty($row['specialization']) ? $row['specialization'] : 'Automotive Servicing';
-            $classes = [];
-            if (stripos($spec, 'Engine') !== false) {
-                $classes = ['BSMA 1-A', 'AT-101'];
-            } elseif (stripos($spec, 'Brake') !== false) {
-                $classes = ['BSMA 2-A', 'AT-102'];
-            } elseif (stripos($spec, 'Electrical') !== false || stripos($spec, 'Battery') !== false || stripos($spec, 'Spark') !== false) {
-                $classes = ['BSMA 3-A', 'AT-201'];
-            } else {
-                $classes = ['BSMA 1-B', 'AT-202'];
+
+            // Real assigned sections stored by the admin
+            $classes = mmParseSections($row['assigned_sections'] ?? '');
+            $studentsCount = mmCountStudentsInSections($mysqli, $classes);
+
+            // Average assessment score across this teacher's own students only
+            $avgPassRate = null;
+            if (!empty($classes)) {
+                $escaped = array_map(function ($s) use ($mysqli) {
+                    return "'" . $mysqli->real_escape_string($s) . "'";
+                }, $classes);
+                $avgRes = $mysqli->query(
+                    "SELECT AVG(a.score) AS avg_score FROM assessment a
+                     INNER JOIN students s ON s.student_id = a.student_id
+                     WHERE s.section IN (" . implode(',', $escaped) . ")"
+                );
+                if ($avgRes && $avgRow = $avgRes->fetch_assoc()) {
+                    if ($avgRow['avg_score'] !== null) {
+                        $avgPassRate = round((float)$avgRow['avg_score']);
+                    }
+                }
             }
 
             $teachers[] = [
@@ -94,8 +378,8 @@ switch ($action) {
                 'contact_number' => $row['contact_number'] ?: '—',
                 'specialization' => $spec,
                 'classes' => $classes,
-                'students_count' => $totalStudents > 0 ? $totalStudents : 1,
-                'avg_pass_rate' => $avgScore,
+                'students_count' => $studentsCount,
+                'avg_pass_rate' => $avgPassRate,
                 'status' => 'Active',
                 'last_active' => 'Active now',
                 'joined_date' => 'Registered Faculty'
@@ -123,6 +407,7 @@ switch ($action) {
         $contact = isset($input['contact_number']) ? trim($input['contact_number']) : '';
         $specialization = isset($input['specialization']) ? trim($input['specialization']) : 'Automotive Servicing NC II';
         $password = isset($input['password']) && !empty($input['password']) ? $input['password'] : 'Teacher@123';
+        $assignedSections = implode(',', mmParseSections($input['classes'] ?? ($input['assigned_sections'] ?? '')));
 
         if (!$first || !$last || !$email) {
             http_response_code(400);
@@ -143,9 +428,11 @@ switch ($action) {
         }
         $stmtCheck->close();
 
+        mmEnsureInstructorSections($mysqli);
+
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        $stmtInsert = $mysqli->prepare("INSERT INTO instructors (first_name, last_name, email, password, specialization, contact_number) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmtInsert->bind_param('ssssss', $first, $last, $email, $hashedPassword, $specialization, $contact);
+        $stmtInsert = $mysqli->prepare("INSERT INTO instructors (first_name, last_name, email, password, specialization, contact_number, assigned_sections) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmtInsert->bind_param('sssssss', $first, $last, $email, $hashedPassword, $specialization, $contact, $assignedSections);
         
         if ($stmtInsert->execute()) {
             $newId = $stmtInsert->insert_id;
@@ -176,6 +463,7 @@ switch ($action) {
         $email = isset($input['email']) ? trim($input['email']) : '';
         $contact = isset($input['contact_number']) ? trim($input['contact_number']) : '';
         $specialization = isset($input['specialization']) ? trim($input['specialization']) : '';
+        $assignedSections = implode(',', mmParseSections($input['classes'] ?? ($input['assigned_sections'] ?? '')));
 
         if (!$id || !$first || !$last || !$email) {
             http_response_code(400);
@@ -183,8 +471,10 @@ switch ($action) {
             exit;
         }
 
-        $stmtUpdate = $mysqli->prepare("UPDATE instructors SET first_name = ?, last_name = ?, email = ?, specialization = ?, contact_number = ? WHERE instructor_id = ?");
-        $stmtUpdate->bind_param('sssssi', $first, $last, $email, $specialization, $contact, $id);
+        mmEnsureInstructorSections($mysqli);
+
+        $stmtUpdate = $mysqli->prepare("UPDATE instructors SET first_name = ?, last_name = ?, email = ?, specialization = ?, contact_number = ?, assigned_sections = ? WHERE instructor_id = ?");
+        $stmtUpdate->bind_param('ssssssi', $first, $last, $email, $specialization, $contact, $assignedSections, $id);
         
         if ($stmtUpdate->execute()) {
             $stmtUpdate->close();
@@ -235,21 +525,19 @@ switch ($action) {
             'Spark Plug Replacement' => 'mod_progress_sparkmodule'
         ];
 
-        // Fetch instructors list for assignment
-        $instructorsList = [];
-        $instRes = $mysqli->query("SELECT instructor_id, first_name, last_name, specialization FROM instructors ORDER BY instructor_id ASC");
+        // Map each section to the instructor the admin assigned to it
+        mmEnsureInstructorSections($mysqli);
+        $sectionToTeacher = [];
+        $instRes = $mysqli->query("SELECT instructor_id, first_name, last_name, assigned_sections FROM instructors ORDER BY instructor_id ASC");
         if ($instRes) {
             while ($iRow = $instRes->fetch_assoc()) {
-                $instructorsList[] = 'Prof. ' . $iRow['first_name'] . ' ' . $iRow['last_name'];
+                $tName = 'Prof. ' . $iRow['first_name'] . ' ' . $iRow['last_name'];
+                foreach (mmParseSections($iRow['assigned_sections'] ?? '') as $sec) {
+                    if (!isset($sectionToTeacher[$sec])) {
+                        $sectionToTeacher[$sec] = $tName;
+                    }
+                }
             }
-        }
-        if (empty($instructorsList)) {
-            $instructorsList = [
-                'Prof. Roberto Santos',
-                'Engr. Maria Theresa Cruz',
-                'Instructor Juan Carlos Dela Cruz',
-                'Prof. Arnel Villanueva'
-            ];
         }
 
         $res = $mysqli->query("SELECT student_id, first_name, last_name, email, section, created_at FROM students ORDER BY student_id ASC");
@@ -274,9 +562,11 @@ switch ($action) {
             $firstName = $s['first_name'];
             $lastName = $s['last_name'];
             $email = $s['email'];
-            $section = !empty($s['section']) ? $s['section'] : 'BSMA 1-A';
-            if (filter_var($section, FILTER_VALIDATE_EMAIL)) {
-                $section = 'BSMA 1-A';
+            $section = strtoupper(trim((string)$s['section']));
+            if (!preg_match('/^[A-Z]$/', $section)) {
+                // No real section on record — surface it as unassigned
+                // instead of silently filing the student under section A.
+                $section = '';
             }
 
             // Fetch module progress
@@ -386,9 +676,8 @@ switch ($action) {
                 }
             }
 
-            // Assigned teacher assignment
-            $teacherIdx = abs($studentId - 1) % count($instructorsList);
-            $teacherName = $instructorsList[$teacherIdx];
+            // Teacher assigned to this student's section by the admin
+            $teacherName = isset($sectionToTeacher[$section]) ? $sectionToTeacher[$section] : 'Unassigned';
 
             $students[] = [
                 'student_id' => $studentId,
@@ -396,7 +685,7 @@ switch ($action) {
                 'first_name' => $firstName,
                 'last_name' => $lastName,
                 'email' => $email,
-                'contact_number' => '+63 9' . rand(10, 99) . ' ' . rand(100, 999) . ' ' . rand(1000, 9999),
+                'contact_number' => '—',
                 'section' => $section,
                 'strand' => 'Automotive Servicing NC II',
                 'teacher_name' => $teacherName,
@@ -411,7 +700,7 @@ switch ($action) {
         $totalCount = count($students);
         $avgProgress = $totalCount > 0 ? round($totalProgressSum / $totalCount) : 0;
         $classAvgScore = $scoredCount > 0 ? round($totalScoreSum / $scoredCount) : 0;
-        $passRate = $scoredCount > 0 ? round(($passCount / $scoredCount) * 100) : ($totalCount > 0 ? 80 : 0);
+        $passRate = $scoredCount > 0 ? round(($passCount / $scoredCount) * 100) : 0;
 
         echo json_encode([
             'success' => true,
@@ -440,7 +729,8 @@ switch ($action) {
         $first = isset($input['first_name']) ? trim($input['first_name']) : '';
         $last = isset($input['last_name']) ? trim($input['last_name']) : '';
         $email = isset($input['email']) ? trim($input['email']) : '';
-        $section = isset($input['section']) ? trim($input['section']) : 'BSMA 1-A';
+        $section = isset($input['section']) ? trim($input['section']) : '';
+        $section = preg_match('/^[A-Za-z]$/', $section) ? strtoupper($section) : '';
         $password = isset($input['password']) && !empty($input['password']) ? $input['password'] : 'Student@123';
 
         if (!$first || !$last || !$email) {
@@ -507,7 +797,14 @@ switch ($action) {
         $first = isset($input['first_name']) ? trim($input['first_name']) : '';
         $last = isset($input['last_name']) ? trim($input['last_name']) : '';
         $email = isset($input['email']) ? trim($input['email']) : '';
-        $section = isset($input['section']) ? trim($input['section']) : 'BSMA 1-A';
+        $section = isset($input['section']) ? trim($input['section']) : '';
+        $section = preg_match('/^[A-Za-z]$/', $section) ? strtoupper($section) : '';
+        if ($section === '') {
+            // Keep whatever section is already stored rather than silently
+            // forcing 'A' when the form sends nothing valid.
+            $curRes = $mysqli->query('SELECT section FROM students WHERE student_id = ' . (int)$id . ' LIMIT 1');
+            $section = ($curRes && ($curRow = $curRes->fetch_assoc())) ? (string)$curRow['section'] : '';
+        }
 
         if (!$id || !$first || !$last || !$email) {
             http_response_code(400);
@@ -2168,7 +2465,7 @@ switch ($action) {
         break;
 
     case 'get_reports_data':
-        // 1. Fetch all reports from motomasterdb
+        // 1. Fetch all reports from motomaster
         $reports = [];
         $rQuery = $mysqli->query("
             SELECT r.report_id, r.student_id, r.instructor_id, r.report_type, r.data, r.generated_data,
@@ -2193,9 +2490,6 @@ switch ($action) {
             if (substr($r['generated_data'], 0, 7) === $currentMonth) {
                 $generatedThisMonth++;
             }
-        }
-        if ($generatedThisMonth == 0 && $totalReports > 0) {
-            $generatedThisMonth = min($totalReports, 3);
         }
 
         // 2. Fetch platform base metrics
@@ -2251,7 +2545,7 @@ switch ($action) {
 
         $moduleCoverage = [];
         foreach ($moduleKeys as $k => $mInfo) {
-            $avgPct = !empty($progAccum[$k]) ? round(array_sum($progAccum[$k]) / count($progAccum[$k])) : 75;
+            $avgPct = !empty($progAccum[$k]) ? round(array_sum($progAccum[$k]) / count($progAccum[$k])) : 0;
             $moduleCoverage[] = [
                 'name' => $mInfo['name'],
                 'color' => $mInfo['color'],
@@ -2269,12 +2563,12 @@ switch ($action) {
         }
 
         $reportTypesMeta = [
-            'Student Progress Report' => isset($latestDates['Student Progress']) ? $latestDates['Student Progress'] : 'Sep 5, 2026',
-            'Module Performance Report' => isset($latestDates['Module Performance']) ? $latestDates['Module Performance'] : 'Sep 1, 2026',
-            'Assessment Results Report' => isset($latestDates['Assessment Results']) ? $latestDates['Assessment Results'] : 'Sep 8, 2026',
-            'Teacher Activity Report' => isset($latestDates['Teacher Activity']) ? $latestDates['Teacher Activity'] : 'Aug 28, 2026',
-            'Engagement & Retention Report' => isset($latestDates['Engagement & Retention']) ? $latestDates['Engagement & Retention'] : 'Aug 20, 2026',
-            'Practice Session Report' => isset($latestDates['Practice Session']) ? $latestDates['Practice Session'] : 'Aug 19, 2026'
+            'Student Progress Report' => isset($latestDates['Student Progress']) ? $latestDates['Student Progress'] : 'Never generated',
+            'Module Performance Report' => isset($latestDates['Module Performance']) ? $latestDates['Module Performance'] : 'Never generated',
+            'Assessment Results Report' => isset($latestDates['Assessment Results']) ? $latestDates['Assessment Results'] : 'Never generated',
+            'Teacher Activity Report' => isset($latestDates['Teacher Activity']) ? $latestDates['Teacher Activity'] : 'Never generated',
+            'Engagement & Retention Report' => isset($latestDates['Engagement & Retention']) ? $latestDates['Engagement & Retention'] : 'Never generated',
+            'Practice Session Report' => isset($latestDates['Practice Session']) ? $latestDates['Practice Session'] : 'Never generated'
         ];
 
         // 5. Chart: Reports Generated Over Time (Stacked 6 Months)
@@ -2288,14 +2582,54 @@ switch ($action) {
             $monthNames[] = $dt->format('M');
         }
 
-        $chartDatasets = [
-            'Student Progress' => [1, 2, 1, 2, 2, 1],
-            'Module Perf.' => [1, 1, 1, 1, 2, 1],
-            'Assessment' => [1, 1, 2, 1, 1, 2],
-            'Teacher' => [0, 1, 0, 1, 1, 1],
-            'Engagement' => [1, 0, 1, 1, 1, 1],
-            'Practice' => [0, 1, 1, 1, 2, 1]
+        $typeToChartKey = [
+            'Student Progress' => 'Student Progress',
+            'Module Performance' => 'Module Perf.',
+            'Assessment Results' => 'Assessment',
+            'Teacher Activity' => 'Teacher',
+            'Engagement & Retention' => 'Engagement',
+            'Practice Session' => 'Practice'
         ];
+        $chartDatasets = [
+            'Student Progress' => array_fill(0, 6, 0),
+            'Module Perf.' => array_fill(0, 6, 0),
+            'Assessment' => array_fill(0, 6, 0),
+            'Teacher' => array_fill(0, 6, 0),
+            'Engagement' => array_fill(0, 6, 0),
+            'Practice' => array_fill(0, 6, 0)
+        ];
+        foreach ($reports as $r) {
+            $rk = isset($typeToChartKey[$r['report_type']]) ? $typeToChartKey[$r['report_type']] : null;
+            $mIdx = array_search(substr($r['generated_data'], 0, 7), $monthsKeys, true);
+            if ($rk !== null && $mIdx !== false) $chartDatasets[$rk][$mIdx]++;
+        }
+
+        // Real per-type report counts and download totals
+        $typeCounts = [];
+        $downloadsTotal = 0;
+        $pdfDownloadsTotal = 0;
+        $scheduledCount = 0;
+        $nextRunTs = null;
+        foreach ($reports as $r) {
+            $typeCounts[$r['report_type']] = isset($typeCounts[$r['report_type']]) ? $typeCounts[$r['report_type']] + 1 : 1;
+            $p = json_decode($r['data'], true) ?: [];
+            $downloadsTotal += isset($p['downloads']) ? (int)$p['downloads'] : 0;
+            if (isset($p['format']) && strtoupper($p['format']) === 'PDF') {
+                $pdfDownloadsTotal += isset($p['downloads']) ? (int)$p['downloads'] : 0;
+            }
+            $sched = isset($p['schedule']) ? strtolower(trim($p['schedule'])) : '';
+            if ($sched !== '' && $sched !== 'one-time only' && $sched !== 'one-time') {
+                $scheduledCount++;
+                $gen = strtotime($r['generated_data']);
+                $interval = ($sched === 'daily') ? '+1 day' : (($sched === 'weekly') ? '+1 week' : '+1 month');
+                $nr = strtotime($interval, $gen);
+                while ($nr <= time()) $nr = strtotime($interval, $nr);
+                if ($nextRunTs === null || $nr < $nextRunTs) $nextRunTs = $nr;
+            }
+        }
+        $moduleDistinct = 0;
+        $mdRes = $mysqli->query("SELECT COUNT(DISTINCT title) AS c FROM simulation");
+        if ($mdRes && $mRow = $mdRes->fetch_assoc()) $moduleDistinct = (int)$mRow['c'];
 
         // 6. Recent Reports Formatted List
         $recentTable = [];
@@ -2344,37 +2678,37 @@ switch ($action) {
         $reportSummary = [
             'student_progress' => [
                 'tracked_text' => "$studentsCount students tracked",
-                'reports_count' => 14
+                'reports_count' => isset($typeCounts['Student Progress']) ? $typeCounts['Student Progress'] : 0
             ],
             'module_performance' => [
-                'tracked_text' => "6 modules, 6 categories",
-                'reports_count' => 10
+                'tracked_text' => "$moduleDistinct modules practiced",
+                'reports_count' => isset($typeCounts['Module Performance']) ? $typeCounts['Module Performance'] : 0
             ],
             'assessment_results' => [
                 'tracked_text' => "$assessCount assessments, $totalSubmissions submissions",
-                'reports_count' => 12
+                'reports_count' => isset($typeCounts['Assessment Results']) ? $typeCounts['Assessment Results'] : 0
             ],
             'teacher_activity' => [
                 'tracked_text' => "$instructorsCount teachers monitored",
-                'reports_count' => 6
+                'reports_count' => isset($typeCounts['Teacher Activity']) ? $typeCounts['Teacher Activity'] : 0
             ],
             'engagement_retention' => [
                 'tracked_text' => "$studentsCount active learners",
-                'reports_count' => 6
+                'reports_count' => isset($typeCounts['Engagement & Retention']) ? $typeCounts['Engagement & Retention'] : 0
             ]
         ];
 
         echo json_encode([
             'success' => true,
             'kpis' => [
-                'total_reports' => $totalReports > 0 ? $totalReports : 48,
+                'total_reports' => $totalReports,
                 'generated_this_month' => $generatedThisMonth,
-                'downloads' => 214,
-                'pdf_downloads' => 142,
-                'scheduled_count' => 6,
-                'next_run' => 'Jun 1',
-                'shared_count' => 19,
-                'active_links' => 7
+                'downloads' => $downloadsTotal,
+                'pdf_downloads' => $pdfDownloadsTotal,
+                'scheduled_count' => $scheduledCount,
+                'next_run' => $nextRunTs !== null ? date('M j', $nextRunTs) : '—',
+                'shared_count' => 0,
+                'active_links' => 0
             ],
             'report_types_meta' => $reportTypesMeta,
             'chart' => [
@@ -2408,6 +2742,8 @@ switch ($action) {
         $studentId = 1;
         $instructorId = 1;
 
+        $dataset = mmBuildReportDataset($mysqli, $reportType, $dateFrom, $dateTo, $moduleFilter);
+
         $dataPayload = json_encode([
             'format' => $format,
             'scope' => $moduleFilter,
@@ -2415,6 +2751,8 @@ switch ($action) {
             'date_to' => $dateTo,
             'schedule' => $schedule,
             'summary' => "Generated on " . date('Y-m-d H:i:s'),
+            'columns' => $dataset['columns'],
+            'rows' => $dataset['rows'],
             'file' => strtolower(str_replace(' ', '_', $reportType)) . '_' . date('Ymd_His') . '.' . strtolower($format)
         ]);
 
@@ -2430,7 +2768,7 @@ switch ($action) {
             $newId = $stmt->insert_id;
             echo json_encode([
                 'success' => true,
-                'message' => 'Report generated and saved to motomasterdb successfully.',
+                'message' => 'Report generated and saved to motomaster successfully.',
                 'report_id' => $newId
             ]);
         } else {
@@ -2439,6 +2777,113 @@ switch ($action) {
         }
         $stmt->close();
         break;
+
+    case 'download_report':
+        $reportId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $stmt = $mysqli->prepare("SELECT report_id, report_type, data, generated_data FROM reports WHERE report_id = ? LIMIT 1");
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $mysqli->error]);
+            exit;
+        }
+        $stmt->bind_param("i", $reportId);
+        $stmt->execute();
+        $report = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$report) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Report not found']);
+            exit;
+        }
+
+        $payload = json_decode($report['data'], true);
+        if (!is_array($payload)) $payload = [];
+
+        // Track real download count on the report record
+        $payload['downloads'] = isset($payload['downloads']) ? (int)$payload['downloads'] + 1 : 1;
+        $updStmt = $mysqli->prepare("UPDATE reports SET data = ? WHERE report_id = ?");
+        if ($updStmt) {
+            $newData = json_encode($payload);
+            $updStmt->bind_param("si", $newData, $reportId);
+            $updStmt->execute();
+            $updStmt->close();
+        }
+
+        $columns = isset($payload['columns']) && is_array($payload['columns']) ? $payload['columns'] : null;
+        $rows = isset($payload['rows']) && is_array($payload['rows']) ? $payload['rows'] : null;
+        if (!$columns || !$rows) {
+            $fb = mmBuildReportDataset(
+                $mysqli,
+                $report['report_type'],
+                isset($payload['date_from']) ? $payload['date_from'] : date('Y-m-01'),
+                isset($payload['date_to']) ? $payload['date_to'] : date('Y-m-d'),
+                isset($payload['scope']) ? $payload['scope'] : 'All Modules'
+            );
+            $columns = $fb['columns'];
+            $rows = $fb['rows'];
+        }
+
+        $format = isset($payload['format']) ? strtoupper($payload['format']) : 'PDF';
+        $scope = isset($payload['scope']) ? $payload['scope'] : 'Platform Wide';
+        $period = (isset($payload['date_from']) ? $payload['date_from'] : '') . ' to ' . (isset($payload['date_to']) ? $payload['date_to'] : '');
+        $baseName = preg_replace('/[^A-Za-z0-9_\-]/', '', strtolower(str_replace(' ', '_', $report['report_type']))) . '_report_' . $reportId;
+
+        $metaLines = [
+            'Report ID: ' . $report['report_id'],
+            'Type: ' . $report['report_type'] . ' Report',
+            'Scope: ' . $scope,
+            'Period: ' . trim($period),
+            'Generated: ' . $report['generated_data'],
+            'Source Database: motomaster'
+        ];
+
+        if ($format === 'CSV') {
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $baseName . '.csv"');
+            $out = fopen('php://output', 'w');
+            fputcsv($out, [$report['report_type'] . ' Report - MotoMaster Admin Portal']);
+            foreach ($metaLines as $m) fputcsv($out, [$m]);
+            fputcsv($out, []);
+            fputcsv($out, $columns);
+            foreach ($rows as $row) fputcsv($out, $row);
+            fclose($out);
+            exit;
+        }
+
+        if ($format === 'EXCEL') {
+            $esc = function ($v) { return htmlspecialchars((string)$v, ENT_XML1, 'UTF-8'); };
+            $xml = '<?xml version="1.0"?>' . "\n" . '<?mso-application progid="Excel.Sheet"?>' . "\n";
+            $xml .= '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
+            $xml .= '<Worksheet ss:Name="Report"><Table>';
+            $xml .= '<Row><Cell><Data ss:Type="String">' . $esc($report['report_type'] . ' Report - MotoMaster Admin Portal') . '</Data></Cell></Row>';
+            foreach ($metaLines as $m) {
+                $xml .= '<Row><Cell><Data ss:Type="String">' . $esc($m) . '</Data></Cell></Row>';
+            }
+            $xml .= '<Row></Row><Row>';
+            foreach ($columns as $c) $xml .= '<Cell><Data ss:Type="String">' . $esc($c) . '</Data></Cell>';
+            $xml .= '</Row>';
+            foreach ($rows as $row) {
+                $xml .= '<Row>';
+                foreach ($columns as $i => $c) {
+                    $v = isset($row[$i]) ? $row[$i] : '';
+                    $xml .= '<Cell><Data ss:Type="' . (is_numeric($v) ? 'Number' : 'String') . '">' . $esc($v) . '</Data></Cell>';
+                }
+                $xml .= '</Row>';
+            }
+            $xml .= '</Table></Worksheet></Workbook>';
+            header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $baseName . '.xls"');
+            echo $xml;
+            exit;
+        }
+
+        $pdf = mmGenerateReportPdf($report['report_type'] . ' Report', $metaLines, $columns, $rows);
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $baseName . '.pdf"');
+        header('Content-Length: ' . strlen($pdf));
+        echo $pdf;
+        exit;
 
     case 'get_admin_settings':
         $adminId = isset($_GET['admin_id']) ? (int)$_GET['admin_id'] : 1;
@@ -2561,7 +3006,7 @@ switch ($action) {
             }
             echo json_encode([
                 'success' => true,
-                'message' => 'Admin profile updated successfully in motomasterdb.',
+                'message' => 'Admin profile updated successfully in motomaster.',
                 'admin' => [
                     'admin_id' => $adminId,
                     'first_name' => $first,
@@ -2603,14 +3048,14 @@ switch ($action) {
             $upd->bind_param("si", $newHash, $adminId);
             if ($upd->execute()) {
                 $upd->close();
-                $logStmt = $mysqli->prepare("INSERT INTO activity_logs (user_id, user_type, action, details, ip_address, created_at) VALUES (?, 'Admin', 'Password Changed', 'Administrator updated their security password in motomasterdb.', ?, NOW())");
+                $logStmt = $mysqli->prepare("INSERT INTO activity_logs (user_id, user_type, action, details, ip_address, created_at) VALUES (?, 'Admin', 'Password Changed', 'Administrator updated their security password in motomaster.', ?, NOW())");
                 if ($logStmt) {
                     $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
                     $logStmt->bind_param("is", $adminId, $ip);
                     $logStmt->execute();
                     $logStmt->close();
                 }
-                echo json_encode(['success' => true, 'message' => 'Password updated successfully in motomasterdb.']);
+                echo json_encode(['success' => true, 'message' => 'Password updated successfully in motomaster.']);
             } else {
                 http_response_code(500);
                 echo json_encode(['success' => false, 'message' => 'Failed to update password.']);
@@ -2651,7 +3096,7 @@ switch ($action) {
         $logStmt = $mysqli->prepare("INSERT INTO activity_logs (user_id, user_type, action, details, ip_address, created_at) VALUES (1, 'Admin', ?, ?, ?, NOW())");
         if ($logStmt) {
             $actName = $name . ' Updated';
-            $det = "Saved preferences for $name in motomasterdb";
+            $det = "Saved preferences for $name in motomaster";
             $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
             $logStmt->bind_param("sss", $actName, $det, $ip);
             $logStmt->execute();
@@ -2702,7 +3147,7 @@ switch ($action) {
             }
             echo json_encode([
                 'success' => true,
-                'message' => 'Admin user added successfully to motomasterdb.',
+                'message' => 'Admin user added successfully to motomaster.',
                 'admin_user' => [
                     'admin_id' => $newAdminId,
                     'first_name' => $first,
@@ -2733,13 +3178,13 @@ switch ($action) {
             $del->close();
             $logStmt = $mysqli->prepare("INSERT INTO activity_logs (user_id, user_type, action, details, ip_address, created_at) VALUES (1, 'Admin', 'Admin User Deleted', ?, ?, NOW())");
             if ($logStmt) {
-                $det = "Deleted admin user ID $adminId from motomasterdb";
+                $det = "Deleted admin user ID $adminId from motomaster";
                 $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
                 $logStmt->bind_param("ss", $det, $ip);
                 $logStmt->execute();
                 $logStmt->close();
             }
-            echo json_encode(['success' => true, 'message' => 'Admin user removed successfully from motomasterdb.']);
+            echo json_encode(['success' => true, 'message' => 'Admin user removed successfully from motomaster.']);
         } else {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Failed to delete admin user.']);
@@ -2757,18 +3202,25 @@ switch ($action) {
                 $mysqli->query("DELETE FROM assessment");
                 $mysqli->query("DELETE FROM simulation");
                 $mysqli->query("DELETE FROM student_module_notes");
-                $msg = 'All student module progress, assessments, and practice simulations have been reset in motomasterdb.';
+                $msg = 'All student module progress, assessments, and practice simulations have been reset in motomaster.';
                 break;
             case 'archive_modules':
-                $msg = 'All learning modules have been archived and hidden from students in motomasterdb.';
+                $msg = 'All learning modules have been archived and hidden from students in motomaster.';
                 break;
             case 'clear_logs':
-                $mysqli->query("DELETE FROM activity_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)");
-                $msg = 'Activity logs older than 30 days cleared from motomasterdb.';
+                $days = isset($input['days']) ? trim((string)$input['days']) : '30';
+                if ($days === 'all') {
+                    $mysqli->query("DELETE FROM activity_logs");
+                    $msg = 'All activity logs cleared from motomaster.';
+                } else {
+                    $d = max(1, (int)$days);
+                    $mysqli->query("DELETE FROM activity_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL $d DAY)");
+                    $msg = "Activity logs older than $d days cleared from motomaster.";
+                }
                 break;
             case 'delete_students':
                 $mysqli->query("DELETE FROM students");
-                $msg = 'All student accounts and profiles have been deleted from motomasterdb.';
+                $msg = 'All student accounts and profiles have been deleted from motomaster.';
                 break;
             case 'factory_reset':
                 $mysqli->query("DELETE FROM student_module_progress");
@@ -2776,7 +3228,7 @@ switch ($action) {
                 $mysqli->query("DELETE FROM assessment");
                 $mysqli->query("DELETE FROM simulation");
                 $mysqli->query("DELETE FROM reports");
-                $msg = 'Platform data factory reset executed successfully in motomasterdb.';
+                $msg = 'Platform data factory reset executed successfully in motomaster.';
                 break;
             default:
                 http_response_code(400);
@@ -2911,9 +3363,12 @@ switch ($action) {
         if ($sentMonthRes && $sm = $sentMonthRes->fetch_assoc()) {
             $sentThisMonth = (int)$sm['total'];
         }
-        if ($sentThisMonth < 47) {
-            // Keep baseline realistic total if recently seeded
-            $sentThisMonth = max(47, $sentThisMonth);
+
+        // Yesterday's total for the "vs yesterday" KPI subtitle
+        $yesterdayRes = $mysqli->query("SELECT COUNT(*) AS total FROM notifications WHERE DATE(created_at) = CURDATE() - INTERVAL 1 DAY");
+        $totalYesterday = 0;
+        if ($yesterdayRes && $yr = $yesterdayRes->fetch_assoc()) {
+            $totalYesterday = (int)$yr['total'];
         }
 
         // Preferences from database
@@ -2942,11 +3397,12 @@ switch ($action) {
             'admin' => $adminInfo,
             'kpis' => [
                 'unread' => $unreadCount,
-                'critical_unread' => $criticalUnreadCount > 0 ? $criticalUnreadCount : 1,
-                'total_today' => max($totalToday, 24),
+                'critical_unread' => $criticalUnreadCount,
+                'total_today' => $totalToday,
+                'total_yesterday' => $totalYesterday,
                 'sent_this_month' => $sentThisMonth,
-                'system_alerts' => max($systemAlertsCount, 3),
-                'high_priority' => max($highPriorityCount, 1)
+                'system_alerts' => $systemAlertsCount,
+                'high_priority' => $highPriorityCount
             ],
             'categories' => $catCounts,
             'notifications' => $notifications,
@@ -3070,9 +3526,11 @@ switch ($action) {
                 elseif (stripos($recipient, 'Teacher') !== false) $recRole = 'Teacher';
                 elseif (stripos($recipient, 'User') !== false) $recRole = 'All';
 
-                $mStmt = $mysqli->prepare("INSERT INTO messages (sender_role, sender_id, sender_name, recipient_role, recipient_id, recipient_name, subject, message_text, category, is_read, created_at) VALUES ('Admin', 1, 'Albea Pallado', ?, 0, ?, ?, ?, ?, 0, NOW())");
+                $senderName = trim((string)($_SESSION['admin_name'] ?? 'Administrator'));
+                if ($senderName === '') $senderName = 'Administrator';
+                $mStmt = $mysqli->prepare("INSERT INTO messages (sender_role, sender_id, sender_name, recipient_role, recipient_id, recipient_name, subject, message_text, category, is_read, created_at) VALUES ('Admin', 1, ?, ?, 0, ?, ?, ?, ?, 0, NOW())");
                 if ($mStmt) {
-                    $mStmt->bind_param("sssss", $recRole, $recipient, $title, $message, $type);
+                    $mStmt->bind_param("ssssss", $senderName, $recRole, $recipient, $title, $message, $type);
                     $mStmt->execute();
                     $mStmt->close();
                 }
@@ -3090,7 +3548,7 @@ switch ($action) {
 
             echo json_encode([
                 'success' => true,
-                'message' => 'Notification broadcasted and saved to motomasterdb successfully.',
+                'message' => 'Notification broadcasted and saved to motomaster successfully.',
                 'notification_id' => $newId
             ]);
         } else {
@@ -3121,7 +3579,7 @@ switch ($action) {
         $check->close();
 
         // Log preference update
-        $logStmt = $mysqli->prepare("INSERT INTO activity_logs (user_id, user_type, action, details, ip_address, created_at) VALUES (1, 'Admin', 'Alert Preferences Updated', 'Updated notification and alert channel preferences in motomasterdb.', ?, NOW())");
+        $logStmt = $mysqli->prepare("INSERT INTO activity_logs (user_id, user_type, action, details, ip_address, created_at) VALUES (1, 'Admin', 'Alert Preferences Updated', 'Updated notification and alert channel preferences in motomaster.', ?, NOW())");
         if ($logStmt) {
             $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
             $logStmt->bind_param("s", $ip);
@@ -3131,8 +3589,766 @@ switch ($action) {
 
         echo json_encode([
             'success' => true,
-            'message' => 'Notification preferences saved to motomasterdb.'
+            'message' => 'Notification preferences saved to motomaster.'
         ]);
+        break;
+
+    case 'get_dashboard_data':
+        // ---- Admin profile + notification badge ----
+        $adminName = 'Administrator';
+        $aRes = $mysqli->query("SELECT first_name, last_name FROM admin ORDER BY admin_id DESC LIMIT 1");
+        if ($aRes && $ar = $aRes->fetch_assoc()) {
+            $adminName = trim($ar['first_name'] . ' ' . $ar['last_name']) ?: 'Administrator';
+        }
+
+        $unreadNotifs = 0;
+        $nRes = $mysqli->query("SELECT COUNT(*) AS c FROM notifications WHERE is_read = 0");
+        if ($nRes && $nr = $nRes->fetch_assoc()) {
+            $unreadNotifs = (int)$nr['c'];
+        }
+
+        // ---- Headline counts ----
+        $totalStudents = 0; $totalTeachers = 0; $totalAssessments = 0;
+        if ($r = $mysqli->query("SELECT COUNT(*) c FROM students")) { $totalStudents = (int)$r->fetch_assoc()['c']; }
+        if ($r = $mysqli->query("SELECT COUNT(*) c FROM instructors")) { $totalTeachers = (int)$r->fetch_assoc()['c']; }
+        if ($r = $mysqli->query("SELECT COUNT(*) c FROM assessment")) { $totalAssessments = (int)$r->fetch_assoc()['c']; }
+
+        // Active sessions = distinct students with activity in the last 24 hours
+        $activeSessions = 0;
+        $actRes = $mysqli->query("SELECT COUNT(DISTINCT student_id) AS c FROM (
+                SELECT student_id FROM simulation WHERE date_attempted >= DATE_SUB(NOW(), INTERVAL 1 DAY)
+                UNION
+                SELECT student_id FROM assessment WHERE date_taken >= DATE_SUB(NOW(), INTERVAL 1 DAY)
+                UNION
+                SELECT student_id FROM student_module_progress WHERE date_updated >= DATE_SUB(NOW(), INTERVAL 1 DAY)
+            ) x");
+        if ($actRes && $row = $actRes->fetch_assoc()) {
+            $activeSessions = (int)$row['c'];
+        }
+
+        // ---- Pull every scored attempt (practice sims + assessments) once ----
+        $attempts = []; // ['ts'=>unix, 'score'=>float, 'kind'=>'practice'|'assessment', 'status'=>string, 'title'=>string, 'student'=>string]
+        $simRes = $mysqli->query("SELECT s.simulation_id, s.title, s.score, s.completion_status, s.date_attempted,
+                                        st.first_name, st.last_name, st.student_id
+                                 FROM simulation s JOIN students st ON s.student_id = st.student_id
+                                 ORDER BY s.date_attempted DESC");
+        if ($simRes) {
+            while ($row = $simRes->fetch_assoc()) {
+                $attempts[] = [
+                    'ts' => strtotime($row['date_attempted']),
+                    'score' => (float)$row['score'],
+                    'kind' => 'practice',
+                    'status' => $row['completion_status'],
+                    'title' => $row['title'],
+                    'student' => trim($row['first_name'] . ' ' . $row['last_name']),
+                    'student_id' => (int)$row['student_id']
+                ];
+            }
+        }
+        $assRes = $mysqli->query("SELECT a.assessment_id, a.title, a.score, a.remarks, a.date_taken,
+                                         st.first_name, st.last_name, st.student_id
+                                  FROM assessment a JOIN students st ON a.student_id = st.student_id
+                                  ORDER BY a.date_taken DESC");
+        if ($assRes) {
+            while ($row = $assRes->fetch_assoc()) {
+                $attempts[] = [
+                    'ts' => strtotime($row['date_taken']),
+                    'score' => (float)$row['score'],
+                    'kind' => 'assessment',
+                    'status' => $row['remarks'],
+                    'title' => $row['title'],
+                    'student' => trim($row['first_name'] . ' ' . $row['last_name']),
+                    'student_id' => (int)$row['student_id']
+                ];
+            }
+        }
+
+        $scoredAttempts = array_filter($attempts, function ($a) { return $a['score'] > 0; });
+        $avgScore = count($scoredAttempts) > 0
+            ? round(array_sum(array_column($scoredAttempts, 'score')) / count($scoredAttempts))
+            : 0;
+
+        // ---- Weekly buckets (last 5 weeks, Monday starts) ----
+        $weekStart = strtotime('monday this week');
+        $weekLabels = []; $weekAvg = []; $weekPrac = []; $weekAssess = [];
+        for ($i = 4; $i >= 0; $i--) {
+            $ws = strtotime("-{$i} week", $weekStart);
+            $we = strtotime('+1 week', $ws);
+            $weekLabels[] = date('M j', $ws);
+            $sum = 0; $cnt = 0; $pc = 0; $ac = 0;
+            foreach ($attempts as $a) {
+                if ($a['ts'] >= $ws && $a['ts'] < $we) {
+                    if ($a['score'] > 0) { $sum += $a['score']; $cnt++; }
+                    if ($a['kind'] === 'practice') { $pc++; } else { $ac++; }
+                }
+            }
+            $weekAvg[] = $cnt > 0 ? round($sum / $cnt) : 0;
+            $weekPrac[] = $pc;
+            $weekAssess[] = $ac;
+        }
+
+        // ---- Doughnut: passed / failed / in progress ----
+        $passed = 0; $failed = 0; $inProgress = 0;
+        foreach ($attempts as $a) {
+            if ($a['kind'] === 'practice' && stripos($a['status'], 'Progress') !== false) {
+                $inProgress++;
+            } elseif ($a['score'] >= 75) {
+                $passed++;
+            } else {
+                $failed++;
+            }
+        }
+        $doughnutTotal = $passed + $failed + $inProgress;
+
+        // ---- Performance metrics strip ----
+        $modulesCompleted = 0;
+        if ($r = $mysqli->query("SELECT COUNT(*) c FROM student_module_progress WHERE progress_percent >= 100")) {
+            $modulesCompleted = (int)$r->fetch_assoc()['c'];
+        }
+        $successRate = ($passed + $failed) > 0 ? round($passed / ($passed + $failed) * 100) : 0;
+
+        // ---- Recent activities (merged real events) ----
+        $activities = [];
+        $logRes = $mysqli->query("SELECT user_id, user_type, action, details, created_at FROM activity_logs ORDER BY created_at DESC LIMIT 20");
+        if ($logRes) {
+            $adminIds = []; $instIds = []; $stuIds = [];
+            if ($r = $mysqli->query("SELECT admin_id, first_name, last_name FROM admin")) {
+                while ($x = $r->fetch_assoc()) $adminIds[(int)$x['admin_id']] = trim($x['first_name'] . ' ' . $x['last_name']);
+            }
+            if ($r = $mysqli->query("SELECT instructor_id, first_name, last_name FROM instructors")) {
+                while ($x = $r->fetch_assoc()) $instIds[(int)$x['instructor_id']] = trim($x['first_name'] . ' ' . $x['last_name']);
+            }
+            if ($r = $mysqli->query("SELECT student_id, first_name, last_name FROM students")) {
+                while ($x = $r->fetch_assoc()) $stuIds[(int)$x['student_id']] = trim($x['first_name'] . ' ' . $x['last_name']);
+            }
+            while ($row = $logRes->fetch_assoc()) {
+                $who = 'User';
+                if ($row['user_type'] === 'Admin' && isset($adminIds[(int)$row['user_id']])) $who = $adminIds[(int)$row['user_id']];
+                elseif (in_array($row['user_type'], ['Teacher', 'Instructor']) && isset($instIds[(int)$row['user_id']])) $who = $instIds[(int)$row['user_id']];
+                elseif ($row['user_type'] === 'Student' && isset($stuIds[(int)$row['user_id']])) $who = $stuIds[(int)$row['user_id']];
+                elseif ($row['user_type'] === 'Admin') $who = 'Administrator';
+                $activities[] = [
+                    'ts' => strtotime($row['created_at']),
+                    'icon' => 'fa-solid fa-gear',
+                    'text' => $row['action'],
+                    'actor' => $who
+                ];
+            }
+        }
+        foreach (array_slice($attempts, 0, 10) as $a) {
+            $activities[] = [
+                'ts' => $a['ts'],
+                'icon' => $a['kind'] === 'practice' ? 'fa-solid fa-gamepad' : 'fa-solid fa-clipboard-check',
+                'text' => $a['title'] . ' – ' . $a['status'] . ' (' . round($a['score']) . '%)',
+                'actor' => $a['student']
+            ];
+        }
+        if ($r = $mysqli->query("SELECT first_name, last_name, created_at FROM students ORDER BY created_at DESC LIMIT 5")) {
+            while ($row = $r->fetch_assoc()) {
+                $activities[] = ['ts' => strtotime($row['created_at']), 'icon' => 'fa-solid fa-user-graduate',
+                    'text' => 'registered as a new student', 'actor' => trim($row['first_name'] . ' ' . $row['last_name'])];
+            }
+        }
+        if ($r = $mysqli->query("SELECT first_name, last_name, created_at FROM instructors ORDER BY created_at DESC LIMIT 5")) {
+            while ($row = $r->fetch_assoc()) {
+                $activities[] = ['ts' => strtotime($row['created_at']), 'icon' => 'fa-solid fa-chalkboard-user',
+                    'text' => 'registered as a new teacher', 'actor' => trim($row['first_name'] . ' ' . $row['last_name'])];
+            }
+        }
+        usort($activities, function ($a, $b) { return $b['ts'] - $a['ts']; });
+        $recentActivities = [];
+        foreach (array_slice($activities, 0, 6) as $a) {
+            $recentActivities[] = ['icon' => $a['icon'], 'actor' => $a['actor'], 'text' => $a['text'], 'time' => mmRelTime(date('Y-m-d H:i:s', $a['ts']))];
+        }
+
+        // ---- Most used modules (practice attempts grouped by title) ----
+        $moduleIcons = [
+            'Engine Oil Change' => 'fa-solid fa-gear',
+            'Brake Pad Replacement' => 'fa-solid fa-circle-stop',
+            'Air Filter Replacement' => 'fa-solid fa-filter',
+            'Fuel Filter Replacement' => 'fa-solid fa-gas-pump',
+            'Battery Maintenance' => 'fa-solid fa-car-battery',
+            'Spark Plug Replacement' => 'fa-solid fa-plug'
+        ];
+        $moduleCounts = [];
+        foreach ($attempts as $a) {
+            $t = $a['title'];
+            if (!isset($moduleCounts[$t])) $moduleCounts[$t] = 0;
+            $moduleCounts[$t]++;
+        }
+        arsort($moduleCounts);
+        $maxMod = !empty($moduleCounts) ? max($moduleCounts) : 1;
+        $topModules = [];
+        $rank = 1;
+        foreach ($moduleCounts as $title => $cnt) {
+            $topModules[] = [
+                'rank' => $rank++,
+                'name' => $title,
+                'icon' => isset($moduleIcons[$title]) ? $moduleIcons[$title] : 'fa-solid fa-book-open',
+                'sessions' => $cnt,
+                'pct' => $maxMod > 0 ? round($cnt / $maxMod * 100) : 0
+            ];
+            if ($rank > 6) break;
+        }
+
+        // ---- Top performing classes (sections) ----
+        $topClasses = [];
+        $secRes = $mysqli->query("SELECT section, student_id FROM students");
+        $sections = [];
+        if ($secRes) {
+            while ($row = $secRes->fetch_assoc()) {
+                $sec = trim($row['section']) !== '' ? trim($row['section']) : 'Unassigned';
+                if (!isset($sections[$sec])) $sections[$sec] = ['students' => 0, 'scores' => []];
+                $sections[$sec]['students']++;
+            }
+            // avg score per student then average per section
+            $scoreByStudent = [];
+            foreach ($scoredAttempts as $a) {
+                $sid = $a['student_id'];
+                if (!isset($scoreByStudent[$sid])) $scoreByStudent[$sid] = ['sum' => 0, 'n' => 0];
+                $scoreByStudent[$sid]['sum'] += $a['score'];
+                $scoreByStudent[$sid]['n']++;
+            }
+            $secRes2 = $mysqli->query("SELECT section, student_id FROM students");
+            while ($row = $secRes2->fetch_assoc()) {
+                $sec = trim($row['section']) !== '' ? trim($row['section']) : 'Unassigned';
+                $sid = (int)$row['student_id'];
+                if (isset($scoreByStudent[$sid])) {
+                    $sections[$sec]['scores'][] = $scoreByStudent[$sid]['sum'] / $scoreByStudent[$sid]['n'];
+                }
+            }
+            $classRows = [];
+            foreach ($sections as $sec => $data) {
+                $avg = count($data['scores']) > 0 ? round(array_sum($data['scores']) / count($data['scores'])) : 0;
+                $classRows[] = ['name' => 'Section ' . $sec, 'avg' => $avg, 'students' => $data['students']];
+            }
+            usort($classRows, function ($a, $b) { return $b['avg'] - $a['avg']; });
+            $topClasses = array_slice($classRows, 0, 5);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'admin_name' => $adminName,
+            'unread_notifications' => $unreadNotifs,
+            'kpis' => [
+                'total_students' => $totalStudents,
+                'total_teachers' => $totalTeachers,
+                'total_modules' => 6,
+                'total_assessments' => $totalAssessments,
+                'active_sessions' => $activeSessions,
+                'avg_score' => $avgScore
+            ],
+            'metrics' => [
+                'assessments_done' => $totalAssessments,
+                'modules_completed' => $modulesCompleted,
+                'practice_attempts' => count(array_filter($attempts, function ($a) { return $a['kind'] === 'practice'; })),
+                'success_rate' => $successRate
+            ],
+            'performance' => ['labels' => $weekLabels, 'values' => $weekAvg],
+            'doughnut' => ['passed' => $passed, 'failed' => $failed, 'in_progress' => $inProgress, 'total' => $doughnutTotal],
+            'recent_activities' => $recentActivities,
+            'top_modules' => $topModules,
+            'top_classes' => $topClasses,
+            'usage' => ['labels' => $weekLabels, 'practices' => $weekPrac, 'assessments' => $weekAssess]
+        ]);
+        break;
+
+    case 'get_activity_logs':
+        // Build a merged, real event feed: activity_logs + derived events from other tables
+        $entries = [];
+        $push = function ($ts, $event, $detail, $user, $email, $role, $category, $severity, $ip, $desc) use (&$entries) {
+            if (!$ts) return;
+            $entries[] = [
+                'ts' => $ts,
+                'event' => $event,
+                'detail' => $detail,
+                'user' => $user,
+                'email' => $email,
+                'role' => $role,
+                'category' => $category,
+                'severity' => $severity,
+                'ip' => $ip ?: 'localhost',
+                'desc' => $desc
+            ];
+        };
+
+        // 1) Real activity_logs rows
+        $logRes = $mysqli->query("SELECT log_id, user_id, user_type, action, details, ip_address, created_at FROM activity_logs ORDER BY created_at DESC");
+        $adminIds = []; $instIds = []; $stuIds = [];
+        if ($r = $mysqli->query("SELECT admin_id, first_name, last_name, email FROM admin")) {
+            while ($x = $r->fetch_assoc()) $adminIds[(int)$x['admin_id']] = $x;
+        }
+        if ($r = $mysqli->query("SELECT instructor_id, first_name, last_name, email FROM instructors")) {
+            while ($x = $r->fetch_assoc()) $instIds[(int)$x['instructor_id']] = $x;
+        }
+        if ($r = $mysqli->query("SELECT student_id, first_name, last_name, email FROM students")) {
+            while ($x = $r->fetch_assoc()) $stuIds[(int)$x['student_id']] = $x;
+        }
+        if ($logRes) {
+            while ($row = $logRes->fetch_assoc()) {
+                $uid = (int)$row['user_id'];
+                $name = $row['user_type']; $email = '';
+                if ($row['user_type'] === 'Admin' && isset($adminIds[$uid])) { $name = trim($adminIds[$uid]['first_name'] . ' ' . $adminIds[$uid]['last_name']); $email = $adminIds[$uid]['email']; }
+                elseif (isset($instIds[$uid])) { $name = trim($instIds[$uid]['first_name'] . ' ' . $instIds[$uid]['last_name']); $email = $instIds[$uid]['email']; }
+                elseif (isset($stuIds[$uid])) { $name = trim($stuIds[$uid]['first_name'] . ' ' . $stuIds[$uid]['last_name']); $email = $stuIds[$uid]['email']; }
+
+                $actionLower = strtolower($row['action'] . ' ' . $row['details']);
+                $category = 'system'; $severity = 'info';
+                if (strpos($actionLower, 'login') !== false || strpos($actionLower, 'password') !== false) $category = 'auth';
+                elseif (strpos($actionLower, 'student') !== false || strpos($actionLower, 'teacher') !== false || strpos($actionLower, 'admin user') !== false) $category = 'user';
+                elseif (strpos($actionLower, 'module') !== false || strpos($actionLower, 'content') !== false) $category = 'content';
+                elseif (strpos($actionLower, 'report') !== false) $category = 'report';
+                elseif (strpos($actionLower, 'assessment') !== false) $category = 'assessment';
+                if (strpos($actionLower, 'danger') !== false || strpos($actionLower, 'failed') !== false || strpos($actionLower, 'unauthorized') !== false) $severity = 'critical';
+                elseif (strpos($actionLower, 'delete') !== false || strpos($actionLower, 'clear') !== false || strpos($actionLower, 'reset') !== false) $severity = 'warning';
+
+                $push(strtotime($row['created_at']), $row['action'], $row['details'], $name, $email, $row['user_type'], $category, $severity, $row['ip_address'], $row['details']);
+            }
+        }
+
+        // 2) Practice simulation attempts
+        $simRes = $mysqli->query("SELECT s.title, s.score, s.completion_status, s.date_attempted,
+                                         st.first_name, st.last_name, st.email
+                                  FROM simulation s JOIN students st ON s.student_id = st.student_id");
+        if ($simRes) {
+            while ($row = $simRes->fetch_assoc()) {
+                $score = (float)$row['score'];
+                $name = trim($row['first_name'] . ' ' . $row['last_name']);
+                $status = $row['completion_status'];
+                $severity = ($status === 'Completed' && $score >= 75) || $status === 'In Progress' ? 'info' : 'warning';
+                $push(strtotime($row['date_attempted']), 'Practice Session ' . $status,
+                    $row['title'] . ' – score ' . round($score) . '%', $name, $row['email'], 'Student', 'practice', $severity, 'localhost',
+                    "Student {$name} recorded a {$status} attempt on the {$row['title']} practice simulation with a score of " . round($score) . "/100.");
+            }
+        }
+
+        // 3) Assessment attempts
+        $assRes = $mysqli->query("SELECT a.title, a.score, a.remarks, a.date_taken,
+                                         st.first_name, st.last_name, st.email
+                                  FROM assessment a JOIN students st ON a.student_id = st.student_id");
+        if ($assRes) {
+            while ($row = $assRes->fetch_assoc()) {
+                $score = (float)$row['score'];
+                $name = trim($row['first_name'] . ' ' . $row['last_name']);
+                $severity = $score >= 75 ? 'info' : 'warning';
+                $push(strtotime($row['date_taken']), 'Assessment Submitted',
+                    $row['title'] . ' – score ' . round($score) . '%', $name, $row['email'], 'Student', 'assessment', $severity, 'localhost',
+                    "Student {$name} submitted {$row['title']} ({$row['remarks']}) with a score of " . round($score) . "/100.");
+            }
+        }
+
+        // 4) Student registrations
+        if ($r = $mysqli->query("SELECT first_name, last_name, email, created_at FROM students")) {
+            while ($row = $r->fetch_assoc()) {
+                $name = trim($row['first_name'] . ' ' . $row['last_name']);
+                $push(strtotime($row['created_at']), 'Student Account Created', $name . ' – ' . $row['email'],
+                    'Administrator', '', 'Admin', 'user', 'info', 'localhost',
+                    "New student account registered for {$name} ({$row['email']}).");
+            }
+        }
+
+        // 5) Teacher registrations
+        if ($r = $mysqli->query("SELECT first_name, last_name, email, created_at FROM instructors")) {
+            while ($row = $r->fetch_assoc()) {
+                $name = trim($row['first_name'] . ' ' . $row['last_name']);
+                $push(strtotime($row['created_at']), 'Teacher Account Created', $name . ' – ' . $row['email'],
+                    'Administrator', '', 'Admin', 'user', 'info', 'localhost',
+                    "New teacher account registered for {$name} ({$row['email']}).");
+            }
+        }
+
+        // 6) Notifications sent
+        if ($r = $mysqli->query("SELECT title, created_at FROM notifications")) {
+            while ($row = $r->fetch_assoc()) {
+                $push(strtotime($row['created_at']), 'Notification Sent', $row['title'],
+                    'Administrator', '', 'Admin', 'system', 'info', 'localhost',
+                    "An admin notification was broadcast: {$row['title']}.");
+            }
+        }
+
+        // 7) Generated reports
+        if ($r = $mysqli->query("SELECT report_type, generated_data FROM reports")) {
+            while ($row = $r->fetch_assoc()) {
+                $push(strtotime($row['generated_data']), 'Report Generated', $row['report_type'],
+                    'Administrator', '', 'Admin', 'report', 'info', 'localhost',
+                    "A {$row['report_type']} report was generated from system data.");
+            }
+        }
+
+        // Sort newest first
+        usort($entries, function ($a, $b) { return $b['ts'] - $a['ts']; });
+
+        // KPIs + breakdowns
+        $totalLogs = count($entries);
+        $todayLogs = 0; $critical = 0; $adminActions = 0;
+        $catCounts = ['auth' => 0, 'content' => 0, 'user' => 0, 'system' => 0, 'report' => 0, 'assessment' => 0, 'practice' => 0];
+        $userCounts = [];
+        $dayCounts = []; // last 7 days keyed Y-m-d
+        for ($i = 6; $i >= 0; $i--) {
+            $dayCounts[date('Y-m-d', strtotime("-{$i} day"))] = 0;
+        }
+        foreach ($entries as $e) {
+            if (date('Y-m-d', $e['ts']) === date('Y-m-d')) $todayLogs++;
+            if ($e['severity'] === 'critical') $critical++;
+            if ($e['role'] === 'Admin') $adminActions++;
+            if (isset($catCounts[$e['category']])) $catCounts[$e['category']]++;
+            $uname = $e['user'] ?: 'System';
+            if (!isset($userCounts[$uname])) $userCounts[$uname] = ['n' => 0, 'role' => $e['role']];
+            $userCounts[$uname]['n']++;
+            $d = date('Y-m-d', $e['ts']);
+            if (isset($dayCounts[$d])) $dayCounts[$d]++;
+        }
+
+        $daily = [];
+        $maxDay = max(1, max(array_values($dayCounts)));
+        foreach ($dayCounts as $d => $c) {
+            $daily[] = ['day' => date('D', strtotime($d)), 'count' => $c, 'pct' => round($c / $maxDay * 100)];
+        }
+
+        arsort($userCounts);
+        $topUsers = [];
+        foreach (array_slice($userCounts, 0, 5, true) as $uname => $ud) {
+            $topUsers[] = ['name' => $uname, 'count' => $ud['n'], 'role' => $ud['role']];
+        }
+
+        $catMeta = [
+            'auth' => ['label' => 'Authentication', 'color' => '#2563eb', 'sub' => 'Logins, logouts, resets'],
+            'content' => ['label' => 'Content', 'color' => '#16a34a', 'sub' => 'Modules, media'],
+            'user' => ['label' => 'User Management', 'color' => '#9333ea', 'sub' => 'Creates, edits, deletes'],
+            'system' => ['label' => 'System', 'color' => '#6b7280', 'sub' => 'Backups, settings'],
+            'report' => ['label' => 'Reports', 'color' => '#2563eb', 'sub' => 'Exports, schedules'],
+            'assessment' => ['label' => 'Assessments', 'color' => '#9333ea', 'sub' => 'Submissions, grades'],
+            'practice' => ['label' => 'Practice', 'color' => '#0ea5e9', 'sub' => 'Simulation attempts']
+        ];
+        $breakdown = [];
+        foreach ($catMeta as $key => $meta) {
+            $breakdown[] = ['key' => $key, 'label' => $meta['label'], 'sub' => $meta['sub'], 'color' => $meta['color'], 'count' => $catCounts[$key]];
+        }
+
+        $logsOut = [];
+        foreach ($entries as $e) {
+            $logsOut[] = [
+                'event' => $e['event'],
+                'detail' => $e['detail'],
+                'user' => $e['user'],
+                'email' => $e['email'],
+                'role' => $e['role'],
+                'category' => $e['category'],
+                'category_label' => $catMeta[$e['category']]['label'],
+                'severity' => $e['severity'],
+                'ip' => $e['ip'],
+                'ts' => date('Y-m-d H:i:s', $e['ts']),
+                'time_label' => mmLogTime(date('Y-m-d H:i:s', $e['ts'])),
+                'desc' => $e['desc']
+            ];
+        }
+
+        echo json_encode([
+            'success' => true,
+            'kpis' => [
+                'total_logs' => $totalLogs,
+                'today_logs' => $todayLogs,
+                'critical_events' => $critical,
+                'admin_actions' => $adminActions
+            ],
+            'breakdown' => $breakdown,
+            'daily' => $daily,
+            'top_users' => $topUsers,
+            'logs' => $logsOut
+        ]);
+        break;
+
+    case 'get_backup_data':
+        $backupDir = __DIR__ . DIRECTORY_SEPARATOR . 'backups';
+        if (!is_dir($backupDir)) { @mkdir($backupDir, 0777, true); }
+
+        // Scan real backup files
+        $files = [];
+        foreach (glob($backupDir . DIRECTORY_SEPARATOR . '*.{zip,sql,gz}', GLOB_BRACE) ?: [] as $path) {
+            if (!is_file($path)) continue;
+            $name = basename($path);
+            $lower = strtolower($name);
+            $type = 'Full';
+            if (strpos($lower, '_db_') !== false || substr($lower, -4) === '.sql' || substr($lower, -7) === '.sql.gz') $type = 'DB Only';
+            elseif (strpos($lower, 'weekly') !== false) $type = 'Weekly';
+            $files[] = [
+                'name' => $name,
+                'size' => filesize($path),
+                'mtime' => filemtime($path),
+                'type' => $type
+            ];
+        }
+        usort($files, function ($a, $b) { return $b['mtime'] - $a['mtime']; });
+
+        $backupBytes = 0;
+        $backupList = [];
+        foreach ($files as $f) {
+            $backupBytes += $f['size'];
+            $backupList[] = [
+                'name' => $f['name'],
+                'type' => $f['type'],
+                'size' => mmHumanSize($f['size']),
+                'triggered' => 'Manual – Admin',
+                'date' => mmLogTime(date('Y-m-d H:i:s', $f['mtime'])),
+                'status' => 'Success',
+                'url' => 'backups/' . rawurlencode($f['name'])
+            ];
+        }
+
+        // Real database size
+        $dbBytes = 0;
+        $szRes = $mysqli->query("SELECT SUM(data_length + index_length) AS sz FROM information_schema.TABLES WHERE table_schema = '{$dbName}'");
+        if ($szRes && $r = $szRes->fetch_assoc()) {
+            $dbBytes = (float)($r['sz'] ?: 0);
+        }
+
+        // Real media + config sizes on disk
+        $mediaBytes = mmDirSize(__DIR__ . DIRECTORY_SEPARATOR . 'models')
+            + mmDirSize(__DIR__ . DIRECTORY_SEPARATOR . 'images')
+            + mmDirSize(__DIR__ . DIRECTORY_SEPARATOR . 'music');
+        $configBytes = mmDirSize(__DIR__ . DIRECTORY_SEPARATOR . 'database')
+            + mmDirSize(__DIR__ . DIRECTORY_SEPARATOR . 'scripts');
+        foreach (glob(__DIR__ . DIRECTORY_SEPARATOR . '*.{php,html,js,css,json,txt,md}', GLOB_BRACE) ?: [] as $p) {
+            if (is_file($p)) $configBytes += filesize($p);
+        }
+
+        $contentBytes = $dbBytes + $mediaBytes + $configBytes;
+        $limitBytes = 10 * 1073741824;
+        $storagePct = $contentBytes > 0 ? min(100, round($contentBytes / $limitBytes * 100)) : 0;
+
+        // Last backup info
+        $lastBackupName = 'None';
+        $lastBackupDate = '—';
+        $thisWeek = 0;
+        foreach ($files as $f) {
+            if ($f['mtime'] >= strtotime('-7 days')) $thisWeek++;
+        }
+        if (!empty($files)) {
+            $lastBackupName = $files[0]['name'];
+            $lastBackupDate = date('M d, Y – h:i A', $files[0]['mtime']);
+        }
+
+        // Integrity checks against real state
+        $tableCount = 0;
+        if ($r = $mysqli->query("SELECT COUNT(*) c FROM information_schema.TABLES WHERE table_schema = '{$dbName}'")) {
+            $tableCount = (int)$r->fetch_assoc()['c'];
+        }
+        $glbCount = count(glob(__DIR__ . DIRECTORY_SEPARATOR . 'models' . DIRECTORY_SEPARATOR . '*.glb') ?: []);
+        $configOk = file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'db.php') && file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'auth_session.php');
+        $logRows = 0;
+        if ($r = $mysqli->query("SELECT COUNT(*) c FROM activity_logs")) {
+            $logRows = (int)$r->fetch_assoc()['c'];
+        }
+
+        // Saved schedule config (if any)
+        $savedSchedule = null;
+        $schRes = $mysqli->query("SELECT details FROM users_vehicle_parts_system_settings WHERE module_type = 'backup_schedule' LIMIT 1");
+        if ($schRes && $r = $schRes->fetch_assoc()) {
+            $savedSchedule = json_decode($r['details'], true);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'kpis' => [
+                'total_backups' => count($files),
+                'this_week' => $thisWeek,
+                'last_backup_name' => $lastBackupName,
+                'last_backup_date' => $lastBackupDate,
+                'last_backup_status' => !empty($files) ? 'Success' : '—',
+                'storage_used' => mmHumanSize($contentBytes),
+                'storage_pct' => $storagePct,
+                'retention' => '30d'
+            ],
+            'storage' => [
+                'db' => mmHumanSize($dbBytes),
+                'media' => mmHumanSize($mediaBytes),
+                'config' => mmHumanSize($configBytes),
+                'used' => mmHumanSize($contentBytes),
+                'limit' => '10 GB',
+                'pct' => $storagePct
+            ],
+            'backups' => $backupList,
+            'integrity' => [
+                ['label' => 'Database', 'sub' => $tableCount . ' tables reachable', 'status' => 'OK'],
+                ['label' => 'Media Files', 'sub' => $glbCount . ' 3D models found', 'status' => $glbCount > 0 ? 'OK' : 'Warn'],
+                ['label' => 'Config Files', 'sub' => $configOk ? 'Core config files present' : 'Missing config files', 'status' => $configOk ? 'OK' : 'Warn'],
+                ['label' => 'Backup Directory', 'sub' => is_writable($backupDir) ? $backupDir : 'Not writable', 'status' => is_writable($backupDir) ? 'OK' : 'Warn']
+            ],
+            'schedule' => $savedSchedule,
+            'backup_dir' => $backupDir
+        ]);
+        break;
+
+    case 'run_backup':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
+            exit;
+        }
+
+        $backupDir = __DIR__ . DIRECTORY_SEPARATOR . 'backups';
+        if (!is_dir($backupDir) && !@mkdir($backupDir, 0777, true)) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Could not create backups directory.']);
+            exit;
+        }
+
+        // Locate mysqldump (XAMPP default path first, then PATH)
+        $dumpBin = null;
+        $candidates = [
+            'C:\\xampp\\mysql\\bin\\mysqldump.exe',
+            'C:\\xampp\\mysql\\bin\\mysqldump',
+            'mysqldump'
+        ];
+        foreach ($candidates as $c) {
+            if (file_exists($c)) { $dumpBin = $c; break; }
+        }
+        if (!$dumpBin) {
+            $which = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'where mysqldump 2>nul' : 'which mysqldump 2>/dev/null';
+            $found = trim((string)shell_exec($which));
+            if ($found) $dumpBin = strtok($found, "\r\n");
+        }
+        if (!$dumpBin) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'mysqldump executable not found on this server.']);
+            exit;
+        }
+
+        $fileName = 'motomaster_db_' . date('Ymd_His') . '.sql';
+        $filePath = $backupDir . DIRECTORY_SEPARATOR . $fileName;
+        $passArg = $dbPass !== '' ? ' -p' . escapeshellarg($dbPass) : '';
+        $nullDev = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'NUL' : '/dev/null';
+        $cmd = '"' . $dumpBin . '" -h ' . escapeshellarg($dbHost) . ' -u ' . escapeshellarg($dbUser) . $passArg . ' ' . escapeshellarg($dbName) . ' > "' . $filePath . '" 2>' . $nullDev;
+        shell_exec($cmd);
+
+        if (!file_exists($filePath) || filesize($filePath) === 0) {
+            @unlink($filePath);
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Backup command failed to produce a dump file.']);
+            exit;
+        }
+
+        // Log the backup event
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        $logStmt = $mysqli->prepare("INSERT INTO activity_logs (user_id, user_type, action, details, ip_address, created_at) VALUES (1, 'Admin', 'Database Backup Created', ?, ?, NOW())");
+        if ($logStmt) {
+            $det = 'Manual database backup written to backups/' . $fileName;
+            $logStmt->bind_param('ss', $det, $ip);
+            $logStmt->execute();
+            $logStmt->close();
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Database backup created successfully.',
+            'file' => [
+                'name' => $fileName,
+                'size' => mmHumanSize(filesize($filePath)),
+                'url' => 'backups/' . rawurlencode($fileName),
+                'date' => mmLogTime(date('Y-m-d H:i:s'))
+            ]
+        ]);
+        break;
+
+    case 'delete_backup':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
+            exit;
+        }
+        $input = getRequestInput();
+        $name = isset($input['filename']) ? basename(trim($input['filename'])) : '';
+        $filePath = __DIR__ . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $name;
+        if (!$name || !is_file($filePath)) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Backup file not found.']);
+            exit;
+        }
+        if (@unlink($filePath)) {
+            echo json_encode(['success' => true, 'message' => 'Backup file deleted.']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Could not delete backup file.']);
+        }
+        break;
+
+    case 'restore_backup':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
+            exit;
+        }
+        $input = getRequestInput();
+        $name = isset($input['filename']) ? basename(trim($input['filename'])) : '';
+        $filePath = __DIR__ . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $name;
+        if (!$name || !is_file($filePath) || substr(strtolower($name), -4) !== '.sql') {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Only .sql database backups in the backups folder can be restored.']);
+            exit;
+        }
+
+        $mysqlBin = null;
+        foreach (['C:\\xampp\\mysql\\bin\\mysql.exe', 'C:\\xampp\\mysql\\bin\\mysql', 'mysql'] as $c) {
+            if (file_exists($c)) { $mysqlBin = $c; break; }
+        }
+        if (!$mysqlBin) {
+            $which = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'where mysql 2>nul' : 'which mysql 2>/dev/null';
+            $found = trim((string)shell_exec($which));
+            if ($found) $mysqlBin = strtok($found, "\r\n");
+        }
+        if (!$mysqlBin) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'mysql client executable not found on this server.']);
+            exit;
+        }
+
+        $passArg = $dbPass !== '' ? ' -p' . escapeshellarg($dbPass) : '';
+        $cmd = '"' . $mysqlBin . '" -h ' . escapeshellarg($dbHost) . ' -u ' . escapeshellarg($dbUser) . $passArg . ' ' . escapeshellarg($dbName) . ' < "' . $filePath . '" 2>&1';
+        $out = shell_exec($cmd);
+
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        $logStmt = $mysqli->prepare("INSERT INTO activity_logs (user_id, user_type, action, details, ip_address, created_at) VALUES (1, 'Admin', 'Database Backup Restored', ?, ?, NOW())");
+        if ($logStmt) {
+            $det = 'Database restored from backups/' . $name;
+            $logStmt->bind_param('ss', $det, $ip);
+            $logStmt->execute();
+            $logStmt->close();
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Database restored from ' . $name . '.',
+            'output' => $out
+        ]);
+        break;
+
+    case 'save_backup_schedule':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
+            exit;
+        }
+        $input = getRequestInput();
+        $prefs = isset($input['schedule']) ? $input['schedule'] : $input;
+        $json = json_encode($prefs);
+
+        $check = $mysqli->prepare("SELECT setting_id FROM users_vehicle_parts_system_settings WHERE module_type = 'backup_schedule'");
+        $check->execute();
+        $check->store_result();
+        if ($check->num_rows > 0) {
+            $upd = $mysqli->prepare("UPDATE users_vehicle_parts_system_settings SET details = ?, date_updated = NOW() WHERE module_type = 'backup_schedule'");
+            $upd->bind_param('s', $json);
+            $upd->execute();
+            $upd->close();
+        } else {
+            $ins = $mysqli->prepare("INSERT INTO users_vehicle_parts_system_settings (admin_id, module_type, module_name, details, date_updated) VALUES (1, 'backup_schedule', 'Backup Schedule', ?, NOW())");
+            $ins->bind_param('s', $json);
+            $ins->execute();
+            $ins->close();
+        }
+        $check->close();
+
+        echo json_encode(['success' => true, 'message' => 'Backup schedule saved.']);
         break;
 
     default:

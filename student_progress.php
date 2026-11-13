@@ -5,7 +5,7 @@ require_once __DIR__ . '/auth_session.php';
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 if ($mysqli->connect_errno) {
@@ -103,12 +103,31 @@ function resolveStudentId(mysqli $mysqli, ?int $studentId, string $email): ?int
 
 ensureProgressTable($mysqli);
 
-$authenticatedStudentId = motoMasterRequireStudentId();
+// Try to get student_id from PHP session first
+$authenticatedStudentId = null;
+try {
+    $authenticatedStudentId = motoMasterRequireStudentId();
+    error_log("Got student_id from session: " . $authenticatedStudentId);
+} catch (Exception $e) {
+    error_log("Session failed, trying fallback: " . $e->getMessage());
+    // If session fails, try to get from request body
+    $input = json_decode(file_get_contents('php://input'), true);
+    if ($input && isset($input['student_id'])) {
+        $authenticatedStudentId = (int) $input['student_id'];
+    }
+    
+    if (!$authenticatedStudentId) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Authentication required - no student ID found']);
+        exit;
+    }
+}
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'GET') {
     $studentId = $authenticatedStudentId;
+    error_log("Loading module progress for student_id: " . $studentId);
 
     $progress = [];
     $progressDetails = [];

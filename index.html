@@ -241,7 +241,7 @@
 
         /* ── CTA BANNER ── */
         .cta-section {
-            padding: 0 48px 100px;
+            padding: 0 48px 64px;
             max-width: 1080px;
             margin: 0 auto;
         }
@@ -298,6 +298,27 @@
         .footer-brand img { height: 24px; }
         .footer-brand-name { font-family: 'Rajdhani', sans-serif; font-size: 0.95rem; font-weight: 700; color: #9ca3af; }
         .footer-copy { font-size: 0.72rem; color: #d1d5db; }
+        /* ── DISCLAIMER ── */
+        .disclaimer-wrap {
+            display: flex;
+            justify-content: center;
+            margin-top: 24px;
+        }
+        .disclaimer-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            max-width: 720px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #6b7280;
+            background: #f8faff;
+            border: 1px solid #e5ebf7;
+            border-radius: 10px;
+            padding: 10px 18px;
+            line-height: 1.55;
+        }
+        .disclaimer-pill svg { width: 14px; height: 14px; color: #2563eb; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -446,11 +467,11 @@
         <div class="features-grid">
             <div class="feat-card mod-link">
                 <div class="feat-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
                 </div>
-                <div class="feat-title">Engine Oil Change</div>
-                <div class="feat-desc">Learn the correct 14-step procedure for safely changing engine oil from drain to disposal.</div>
-                <div class="mod-tag">18 Lessons</div>
+                <div class="feat-title">Battery Maintenance</div>
+                <div class="feat-desc">Inspect, clean, and maintain vehicle batteries to ensure reliable starting and electrical performance.</div>
+                <div class="mod-tag">8 Lessons</div>
             </div>
             <div class="feat-card mod-link">
                 <div class="feat-icon">
@@ -478,11 +499,11 @@
             </div>
             <div class="feat-card mod-link">
                 <div class="feat-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
                 </div>
-                <div class="feat-title">Battery Maintenance</div>
-                <div class="feat-desc">Inspect, clean, and maintain vehicle batteries to ensure reliable starting and electrical performance.</div>
-                <div class="mod-tag">8 Lessons</div>
+                <div class="feat-title">Engine Oil Change</div>
+                <div class="feat-desc">Learn the correct 14-step procedure for safely changing engine oil from drain to disposal.</div>
+                <div class="mod-tag">18 Lessons</div>
             </div>
             <div class="feat-card mod-link">
                 <div class="feat-icon">
@@ -500,9 +521,15 @@
         <div class="cta-banner">
             <div class="cta-text">
                 <div class="cta-title">Ready to start your training?</div>
-                <div class="cta-sub">Create your free account and begin the Engine Oil Change module today.</div>
+                <div class="cta-sub">Create your free account and begin the Battery Maintenance module today.</div>
             </div>
             <a href="signin.html" class="btn-white">Get Started Free</a>
+        </div>
+        <div class="disclaimer-wrap">
+            <span class="disclaimer-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                All photos and images used in this system are for educational and training purposes only. No copyright infringement is intended — all rights and credits belong to their respective owners.
+            </span>
         </div>
     </div>
 

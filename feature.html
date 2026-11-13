@@ -1051,6 +1051,7 @@
             background: rgba(0, 0, 0, 0.24);
         }
     </style>
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 
 <body>
@@ -1070,7 +1071,7 @@
             </button>
             <div class="nav-user-wrap">
                 <div class="nav-user">
-                    <div class="nav-avatar"><img src="images/unknown-avatar.svg" alt="User"></div>
+                    <div class="nav-avatar"><img src="images/userprofile.jpg" alt="User"></div>
                     <div>
                         <div class="nav-user-name" id="studentFullName"></div>
                         <div class="nav-user-role">Student</div>
@@ -1226,9 +1227,9 @@
                 <div class="streak-row">
                     <span class="streak-fire">&#128293;</span>
                     <div>
-                        <div class="streak-num">12 <span
+                        <div class="streak-num"><span id="streakDaysNum">0</span> <span
                                 style="font-size:0.88rem;font-weight:600;color:#6b7280">Days</span></div>
-                        <div class="streak-sub">Keep it up!</div>
+                        <div class="streak-sub" id="streakSub">Keep it up!</div>
                     </div>
                 </div>
             </div>
@@ -1361,6 +1362,7 @@
     <script src="js/student-dashboard.js"></script>
 
     <script src="js/notifications.js"></script>
+    <script src="js/user-avatar.js"></script>
 </body>
 
 </html>

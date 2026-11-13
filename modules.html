@@ -8,6 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
         rel="stylesheet" />
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 <style>
     *,
@@ -831,7 +832,7 @@
             </button>
             <div class="nav-user-wrap">
                 <div class="nav-user">
-                    <div class="nav-avatar"><img src="images/bluehumanbg.png" alt="User"></div>
+                    <div class="nav-avatar"><img src="images/userprofile.jpg" alt="User"></div>
                     <div>
                         <div class="nav-user-name" id="studentFullName"></div>
                         <div class="nav-user-role">Student</div>
@@ -942,28 +943,28 @@
             <!-- MODULE CARDS GRID -->
             <div class="mod-grid">
 
-                <!-- Engine Oil Change -->
+                <!-- Battery Maintenance -->
                 <div class="mod-card">
-                    <img class="mod-card-img" src="images/enginee.png" alt="Engine Oil Change">
+                    <img class="mod-card-img" src="images/batteryy.png" alt="Battery Maintenance">
                     <div class="mod-card-body">
                         <div class="mod-card-top">
                             <div class="mod-card-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path
-                                        d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                                    <rect x="1" y="6" width="18" height="12" rx="2" />
+                                    <line x1="23" y1="13" x2="23" y2="11" />
                                 </svg>
                             </div>
-                            <span class="mod-status in-progress">In Progress</span>
+                            <span class="mod-status not-started">Not Started</span>
                         </div>
-                        <div class="mod-card-title">Engine Oil Change</div>
-                        <div class="mod-card-desc">Track and manage engine oil change services.</div>
+                        <div class="mod-card-title">Battery Maintenance</div>
+                        <div class="mod-card-desc">Track and manage battery maintenance.</div>
                         <div class="mod-progress-wrap">
                             <div class="mod-progress-bar">
-                                <div class="mod-progress-fill" style="width:60%"></div>
+                                <div class="mod-progress-fill" style="width:0%"></div>
                             </div>
-                            <div class="mod-progress-row"><span class="mod-progress-pct">60% complete</span></div>
+                            <div class="mod-progress-row"><span class="mod-progress-pct">0% complete</span></div>
                         </div>
-                        <a href="enginemodule.html" class="mod-btn">Read Module <svg viewBox="0 0 24 24" fill="none"
+                        <a href="batterymodule.html" class="mod-btn">Read Module <svg viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2.5">
                                 <line x1="5" y1="12" x2="19" y2="12" />
                                 <polyline points="12 5 19 12 12 19" />
@@ -1060,28 +1061,28 @@
                     </div>
                 </div>
 
-                <!-- Battery Maintenance -->
+                <!-- Engine Oil Change -->
                 <div class="mod-card">
-                    <img class="mod-card-img" src="images/batteryy.png" alt="Battery Maintenance">
+                    <img class="mod-card-img" src="images/enginee.png" alt="Engine Oil Change">
                     <div class="mod-card-body">
                         <div class="mod-card-top">
                             <div class="mod-card-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="1" y="6" width="18" height="12" rx="2" />
-                                    <line x1="23" y1="13" x2="23" y2="11" />
+                                    <path
+                                        d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                                 </svg>
                             </div>
-                            <span class="mod-status not-started">Not Started</span>
+                            <span class="mod-status in-progress">In Progress</span>
                         </div>
-                        <div class="mod-card-title">Battery Maintenance</div>
-                        <div class="mod-card-desc">Track and manage battery maintenance.</div>
+                        <div class="mod-card-title">Engine Oil Change</div>
+                        <div class="mod-card-desc">Track and manage engine oil change services.</div>
                         <div class="mod-progress-wrap">
                             <div class="mod-progress-bar">
-                                <div class="mod-progress-fill" style="width:0%"></div>
+                                <div class="mod-progress-fill" style="width:60%"></div>
                             </div>
-                            <div class="mod-progress-row"><span class="mod-progress-pct">0% complete</span></div>
+                            <div class="mod-progress-row"><span class="mod-progress-pct">60% complete</span></div>
                         </div>
-                        <a href="batterymodule.html" class="mod-btn">Read Module <svg viewBox="0 0 24 24" fill="none"
+                        <a href="enginemodule.html" class="mod-btn">Read Module <svg viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2.5">
                                 <line x1="5" y1="12" x2="19" y2="12" />
                                 <polyline points="12 5 19 12 12 19" />
@@ -1194,6 +1195,7 @@
     <script src="js/module-progress.js"></script>
     <script src="js/modules-page.js"></script>
     <script src="js/notifications.js"></script>
+    <script src="js/user-avatar.js"></script>
 </body>
 
 </html>

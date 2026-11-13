@@ -7,7 +7,7 @@ motoMasterStartSession();
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 if ($mysqli->connect_errno) {
@@ -28,7 +28,9 @@ if (!$email || !$password) {
     exit;
 }
 
-$stmt = $mysqli->prepare('SELECT student_id, first_name, last_name, email, section, password FROM students WHERE email = ? LIMIT 1');
+motoMasterEnsureProfilePhotoColumn($mysqli, 'students');
+
+$stmt = $mysqli->prepare('SELECT student_id, first_name, last_name, email, section, password, profile_photo FROM students WHERE email = ? LIMIT 1');
 $stmt->bind_param('s', $email);
 $stmt->execute();
 $stmt->store_result();
@@ -37,7 +39,7 @@ if ($stmt->num_rows === 0) {
     echo json_encode(['success' => false, 'message' => 'Account not registered']);
     exit;
 }
-$stmt->bind_result($studentId, $firstName, $lastName, $storedEmail, $section, $hash);
+$stmt->bind_result($studentId, $firstName, $lastName, $storedEmail, $section, $hash, $profilePhoto);
 $stmt->fetch();
 $stmt->close();
 
@@ -57,6 +59,7 @@ if (password_verify($password, $hash)) {
             'last_name' => $lastName,
             'email' => $storedEmail,
             'section' => $section,
+            'profile_photo' => $profilePhoto ?: 'images/userprofile.jpg',
             'role' => 'Student'
         ]
     ]);

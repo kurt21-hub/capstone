@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <script src="js/teacher-notif-badge.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MotoMaster – Assessments</title>
@@ -1265,6 +1266,231 @@
             padding: 14px 24px;
             border-top: 1px solid var(--border-color);
         }
+
+        /* COMMENT FEATURE */
+        .cm-btn {
+            position: relative;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border-color);
+            background: #fff;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .cm-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(37, 99, 235, 0.06);
+        }
+
+        .cm-btn.has-comments {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        .cm-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 15px;
+            height: 15px;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.52rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 1.5px solid #fff;
+        }
+
+        .cm-modal {
+            max-width: 560px;
+        }
+
+        .cm-context {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 22px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cm-context-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .cm-context-name {
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+
+        .cm-context-sub {
+            font-size: 0.66rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .cm-context-score {
+            margin-left: auto;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .cm-thread {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 14px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #fff;
+        }
+
+        .cm-empty {
+            text-align: center;
+            padding: 26px 10px;
+            color: var(--text-secondary);
+            font-size: 0.74rem;
+            font-weight: 700;
+        }
+
+        .cm-empty i {
+            display: block;
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            color: var(--border-color);
+        }
+
+        .cm-bubble {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cm-bubble-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.66rem;
+            flex-shrink: 0;
+        }
+
+        .cm-bubble-body {
+            flex: 1;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 4px 14px 14px 14px;
+            padding: 9px 12px;
+        }
+
+        .cm-bubble-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 3px;
+        }
+
+        .cm-bubble-name {
+            font-size: 0.7rem;
+            font-weight: 800;
+        }
+
+        .cm-bubble-time {
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .cm-bubble-del {
+            margin-left: auto;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.62rem;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .cm-bubble-del:hover {
+            color: var(--red);
+            background: #fef2f2;
+        }
+
+        .cm-bubble-text {
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.55;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .cm-composer {
+            padding: 12px 22px 16px;
+            border-top: 1px solid var(--border-color);
+            background: #fff;
+        }
+
+        .cm-textarea {
+            width: 100%;
+            min-height: 70px;
+            resize: vertical;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .cm-textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .cm-composer-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            gap: 10px;
+        }
+
+        .cm-hint {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 
@@ -1736,6 +1962,34 @@
         </div>
     </div>
 
+    <!-- COMMENT MODAL -->
+    <div class="modal-overlay" id="commentModal">
+        <div class="nm-modal cm-modal">
+            <div class="nm-header">
+                <div class="nm-header-left">
+                    <div class="nm-header-icon"><i class="fa-solid fa-comments"></i></div>
+                    <div>
+                        <h3>Instructor Comments</h3>
+                        <p id="cmSub">Feedback on student work</p>
+                    </div>
+                </div>
+                <button class="nm-close" onclick="closeCommentModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="cm-context" id="cmContext"></div>
+            <div class="cm-thread" id="cmThread"></div>
+            <div class="cm-composer">
+                <textarea id="cmText" class="cm-textarea" maxlength="1000"
+                    placeholder="Write feedback on this student's work..."></textarea>
+                <div class="cm-composer-bar">
+                    <span class="cm-hint"><i class="fa-solid fa-circle-info"></i> Comments are visible to
+                        instructors</span>
+                    <button class="btn-primary" id="cmPostBtn" onclick="postComment()"><i
+                            class="fa-solid fa-paper-plane"></i> Post Comment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- DELETE CONFIRM MODAL -->
     <div class="modal-overlay" id="deleteModal">
         <div class="nm-modal del-modal">
@@ -1765,7 +2019,10 @@
     </div>
 
     <script src="teacher-profile.js"></script>
+    <script src="teacher-live-refresh.js"></script>
     <script>
+        window.TEACHER_REFRESH_FN = 'fetchAssessmentsData';
+
         let assessments = [];
         let studentsList = [];
         let currentFilter = 'all', deleteTargetId = null, currentResultsId = null, aCurrentTab = 0;
@@ -1853,7 +2110,9 @@
                             i: studInfo.initials,
                             c: studInfo.color,
                             score: Math.round(att.score),
-                            pass: isPass
+                            pass: isPass,
+                            sid: att.student_id,
+                            wid: att.assessment_id
                         };
                     });
                     
@@ -2097,9 +2356,10 @@
         function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); document.body.style.overflow = ''; }
         function confirmDelete() { closeDeleteModal(); alert('Assessment configurations are managed by the simulator modules.'); }
 
-        function openResultsModal(id) {
+        async function openResultsModal(id) {
             currentResultsId = id;
             const a = assessments.find(a => a.id === id); if (!a) return;
+            await fetchCommentCounts('assessment');
             document.getElementById('resModalSub').textContent = a.title;
             const passed = a.submissions_data.filter(s => s.pass).length;
             const failed = a.submissions_data.length - passed;
@@ -2109,13 +2369,17 @@
         <div class="res-stat"><div class="res-stat-val" style="color:#16a34a">${passed}</div><div class="res-stat-label">Passed</div></div>
         <div class="res-stat"><div class="res-stat-val" style="color:#dc2626">${failed}</div><div class="res-stat-label">Failed</div></div>
         <div class="res-stat"><div class="res-stat-val" style="color:${sc}">${a.avgScore || '—'}${a.avgScore ? '%' : ''}</div><div class="res-stat-label">Avg. Score</div></div>`;
-            document.getElementById('resSubmissions').innerHTML = a.submissions_data.length ? a.submissions_data.map(s => `
+            document.getElementById('resSubmissions').innerHTML = a.submissions_data.length ? a.submissions_data.map((s, i) => {
+                const cc = commentCounts['assessment|' + s.sid + '|' + a.title] || 0;
+                return `
         <div class="sub-list-row">
             <div class="sub-avatar" style="background:${s.c}">${s.i}</div>
             <div class="sub-name">${s.n}</div>
             <span class="sub-score" style="color:${s.score >= 75 ? '#16a34a' : s.score >= 60 ? '#2563eb' : '#dc2626'}">${s.score}%</span>
             <span class="sub-status"><span class="badge ${s.pass ? 'badge-green' : 'badge-red'}">${s.pass ? 'Passed' : 'Failed'}</span></span>
-        </div>`).join('') : '<div style="padding:24px;text-align:center;color:var(--text-secondary);font-size:0.76rem;font-weight:700">No submissions yet.</div>';
+            <button class="cm-btn ${cc > 0 ? 'has-comments' : ''}" title="Comment on this work" onclick="openCommentModal(${a.id}, ${i})"><i class="fa-regular fa-comment-dots"></i>${cc > 0 ? `<span class="cm-count">${cc}</span>` : ''}</button>
+        </div>`;
+            }).join('') : '<div style="padding:24px;text-align:center;color:var(--text-secondary);font-size:0.76rem;font-weight:700">No submissions yet.</div>';
             document.getElementById('resultsModal').classList.add('open');
             document.body.style.overflow = 'hidden';
         }
@@ -2164,7 +2428,165 @@
         function addQuestion() {
             alert('Assessment configurations are managed by the simulator modules.');
         }
-        ['createModal', 'resultsModal', 'deleteModal'].forEach(id => {
+
+        /* COMMENT FEATURE */
+        let cmCtx = null;
+        let commentCounts = {};
+
+        function cmEsc(t) {
+            return String(t == null ? '' : t)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        async function fetchCommentCounts(workType) {
+            try {
+                const res = await fetch('teacher_comments.php?action=counts&work_type=' + encodeURIComponent(workType));
+                const data = await res.json();
+                if (data.success) commentCounts = data.counts || {};
+            } catch (e) {
+                console.error('Failed to load comment counts:', e);
+            }
+        }
+
+        function openCommentModal(assessId, subIdx) {
+            const a = assessments.find(x => x.id === assessId);
+            if (!a || !a.submissions_data[subIdx]) return;
+            const s = a.submissions_data[subIdx];
+            cmCtx = {
+                workType: 'assessment',
+                workId: s.wid,
+                studentId: s.sid,
+                moduleTitle: a.title,
+                name: s.n,
+                initials: s.i,
+                color: s.c,
+                score: s.score,
+                pass: s.pass,
+                module: a.module
+            };
+            document.getElementById('cmSub').textContent = a.title;
+            const scColor = s.score >= 75 ? '#16a34a' : s.score >= 60 ? '#2563eb' : '#dc2626';
+            document.getElementById('cmContext').innerHTML = `
+                <div class="cm-context-avatar" style="background:${cmCtx.color}">${cmEsc(cmCtx.initials)}</div>
+                <div>
+                    <div class="cm-context-name">${cmEsc(cmCtx.name)}</div>
+                    <div class="cm-context-sub">${cmEsc(a.module)} &bull; Assessment &bull; ${s.pass ? 'Passed' : 'Failed'}</div>
+                </div>
+                <div class="cm-context-score" style="color:${scColor}">${s.score}%</div>`;
+            document.getElementById('cmText').value = '';
+            document.getElementById('commentModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+            loadComments();
+        }
+
+        function closeCommentModal() {
+            document.getElementById('commentModal').classList.remove('open');
+            document.body.style.overflow = '';
+            cmCtx = null;
+        }
+
+        async function loadComments() {
+            if (!cmCtx) return;
+            const thread = document.getElementById('cmThread');
+            thread.innerHTML = '<div class="cm-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading comments...</div>';
+            try {
+                const url = 'teacher_comments.php?action=list&work_type=' + encodeURIComponent(cmCtx.workType) +
+                    '&student_id=' + encodeURIComponent(cmCtx.studentId) +
+                    '&module_title=' + encodeURIComponent(cmCtx.moduleTitle);
+                const res = await fetch(url);
+                const data = await res.json();
+                if (!data.success) {
+                    thread.innerHTML = '<div class="cm-empty"><i class="fa-solid fa-triangle-exclamation"></i>' + cmEsc(data.message || 'Failed to load comments.') + '</div>';
+                    return;
+                }
+                renderComments(data.comments || []);
+            } catch (e) {
+                console.error('Failed to load comments:', e);
+                thread.innerHTML = '<div class="cm-empty"><i class="fa-solid fa-triangle-exclamation"></i>Failed to load comments.</div>';
+            }
+        }
+
+        function renderComments(comments) {
+            const thread = document.getElementById('cmThread');
+            if (!comments.length) {
+                thread.innerHTML = '<div class="cm-empty"><i class="fa-regular fa-comment-dots"></i>No comments yet.<br>Be the first to leave feedback on this work.</div>';
+                return;
+            }
+            thread.innerHTML = comments.map(c => `
+                <div class="cm-bubble">
+                    <div class="cm-bubble-avatar"><i class="fa-solid fa-chalkboard-user"></i></div>
+                    <div class="cm-bubble-body">
+                        <div class="cm-bubble-head">
+                            <span class="cm-bubble-name">${cmEsc(c.teacher_name)}</span>
+                            <span class="cm-bubble-time">${cmEsc(c.created_display)}</span>
+                            ${c.is_own ? `<button class="cm-bubble-del" title="Delete comment" onclick="deleteComment(${c.comment_id})"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        </div>
+                        <div class="cm-bubble-text">${cmEsc(c.comment_text)}</div>
+                    </div>
+                </div>`).join('');
+            thread.scrollTop = thread.scrollHeight;
+        }
+
+        async function postComment() {
+            if (!cmCtx) return;
+            const text = document.getElementById('cmText').value.trim();
+            if (!text) {
+                document.getElementById('cmText').focus();
+                return;
+            }
+            const btn = document.getElementById('cmPostBtn');
+            btn.disabled = true;
+            try {
+                const res = await fetch('teacher_comments.php?action=add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        work_type: cmCtx.workType,
+                        work_id: cmCtx.workId,
+                        student_id: cmCtx.studentId,
+                        module_title: cmCtx.moduleTitle,
+                        comment: text
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('cmText').value = '';
+                    const key = cmCtx.workType + '|' + cmCtx.studentId + '|' + cmCtx.moduleTitle;
+                    commentCounts[key] = (commentCounts[key] || 0) + 1;
+                    loadComments();
+                } else {
+                    alert(data.message || 'Failed to save comment.');
+                }
+            } catch (e) {
+                console.error('Failed to save comment:', e);
+                alert('Failed to save comment. Please try again.');
+            }
+            btn.disabled = false;
+        }
+
+        async function deleteComment(commentId) {
+            if (!confirm('Delete this comment?')) return;
+            try {
+                const res = await fetch('teacher_comments.php?action=delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ comment_id: commentId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const key = cmCtx.workType + '|' + cmCtx.studentId + '|' + cmCtx.moduleTitle;
+                    commentCounts[key] = Math.max(0, (commentCounts[key] || 0) - 1);
+                    loadComments();
+                } else {
+                    alert(data.message || 'Failed to delete comment.');
+                }
+            } catch (e) {
+                console.error('Failed to delete comment:', e);
+            }
+        }
+
+        ['createModal', 'resultsModal', 'deleteModal', 'commentModal'].forEach(id => {
             document.getElementById(id).addEventListener('click', function (e) { if (e.target === this) { this.classList.remove('open'); document.body.style.overflow = ''; } });
         });
 

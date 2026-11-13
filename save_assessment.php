@@ -5,7 +5,7 @@ require_once __DIR__ . '/auth_session.php';
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 if ($mysqli->connect_errno) {
@@ -19,7 +19,27 @@ if (!$input) {
     $input = $_POST;
 }
 
-$studentId = motoMasterRequireStudentId();
+// Try to get student_id from PHP session first
+motoMasterStartSession();
+$studentId = null;
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'Student' && !empty($_SESSION['student_id'])) {
+    $studentId = (int) $_SESSION['student_id'];
+}
+
+// Fallback: student_id from request body (used when PHP session is unavailable)
+if (!$studentId) {
+    $studentId = isset($input['student_id']) ? (int) $input['student_id'] : null;
+
+    if (!$studentId && isset($input['student']) && is_array($input['student'])) {
+        $studentId = isset($input['student']['student_id']) ? (int) $input['student']['student_id'] : null;
+    }
+}
+
+if (!$studentId) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Authentication required - no student ID found']);
+    exit;
+}
 $title = isset($input['title']) ? trim($input['title']) : 'Battery Maintenance Assessment';
 $score = isset($input['score']) ? (float) $input['score'] : 0;
 $completionStatus = isset($input['completion_status']) ? trim($input['completion_status']) : 'Completed';

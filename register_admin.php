@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 // Connect without database first to create it if needed
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass);

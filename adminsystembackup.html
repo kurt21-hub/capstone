@@ -277,32 +277,32 @@
                         <div class="kpi-icon" style="background:#eff6ff;color:#2563eb"><i class="fa-solid fa-database"></i></div>
                         <div class="kpi-title">Total Backups</div>
                     </div>
-                    <div class="kpi-value">38</div>
-                    <div class="kpi-foot"><span>All time</span><span style="color:var(--accent)">3 this week</span></div>
+                    <div class="kpi-value" id="kpiTotalBackups">—</div>
+                    <div class="kpi-foot"><span>All time</span><span style="color:var(--accent)" id="kpiThisWeek">—</span></div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-header">
                         <div class="kpi-icon" style="background:#f0fdf4;color:#16a34a"><i class="fa-solid fa-circle-check"></i></div>
                         <div class="kpi-title">Last Backup</div>
                     </div>
-                    <div class="kpi-value" style="font-size:1.1rem;padding-top:6px">Today</div>
-                    <div class="kpi-foot"><span>May 28, 2025 – 02:00 AM</span><span style="color:var(--green)">Success</span></div>
+                    <div class="kpi-value" style="font-size:1.1rem;padding-top:6px" id="kpiLastBackup">—</div>
+                    <div class="kpi-foot"><span id="kpiLastBackupDate">—</span><span style="color:var(--green)" id="kpiLastBackupStatus">—</span></div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-header">
                         <div class="kpi-icon" style="background:#fff7ed;color:#d97706"><i class="fa-solid fa-hard-drive"></i></div>
                         <div class="kpi-title">Storage Used</div>
                     </div>
-                    <div class="kpi-value">2.4 GB</div>
-                    <div class="kpi-foot"><span>of 10 GB limit</span><span style="color:var(--orange)">24%</span></div>
+                    <div class="kpi-value" id="kpiStorage">—</div>
+                    <div class="kpi-foot"><span>of 10 GB limit</span><span style="color:var(--orange)" id="kpiStoragePct">—</span></div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-header">
                         <div class="kpi-icon" style="background:#fdf4ff;color:#9333ea"><i class="fa-solid fa-clock-rotate-left"></i></div>
                         <div class="kpi-title">Retention</div>
                     </div>
-                    <div class="kpi-value">30d</div>
-                    <div class="kpi-foot"><span>Auto-purge on</span><span style="color:var(--purple)">Next: Jun 28</span></div>
+                    <div class="kpi-value" id="kpiRetention">30d</div>
+                    <div class="kpi-foot"><span>Auto-purge on</span><span style="color:var(--purple)">Rolling</span></div>
                 </div>
             </div>
 
@@ -317,25 +317,25 @@
                         <div class="storage-bar-wrap">
                             <div class="storage-label-row">
                                 <span class="storage-label"><i class="fa-solid fa-hard-drive" style="color:var(--accent);margin-right:6px"></i>Storage Overview</span>
-                                <span class="storage-pct">2.4 GB / 10 GB</span>
+                                <span class="storage-pct" id="storagePctLabel">—</span>
                             </div>
-                            <div class="storage-track"><div class="storage-fill" style="width:24%"></div></div>
-                            <div class="storage-foot"><span>2.4 GB used</span><span>7.6 GB free</span></div>
+                            <div class="storage-track"><div class="storage-fill" id="storageFill" style="width:0%"></div></div>
+                            <div class="storage-foot"><span id="storageUsedLabel">—</span><span id="storageFreeLabel">—</span></div>
                         </div>
                         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:none">
                             <div style="padding:12px 18px;border-right:1px solid var(--border-color)">
                                 <div style="font-size:0.62rem;font-weight:800;color:var(--text-secondary);text-transform:uppercase;margin-bottom:4px">Database</div>
-                                <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text-primary)">1.1 GB</div>
+                                <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text-primary)" id="storageDb">—</div>
                                 <div style="font-size:0.62rem;font-weight:600;color:var(--text-secondary)">SQL dumps</div>
                             </div>
                             <div style="padding:12px 18px;border-right:1px solid var(--border-color)">
                                 <div style="font-size:0.62rem;font-weight:800;color:var(--text-secondary);text-transform:uppercase;margin-bottom:4px">Media Files</div>
-                                <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text-primary)">0.9 GB</div>
+                                <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text-primary)" id="storageMedia">—</div>
                                 <div style="font-size:0.62rem;font-weight:600;color:var(--text-secondary)">Module assets</div>
                             </div>
                             <div style="padding:12px 18px">
                                 <div style="font-size:0.62rem;font-weight:800;color:var(--text-secondary);text-transform:uppercase;margin-bottom:4px">Config / Logs</div>
-                                <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text-primary)">0.4 GB</div>
+                                <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text-primary)" id="storageConfig">—</div>
                                 <div style="font-size:0.62rem;font-weight:600;color:var(--text-secondary)">System data</div>
                             </div>
                         </div>
@@ -354,71 +354,9 @@
                                 <thead>
                                     <tr><th>File</th><th>Type</th><th>Size</th><th>Triggered By</th><th>Date</th><th>Status</th><th>Actions</th></tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><div class="file-cell"><div class="file-icon" style="background:#eff6ff;color:#2563eb"><i class="fa-solid fa-file-zipper"></i></div><div><div class="file-name">motomaster_backup_20250528.zip</div><div class="file-sub">Full system snapshot</div></div></div></td>
-                                        <td><span class="badge badge-blue">Full</span></td>
-                                        <td class="muted">48.2 MB</td>
-                                        <td class="muted">Scheduled</td>
-                                        <td class="muted">May 28 – 02:00 AM</td>
-                                        <td><span class="badge badge-green">Success</span></td>
-                                        <td><div class="actions-cell"><button class="action-btn dl" title="Download"><i class="fa-solid fa-download"></i></button><button class="action-btn restore" title="Restore" onclick="openRestoreModal('motomaster_backup_20250528.zip')"><i class="fa-solid fa-rotate-left"></i></button><button class="action-btn del" title="Delete" onclick="openDeleteModal('motomaster_backup_20250528.zip')"><i class="fa-solid fa-trash"></i></button></div></td>
-                                    </tr>
-                                    <tr>
-                                        <td><div class="file-cell"><div class="file-icon" style="background:#eff6ff;color:#2563eb"><i class="fa-solid fa-file-zipper"></i></div><div><div class="file-name">motomaster_backup_20250527.zip</div><div class="file-sub">Full system snapshot</div></div></div></td>
-                                        <td><span class="badge badge-blue">Full</span></td>
-                                        <td class="muted">47.8 MB</td>
-                                        <td class="muted">Scheduled</td>
-                                        <td class="muted">May 27 – 02:00 AM</td>
-                                        <td><span class="badge badge-green">Success</span></td>
-                                        <td><div class="actions-cell"><button class="action-btn dl" title="Download"><i class="fa-solid fa-download"></i></button><button class="action-btn restore" title="Restore" onclick="openRestoreModal('motomaster_backup_20250527.zip')"><i class="fa-solid fa-rotate-left"></i></button><button class="action-btn del" title="Delete" onclick="openDeleteModal('motomaster_backup_20250527.zip')"><i class="fa-solid fa-trash"></i></button></div></td>
-                                    </tr>
-                                    <tr>
-                                        <td><div class="file-cell"><div class="file-icon" style="background:#f0fdf4;color:#16a34a"><i class="fa-solid fa-file-zipper"></i></div><div><div class="file-name">motomaster_db_20250526.sql.gz</div><div class="file-sub">Database only</div></div></div></td>
-                                        <td><span class="badge badge-green">DB Only</span></td>
-                                        <td class="muted">12.1 MB</td>
-                                        <td class="muted">Manual – Admin</td>
-                                        <td class="muted">May 26 – 04:30 PM</td>
-                                        <td><span class="badge badge-green">Success</span></td>
-                                        <td><div class="actions-cell"><button class="action-btn dl" title="Download"><i class="fa-solid fa-download"></i></button><button class="action-btn restore" title="Restore" onclick="openRestoreModal('motomaster_db_20250526.sql.gz')"><i class="fa-solid fa-rotate-left"></i></button><button class="action-btn del" title="Delete" onclick="openDeleteModal('motomaster_db_20250526.sql.gz')"><i class="fa-solid fa-trash"></i></button></div></td>
-                                    </tr>
-                                    <tr>
-                                        <td><div class="file-cell"><div class="file-icon" style="background:#eff6ff;color:#2563eb"><i class="fa-solid fa-file-zipper"></i></div><div><div class="file-name">motomaster_backup_20250526.zip</div><div class="file-sub">Full system snapshot</div></div></div></td>
-                                        <td><span class="badge badge-blue">Full</span></td>
-                                        <td class="muted">47.5 MB</td>
-                                        <td class="muted">Scheduled</td>
-                                        <td class="muted">May 26 – 02:00 AM</td>
-                                        <td><span class="badge badge-green">Success</span></td>
-                                        <td><div class="actions-cell"><button class="action-btn dl" title="Download"><i class="fa-solid fa-download"></i></button><button class="action-btn restore" title="Restore" onclick="openRestoreModal('motomaster_backup_20250526.zip')"><i class="fa-solid fa-rotate-left"></i></button><button class="action-btn del" title="Delete" onclick="openDeleteModal('motomaster_backup_20250526.zip')"><i class="fa-solid fa-trash"></i></button></div></td>
-                                    </tr>
-                                    <tr>
-                                        <td><div class="file-cell"><div class="file-icon" style="background:#fff7ed;color:#d97706"><i class="fa-solid fa-file-zipper"></i></div><div><div class="file-name">motomaster_backup_20250525.zip</div><div class="file-sub">Full system snapshot</div></div></div></td>
-                                        <td><span class="badge badge-blue">Full</span></td>
-                                        <td class="muted">46.9 MB</td>
-                                        <td class="muted">Scheduled</td>
-                                        <td class="muted">May 25 – 02:00 AM</td>
-                                        <td><span class="badge badge-orange">Partial</span></td>
-                                        <td><div class="actions-cell"><button class="action-btn dl" title="Download"><i class="fa-solid fa-download"></i></button><button class="action-btn restore" title="Restore" onclick="openRestoreModal('motomaster_backup_20250525.zip')"><i class="fa-solid fa-rotate-left"></i></button><button class="action-btn del" title="Delete" onclick="openDeleteModal('motomaster_backup_20250525.zip')"><i class="fa-solid fa-trash"></i></button></div></td>
-                                    </tr>
-                                    <tr>
-                                        <td><div class="file-cell"><div class="file-icon" style="background:#fef2f2;color:#dc2626"><i class="fa-solid fa-file-zipper"></i></div><div><div class="file-name">motomaster_backup_20250521.zip</div><div class="file-sub">Full system snapshot</div></div></div></td>
-                                        <td><span class="badge badge-blue">Full</span></td>
-                                        <td class="muted">—</td>
-                                        <td class="muted">Scheduled</td>
-                                        <td class="muted">May 21 – 02:00 AM</td>
-                                        <td><span class="badge badge-red">Failed</span></td>
-                                        <td><div class="actions-cell"><button class="action-btn dl" title="Download" disabled style="opacity:0.4;cursor:not-allowed"><i class="fa-solid fa-download"></i></button><button class="action-btn restore" title="Restore" disabled style="opacity:0.4;cursor:not-allowed"><i class="fa-solid fa-rotate-left"></i></button><button class="action-btn del" title="Delete" onclick="openDeleteModal('motomaster_backup_20250521.zip')"><i class="fa-solid fa-trash"></i></button></div></td>
-                                    </tr>
-                                    <tr>
-                                        <td><div class="file-cell"><div class="file-icon" style="background:#eff6ff;color:#2563eb"><i class="fa-solid fa-file-zipper"></i></div><div><div class="file-name">motomaster_weekly_20250518.zip</div><div class="file-sub">Weekly archive</div></div></div></td>
-                                        <td><span class="badge badge-purple">Weekly</span></td>
-                                        <td class="muted">45.1 MB</td>
-                                        <td class="muted">Scheduled</td>
-                                        <td class="muted">May 18 – 02:00 AM</td>
-                                        <td><span class="badge badge-green">Success</span></td>
-                                        <td><div class="actions-cell"><button class="action-btn dl" title="Download"><i class="fa-solid fa-download"></i></button><button class="action-btn restore" title="Restore" onclick="openRestoreModal('motomaster_weekly_20250518.zip')"><i class="fa-solid fa-rotate-left"></i></button><button class="action-btn del" title="Delete" onclick="openDeleteModal('motomaster_weekly_20250518.zip')"><i class="fa-solid fa-trash"></i></button></div></td>
-                                    </tr>
-                                </tbody>
+                                <tbody id="backupBody">
+                                
+                            </tbody>
                             </table>
                         </div>
                     </div>
@@ -433,11 +371,11 @@
                         <div class="side-panel-title"><i class="fa-solid fa-calendar-check" style="color:var(--accent);margin-right:6px"></i>Backup Schedule</div>
                         <div class="config-row">
                             <div class="config-label"><div class="c-title">Auto Backup</div><div class="c-sub">Run backups automatically</div></div>
-                            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                            <label class="toggle"><input type="checkbox" id="schAuto" checked><span class="toggle-slider"></span></label>
                         </div>
                         <div class="config-row">
                             <div class="config-label"><div class="c-title">Frequency</div><div class="c-sub">How often to run</div></div>
-                            <select class="form-control-sm">
+                            <select class="form-control-sm" id="schFrequency">
                                 <option selected>Daily</option>
                                 <option>Weekly</option>
                                 <option>Monthly</option>
@@ -445,11 +383,11 @@
                         </div>
                         <div class="config-row">
                             <div class="config-label"><div class="c-title">Time</div><div class="c-sub">Scheduled run time</div></div>
-                            <input type="time" class="form-control-sm" value="02:00">
+                            <input type="time" class="form-control-sm" id="schTime" value="02:00">
                         </div>
                         <div class="config-row">
                             <div class="config-label"><div class="c-title">Backup Type</div><div class="c-sub">Scope of backup</div></div>
-                            <select class="form-control-sm">
+                            <select class="form-control-sm" id="schType">
                                 <option selected>Full</option>
                                 <option>DB Only</option>
                                 <option>Files Only</option>
@@ -457,7 +395,7 @@
                         </div>
                         <div class="config-row">
                             <div class="config-label"><div class="c-title">Retention</div><div class="c-sub">Keep backups for</div></div>
-                            <select class="form-control-sm">
+                            <select class="form-control-sm" id="schRetention">
                                 <option>7 days</option>
                                 <option selected>30 days</option>
                                 <option>60 days</option>
@@ -466,36 +404,17 @@
                         </div>
                         <div class="config-row">
                             <div class="config-label"><div class="c-title">Email on Failure</div><div class="c-sub">Alert admin if backup fails</div></div>
-                            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                            <label class="toggle"><input type="checkbox" id="schEmail" checked><span class="toggle-slider"></span></label>
                         </div>
                         <div style="padding:12px 16px;border-top:1px solid var(--border-color)">
-                            <button class="btn-primary" style="width:100%;justify-content:center" onclick="saveSchedule()"><i class="fa-solid fa-floppy-disk"></i> Save Schedule</button>
+                            <button class="btn-primary" id="saveScheduleBtn" style="width:100%;justify-content:center" onclick="saveSchedule(this)"><i class="fa-solid fa-floppy-disk"></i> Save Schedule</button>
                         </div>
                     </div>
 
                     <!-- Integrity checks -->
                     <div class="side-panel">
                         <div class="side-panel-title"><i class="fa-solid fa-shield-check" style="color:var(--accent);margin-right:6px"></i>Integrity Checks</div>
-                        <div class="integrity-item">
-                            <div class="integrity-icon" style="background:#f0fdf4;color:#16a34a"><i class="fa-solid fa-database"></i></div>
-                            <div><div class="integrity-label">Database</div><div class="integrity-sub">Verified May 28, 02:01 AM</div></div>
-                            <div class="integrity-badge"><span class="badge badge-green">OK</span></div>
-                        </div>
-                        <div class="integrity-item">
-                            <div class="integrity-icon" style="background:#f0fdf4;color:#16a34a"><i class="fa-solid fa-folder-open"></i></div>
-                            <div><div class="integrity-label">Media Files</div><div class="integrity-sub">Verified May 28, 02:03 AM</div></div>
-                            <div class="integrity-badge"><span class="badge badge-green">OK</span></div>
-                        </div>
-                        <div class="integrity-item">
-                            <div class="integrity-icon" style="background:#fff7ed;color:#d97706"><i class="fa-solid fa-gear"></i></div>
-                            <div><div class="integrity-label">Config Files</div><div class="integrity-sub">1 warning – old .env backup</div></div>
-                            <div class="integrity-badge"><span class="badge badge-orange">Warn</span></div>
-                        </div>
-                        <div class="integrity-item">
-                            <div class="integrity-icon" style="background:#f0fdf4;color:#16a34a"><i class="fa-solid fa-file-lines"></i></div>
-                            <div><div class="integrity-label">Log Archives</div><div class="integrity-sub">Verified May 27, 11:59 PM</div></div>
-                            <div class="integrity-badge"><span class="badge badge-green">OK</span></div>
-                        </div>
+                        <div id="integrityList"></div>
                     </div>
 
                     <!-- Destinations -->
@@ -503,7 +422,7 @@
                         <div class="side-panel-title"><i class="fa-solid fa-cloud" style="color:var(--accent);margin-right:6px"></i>Backup Destinations</div>
                         <div class="dest-item">
                             <div class="dest-icon" style="background:#eff6ff;color:#2563eb"><i class="fa-solid fa-server"></i></div>
-                            <div><div class="dest-label">Local Server</div><div class="dest-sub">/var/backups/motomaster</div></div>
+                            <div><div class="dest-label">Local Server</div><div class="dest-sub" id="backupDirLabel">backups/</div></div>
                             <div class="dest-toggle"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
                         </div>
                         <div class="dest-item">
@@ -539,24 +458,22 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Backup Type</label>
-                    <select class="form-control">
-                        <option selected>Full (Database + Files + Config)</option>
-                        <option>Database Only</option>
-                        <option>Files Only</option>
-                        <option>Config Only</option>
+                    <select class="form-control" id="backupType">
+                        <option selected value="db">Database Only (.sql dump)</option>
+                        <option disabled>Full (Database + Files + Config) — coming soon</option>
+                        <option disabled>Files Only — coming soon</option>
+                        <option disabled>Config Only — coming soon</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Label / Note</label>
-                    <input type="text" class="form-control" placeholder="e.g. Pre-update snapshot">
+                    <input type="text" class="form-control" id="backupNote" placeholder="e.g. Pre-update snapshot">
                     <span class="form-hint">Optional note to identify this backup.</span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Destination</label>
-                    <select class="form-control">
+                    <select class="form-control" id="backupDest">
                         <option selected>Local Server</option>
-                        <option>Cloud Storage</option>
-                        <option>Both</option>
                     </select>
                 </div>
             </div>
@@ -585,7 +502,7 @@
             </div>
             <div class="modal-footer-row">
                 <button class="btn-cancel" onclick="closeRestoreModal()">Cancel</button>
-                <button class="btn-save-green" onclick="closeRestoreModal()"><i class="fa-solid fa-rotate-left"></i> Confirm Restore</button>
+                <button class="btn-save-green" id="restoreConfirmBtn" onclick="confirmRestore()"><i class="fa-solid fa-rotate-left"></i> Confirm Restore</button>
             </div>
         </div>
     </div>
@@ -603,7 +520,7 @@
             </div>
             <div class="modal-footer-row">
                 <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
-                <button class="btn-save-danger" onclick="closeDeleteModal()"><i class="fa-solid fa-trash"></i> Delete</button>
+                <button class="btn-save-danger" id="deleteConfirmBtn" onclick="confirmDelete()"><i class="fa-solid fa-trash"></i> Delete</button>
             </div>
         </div>
     </div>
@@ -655,14 +572,99 @@
     </div>
 
     <script>
+        let pendingDeleteFile = null;
+        let pendingRestoreFile = null;
+
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        const typeBadge = { 'Full': 'badge-blue', 'DB Only': 'badge-green', 'Weekly': 'badge-blue' };
+        const statusBadge = { 'Success': 'badge-green', 'Partial': 'badge-orange', 'Failed': 'badge-red' };
+
+        function loadBackupData() {
+            fetch('admin_data_api.php?action=get_backup_data&t=' + Date.now())
+                .then(r => r.json())
+                .then(data => {
+                    if (!data || !data.success) return;
+
+                    const k = data.kpis;
+                    document.getElementById('kpiTotalBackups').textContent = k.total_backups;
+                    document.getElementById('kpiThisWeek').textContent = k.this_week + ' this week';
+                    document.getElementById('kpiLastBackup').textContent = k.last_backup_name;
+                    document.getElementById('kpiLastBackupDate').textContent = k.last_backup_date;
+                    document.getElementById('kpiLastBackupStatus').textContent = k.last_backup_status;
+                    document.getElementById('kpiStorage').textContent = k.storage_used;
+                    document.getElementById('kpiStoragePct').textContent = k.storage_pct + '%';
+                    document.getElementById('kpiRetention').textContent = k.retention;
+
+                    const s = data.storage;
+                    document.getElementById('storagePctLabel').textContent = s.used + ' / ' + s.limit;
+                    document.getElementById('storageFill').style.width = Math.max(1, s.pct) + '%';
+                    document.getElementById('storageUsedLabel').textContent = s.used + ' used';
+                    document.getElementById('storageFreeLabel').textContent = s.limit + ' limit';
+                    document.getElementById('storageDb').textContent = s.db;
+                    document.getElementById('storageMedia').textContent = s.media;
+                    document.getElementById('storageConfig').textContent = s.config;
+
+                    document.getElementById('backupDirLabel').textContent = data.backup_dir || 'backups/';
+
+                    document.getElementById('integrityList').innerHTML = data.integrity.map(it => {
+                        const ok = it.status === 'OK';
+                        const icon = it.label === 'Database' ? 'fa-database'
+                            : it.label === 'Media Files' ? 'fa-folder-open'
+                            : it.label === 'Config Files' ? 'fa-gear' : 'fa-server';
+                        return `<div class="integrity-item">
+                            <div class="integrity-icon" style="background:${ok ? '#f0fdf4' : '#fff7ed'};color:${ok ? '#16a34a' : '#d97706'}"><i class="fa-solid ${icon}"></i></div>
+                            <div><div class="integrity-label">${esc(it.label)}</div><div class="integrity-sub">${esc(it.sub)}</div></div>
+                            <div class="integrity-badge"><span class="badge ${ok ? 'badge-green' : 'badge-orange'}">${esc(it.status)}</span></div>
+                        </div>`;
+                    }).join('');
+
+                    const tbody = document.getElementById('backupBody');
+                    if (data.backups.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:22px;color:var(--text-secondary)">No backups yet. Click "Run Backup Now" to create the first one.</td></tr>';
+                    } else {
+                        tbody.innerHTML = data.backups.map(b => `
+                            <tr>
+                                <td><div class="file-cell"><div class="file-icon" style="background:#eff6ff;color:#2563eb"><i class="fa-solid fa-file-zipper"></i></div><div><div class="file-name">${esc(b.name)}</div><div class="file-sub">${esc(b.type)} backup</div></div></div></td>
+                                <td><span class="badge ${typeBadge[b.type] || 'badge-gray'}">${esc(b.type)}</span></td>
+                                <td class="muted">${esc(b.size)}</td>
+                                <td class="muted">${esc(b.triggered)}</td>
+                                <td class="muted">${esc(b.date)}</td>
+                                <td><span class="badge ${statusBadge[b.status] || 'badge-gray'}">${esc(b.status)}</span></td>
+                                <td><div class="actions-cell">
+                                    <a class="action-btn dl" title="Download" href="${esc(b.url)}" download><i class="fa-solid fa-download"></i></a>
+                                    ${b.name.toLowerCase().endsWith('.sql') ? `<button class="action-btn restore" title="Restore" onclick="openRestoreModal('${esc(b.name)}')"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
+                                    <button class="action-btn del" title="Delete" onclick="openDeleteModal('${esc(b.name)}')"><i class="fa-solid fa-trash"></i></button>
+                                </div></td>
+                            </tr>`).join('');
+                    }
+
+                    if (data.schedule) applySchedule(data.schedule);
+                })
+                .catch(err => console.error('Failed to load backup data:', err));
+        }
+
+        function applySchedule(sch) {
+            if (!sch) return;
+            if (sch.auto !== undefined) document.getElementById('schAuto').checked = !!sch.auto;
+            if (sch.frequency) document.getElementById('schFrequency').value = sch.frequency;
+            if (sch.time) document.getElementById('schTime').value = sch.time;
+            if (sch.type) document.getElementById('schType').value = sch.type;
+            if (sch.retention) document.getElementById('schRetention').value = sch.retention;
+            if (sch.email_on_failure !== undefined) document.getElementById('schEmail').checked = !!sch.email_on_failure;
+        }
+
         function openBackupModal() { document.getElementById('backupModal').classList.add('open'); }
         function closeBackupModal() {
             document.getElementById('backupModal').classList.remove('open');
             document.getElementById('backupProgress').classList.remove('visible');
             document.getElementById('progressFill').style.width = '0%';
             document.getElementById('progressLabel').textContent = 'Initializing backup…';
-            document.getElementById('runBtn').disabled = false;
-            document.getElementById('runBtn').innerHTML = '<i class="fa-solid fa-play"></i> Start Backup';
+            const btn = document.getElementById('runBtn');
+            btn.disabled = false;
+            btn.style.background = '';
+            btn.innerHTML = '<i class="fa-solid fa-play"></i> Start Backup';
         }
 
         function runBackup() {
@@ -673,59 +675,133 @@
             progress.classList.add('visible');
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Running…';
-            const steps = [
-                [20, 'Backing up database…'],
-                [50, 'Archiving media files…'],
-                [75, 'Compressing config data…'],
-                [95, 'Writing to destination…'],
-                [100, 'Backup complete!']
-            ];
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i < steps.length) {
-                    fill.style.width = steps[i][0] + '%';
-                    label.textContent = steps[i][1];
-                    i++;
-                } else {
-                    clearInterval(interval);
-                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Done';
-                    btn.style.background = '#16a34a';
-                    setTimeout(() => closeBackupModal(), 1200);
-                }
-            }, 700);
+            fill.style.width = '35%';
+            label.textContent = 'Dumping database to backups/ …';
+
+            fetch('admin_data_api.php?action=run_backup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: document.getElementById('backupType').value,
+                    note: document.getElementById('backupNote').value
+                })
+            })
+                .then(r => r.json())
+                .then(res => {
+                    if (res && res.success) {
+                        fill.style.width = '100%';
+                        label.textContent = 'Backup complete: ' + res.file.name + ' (' + res.file.size + ')';
+                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Done';
+                        btn.style.background = '#16a34a';
+                        setTimeout(() => { closeBackupModal(); loadBackupData(); }, 1200);
+                    } else {
+                        label.textContent = (res && res.message) ? res.message : 'Backup failed.';
+                        btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Failed';
+                        btn.style.background = '#dc2626';
+                        btn.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    label.textContent = 'Backup request failed.';
+                    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Failed';
+                    btn.style.background = '#dc2626';
+                    btn.disabled = false;
+                });
         }
 
         function openRestoreModal(name) {
+            pendingRestoreFile = name;
             document.getElementById('restoreFileName').textContent = name;
             document.getElementById('restoreModal').classList.add('open');
         }
         function closeRestoreModal() { document.getElementById('restoreModal').classList.remove('open'); }
 
+        function confirmRestore() {
+            const btn = document.getElementById('restoreConfirmBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Restoring…';
+            fetch('admin_data_api.php?action=restore_backup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: pendingRestoreFile })
+            })
+                .then(r => r.json())
+                .then(res => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Confirm Restore';
+                    closeRestoreModal();
+                    alert(res && res.message ? res.message : 'Restore finished.');
+                    loadBackupData();
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Confirm Restore';
+                    closeRestoreModal();
+                });
+        }
+
         function openDeleteModal(name) {
+            pendingDeleteFile = name;
             document.getElementById('deleteFileName').textContent = name;
             document.getElementById('deleteModal').classList.add('open');
         }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); }
 
+        function confirmDelete() {
+            const btn = document.getElementById('deleteConfirmBtn');
+            btn.disabled = true;
+            fetch('admin_data_api.php?action=delete_backup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: pendingDeleteFile })
+            })
+                .then(r => r.json())
+                .then(() => {
+                    btn.disabled = false;
+                    closeDeleteModal();
+                    loadBackupData();
+                })
+                .catch(() => { btn.disabled = false; closeDeleteModal(); });
+        }
+
         function openScheduleModal() { document.getElementById('scheduleModal').classList.add('open'); }
         function closeScheduleModal() { document.getElementById('scheduleModal').classList.remove('open'); }
 
-        function saveSchedule() {
-            const btn = event.currentTarget;
-            const orig = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
-            btn.style.background = '#16a34a';
-            setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 1800);
+        function saveSchedule(btn) {
+            btn = btn || document.getElementById('saveScheduleBtn');
+            const schedule = {
+                auto: document.getElementById('schAuto').checked,
+                frequency: document.getElementById('schFrequency').value,
+                time: document.getElementById('schTime').value,
+                type: document.getElementById('schType').value,
+                retention: document.getElementById('schRetention').value,
+                email_on_failure: document.getElementById('schEmail').checked
+            };
+            fetch('admin_data_api.php?action=save_backup_schedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ schedule: schedule })
+            }).then(r => r.json()).then(res => {
+                const orig = '<i class="fa-solid fa-floppy-disk"></i> Save Schedule';
+                btn.innerHTML = res && res.success ? '<i class="fa-solid fa-check"></i> Saved!' : '<i class="fa-solid fa-triangle-exclamation"></i> Error';
+                btn.style.background = res && res.success ? '#16a34a' : '#dc2626';
+                setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 1800);
+            });
         }
 
         function saveScheduleModal() {
+            saveSchedule();
             closeScheduleModal();
         }
 
         document.querySelectorAll('.modal-overlay').forEach(m => {
             m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
         });
+
+        loadBackupData();
     </script>
 
+    <script src="admin-live-refresh.js"></script>
+    <script>window.ADMIN_REFRESH_FN = 'loadBackupData';</script>
 </body>
 </html>

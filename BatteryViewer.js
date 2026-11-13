@@ -12,6 +12,8 @@ export function initBatteryViewer(containerId, options = {}) {
         enableDrag = true,
         enableRotate = true,
         enableSelection = false,
+        modelPath = 'models/Battery.glb',
+        extractName = null,
     } = options;
 
     requestAnimationFrame(() => {
@@ -26,7 +28,7 @@ export function initBatteryViewer(containerId, options = {}) {
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setPixelRatio(window.devicePixelRatio || 1);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
         renderer.setSize(w, h);
         renderer.setClearColor(0x000000, 0);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -63,14 +65,23 @@ export function initBatteryViewer(containerId, options = {}) {
         fill.position.set(-2, 1, -1);
         scene.add(fill);
 
-        function animate() {
-            requestAnimationFrame(animate);
-            if (controls) controls.update();
-            renderer.render(scene, camera);
+        let isRunning = false;
+        function requestRender() {
+            if (!isRunning) {
+                isRunning = true;
+                requestAnimationFrame(renderLoop);
+            }
         }
 
-        // Start animation loop immediately
-        animate();
+        function renderLoop() {
+            const needMore = controls ? controls.update() : false;
+            renderer.render(scene, camera);
+            if (needMore) {
+                requestAnimationFrame(renderLoop);
+            } else {
+                isRunning = false;
+            }
+        }
 
         if (enableDrag || enableRotate || enableSelection) {
             canvas.style.cursor = 'grab';
@@ -83,6 +94,7 @@ export function initBatteryViewer(containerId, options = {}) {
                     controls.enablePan = false;
                     controls.enableZoom = false;
                     controls.target.set(0, 0, 0);
+                    controls.addEventListener('change', requestRender);
                     controls.update();
                 } catch (err) {
                     console.warn('Battery OrbitControls failed to initialize:', err);
@@ -138,6 +150,7 @@ export function initBatteryViewer(containerId, options = {}) {
                         batteryPivot.position.set(0, 0, 0);
                         container.dispatchEvent(new CustomEvent('batteryPositioned'));
                     }
+                    requestRender();
                 }
             }, { passive: true });
 
@@ -172,17 +185,38 @@ export function initBatteryViewer(containerId, options = {}) {
 
         const loader = new GLTFLoader();
         loader.load(
-            'models/Battery.glb',
+            modelPath,
             (gltf) => {
-                const model = gltf.scene;
+                let model = gltf.scene;
+
+                // Some GLBs are kit scenes holding many parts — extractName
+                // isolates a single named node (e.g. 'Fuel_filter').
+                if (extractName) {
+                    let part = model.getObjectByName(extractName);
+                    if (!part) {
+                        const wanted = extractName.toLowerCase();
+                        model.traverse((o) => {
+                            if (!part && (o.name || '').toLowerCase() === wanted) part = o;
+                        });
+                    }
+                    if (part) {
+                        model = part.clone(true);
+                        model.position.set(0, 0, 0);
+                        model.quaternion.identity();
+                        model.scale.set(1, 1, 1);
+                    } else {
+                        console.warn('BatteryViewer: node not found for extractName:', extractName);
+                    }
+                }
 
                 const box = new THREE.Box3().setFromObject(model);
                 const size = box.getSize(new THREE.Vector3());
                 const center = box.getCenter(new THREE.Vector3());
-                model.position.sub(center);
 
                 const maxDim = Math.max(size.x, size.y, size.z);
-                if (maxDim > 0) model.scale.setScalar((1.0 / maxDim) * 1.4);
+                const fitScale = maxDim > 0 ? (1.0 / maxDim) * 1.4 : 1;
+                model.scale.setScalar(fitScale);
+                model.position.copy(center).multiplyScalar(-fitScale);
 
                 batteryPivot = new THREE.Group();
                 batteryPivot.add(model);
@@ -214,7 +248,8 @@ export function initBatteryViewer(containerId, options = {}) {
                     });
                 });
 
-                // Model loaded - it's already being rendered by the running animation loop
+                requestRender();
+
                 container.dispatchEvent(new CustomEvent('batteryViewerReady', {
                     detail: { model: batteryModel, pivot: batteryPivot }
                 }));
@@ -230,6 +265,7 @@ export function initBatteryViewer(containerId, options = {}) {
                 camera.aspect = cw / ch;
                 camera.updateProjectionMatrix();
                 renderer.setSize(cw, ch);
+                requestRender();
             });
             ro.observe(container);
         }
@@ -242,6 +278,7 @@ export function initBatteryViewer(containerId, options = {}) {
                 camera.aspect = cw / ch;
                 camera.updateProjectionMatrix();
                 renderer.setSize(cw, ch);
+                requestRender();
             }
         }
         // Check multiple times over 2 seconds to catch when modal becomes visible

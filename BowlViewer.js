@@ -19,7 +19,7 @@ export function initBowlViewer(containerId, options = {}) {
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setPixelRatio(window.devicePixelRatio || 1);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
         renderer.setSize(w, h);
         renderer.setClearColor(0x000000, 0);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -48,16 +48,38 @@ export function initBowlViewer(containerId, options = {}) {
         scene.add(fill);
 
         let controls = null;
-        function animate() {
-            requestAnimationFrame(animate);
-            // if interaction is enabled, update controls; otherwise apply subtle auto-rotation
-            if (options && options.enableInteraction) {
-                if (controls) controls.update();
-            } else {
-                if (pivot) pivot.rotation.y += 0.005;
+        const enableInteractive = options && options.enableInteraction;
+        if (enableInteractive) {
+            try {
+                controls = new OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.08;
+                controls.enablePan = true;
+                controls.enableZoom = true;
+                controls.target.set(0, 0, 0);
+            } catch (err) {
+                console.warn('OrbitControls failed to initialize:', err);
             }
-            renderer.render(scene, camera);
         }
+
+        let isRunning = false;
+        function requestRender() {
+            if (!isRunning) {
+                isRunning = true;
+                requestAnimationFrame(renderLoop);
+            }
+        }
+
+        function renderLoop() {
+            const needMore = controls ? controls.update() : false;
+            renderer.render(scene, camera);
+            if (needMore) {
+                requestAnimationFrame(renderLoop);
+            } else {
+                isRunning = false;
+            }
+        }
+        if (controls) controls.addEventListener('change', requestRender);
 
         const loader = new GLTFLoader();
         loader.load(
@@ -91,21 +113,7 @@ export function initBowlViewer(containerId, options = {}) {
                     });
                 });
 
-                // If interaction requested, initialize OrbitControls
-                if (options && options.enableInteraction) {
-                    try {
-                        controls = new OrbitControls(camera, renderer.domElement);
-                        controls.enableDamping = true;
-                        controls.dampingFactor = 0.08;
-                        controls.enablePan = true;
-                        controls.enableZoom = true;
-                        controls.target.set(0, 0, 0);
-                    } catch (err) {
-                        console.warn('OrbitControls failed to initialize:', err);
-                    }
-                }
-
-                animate();
+                requestRender();
             },
             undefined,
             (err) => console.error('Failed to load Bowl model:', err)
@@ -118,6 +126,7 @@ export function initBowlViewer(containerId, options = {}) {
                 camera.aspect = cw / ch;
                 camera.updateProjectionMatrix();
                 renderer.setSize(cw, ch);
+                requestRender();
             });
             ro.observe(container);
         }

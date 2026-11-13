@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family:sans-serif;padding:40px;">
+<h2>Engine audio test</h2>
+<p>notstarting.mp3 — press the player button:</p>
+<audio controls src="music/notstarting.mp3" preload="auto"></audio>
+<p>start.mp3:</p>
+<audio controls src="music/start.mp3" preload="auto"></audio>
+<div id="log" style="margin-top:20px;font-family:monospace;font-size:12px;white-space:pre;"></div>
+<script>
+    const log = (m) => document.getElementById('log').textContent += m + '\n';
+    document.querySelectorAll('audio').forEach(a => {
+        a.addEventListener('error', () => log(a.src.split('/').pop() + ' ERROR code=' + (a.error && a.error.code)));
+        a.addEventListener('canplay', () => log(a.src.split('/').pop() + ' canplay, duration=' + a.duration));
+        a.addEventListener('play', () => log(a.src.split('/').pop() + ' PLAYING'));
+    });
+</script>
+</body>
+</html>

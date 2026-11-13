@@ -568,6 +568,15 @@
         document.addEventListener('keydown', (e) => { if (e.key === 'Enter') adminSignup(); });
     </script>
 
+    <script src="js/google-auth.js"></script>
+    <script>
+        MotoMasterGoogleAuth.init({
+            role: 'admin',
+            buttons: ['googleBtn'],
+            errorId: 'signupError'
+        });
+    </script>
+
 </body>
 
 </html>

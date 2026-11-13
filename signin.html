@@ -521,6 +521,53 @@
         .modal-btn:active {
             transform: translateY(0);
         }
+        .modal-btn:disabled {
+            opacity: 0.7;
+            cursor: default;
+            transform: none;
+        }
+
+        /* ── Forgot Password Modal ── */
+        .forgot-modal-card {
+            text-align: left;
+        }
+        .forgot-modal-card h2 {
+            font-size: 1.6rem;
+            margin-bottom: 6px;
+        }
+        .forgot-modal-card p {
+            margin-bottom: 18px;
+            font-size: 0.85rem;
+        }
+        .fp-error {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 7px 11px;
+            margin-bottom: 12px;
+        }
+        .fp-error.show {
+            display: block;
+        }
+        .fp-links {
+            margin-top: 14px;
+            text-align: center;
+        }
+        .fp-links a {
+            color: #6b7280;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .fp-links a:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
         @keyframes scaleInCheck {
             from {
                 transform: scale(0);
@@ -552,6 +599,35 @@
             <h2>Success!</h2>
             <p id="successMessage">Your account has been created successfully.</p>
             <button class="modal-btn" id="modalConfirmBtn">Continue</button>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotModal" class="modal-overlay">
+        <div class="modal-card forgot-modal-card">
+            <div id="fpStepEmail">
+                <h2>Forgot Password?</h2>
+                <p>Enter the email linked to your account to continue.</p>
+                <div class="fp-error" id="fpErrorEmail"></div>
+                <div class="sc-field">
+                    <input type="email" id="fpEmail" placeholder="Email" autocomplete="email" />
+                </div>
+                <button class="modal-btn" id="fpContinueBtn" onclick="forgotCheckEmail()">Continue</button>
+                <div class="fp-links"><a onclick="closeForgotModal()">Back to Sign in</a></div>
+            </div>
+            <div id="fpStepReset" style="display:none;">
+                <h2>Reset Password</h2>
+                <p>Create a new password for <span id="fpEmailEcho" style="font-weight:800;color:#1a1a2e"></span>.</p>
+                <div class="fp-error" id="fpErrorReset"></div>
+                <div class="sc-field">
+                    <input type="password" id="fpNewPass" placeholder="New password" autocomplete="new-password" />
+                </div>
+                <div class="sc-field">
+                    <input type="password" id="fpConfirmPass" placeholder="Confirm new password" autocomplete="new-password" />
+                </div>
+                <button class="modal-btn" id="fpResetBtn" onclick="forgotResetPassword()">Reset Password</button>
+                <div class="fp-links"><a onclick="fpBackToEmail()">Back</a></div>
+            </div>
         </div>
     </div>
 
@@ -605,7 +681,7 @@
                         <input type="checkbox" id="showPwd" onchange="togglePwd()" />
                         Show Password
                     </label>
-                    <a href="#" class="forgot-link">Forgot Password?</a>
+                    <a href="#" class="forgot-link" onclick="openForgotModal(event)">Forgot Password?</a>
                 </div>
 
                 <button class="sc-btn-signin" onclick="studentLogin()">
@@ -674,7 +750,7 @@
                         <input type="checkbox" id="showPwdReg" onchange="togglePwdReg()" />
                         Show Password
                     </label>
-                    <a href="#" class="forgot-link">Forgot Password?</a>
+                    <a href="#" class="forgot-link" onclick="openForgotModal(event)">Forgot Password?</a>
                 </div>
 
                 <button class="sc-btn-signup" id="signupBtn" onclick="registerStudent()">
@@ -851,6 +927,119 @@
             }
         }
 
+        function openForgotModal(e) {
+            if (e) e.preventDefault();
+            document.getElementById('fpStepEmail').style.display = 'block';
+            document.getElementById('fpStepReset').style.display = 'none';
+            document.getElementById('fpErrorEmail').classList.remove('show');
+            document.getElementById('fpErrorReset').classList.remove('show');
+            document.getElementById('forgotModal').classList.add('active');
+            setTimeout(() => document.getElementById('fpEmail').focus(), 150);
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgotModal').classList.remove('active');
+        }
+
+        function fpBackToEmail() {
+            document.getElementById('fpStepReset').style.display = 'none';
+            document.getElementById('fpStepEmail').style.display = 'block';
+            document.getElementById('fpErrorReset').classList.remove('show');
+        }
+
+        function fpShowErr(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.classList.add('show');
+        }
+
+        async function forgotCheckEmail() {
+            const email = document.getElementById('fpEmail').value.trim();
+            const errId = 'fpErrorEmail';
+            document.getElementById(errId).classList.remove('show');
+
+            if (!email) {
+                fpShowErr(errId, 'Please enter your email.');
+                return;
+            }
+
+            const btn = document.getElementById('fpContinueBtn');
+            btn.disabled = true;
+            btn.textContent = 'Checking...';
+
+            try {
+                const res = await fetch('forgot_password.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'check', role: 'student', email: email })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    document.getElementById('fpEmailEcho').textContent = email;
+                    document.getElementById('fpStepEmail').style.display = 'none';
+                    document.getElementById('fpStepReset').style.display = 'block';
+                    setTimeout(() => document.getElementById('fpNewPass').focus(), 100);
+                } else {
+                    fpShowErr(errId, data.message || 'No account found with that email.');
+                }
+            } catch (err) {
+                fpShowErr(errId, 'Network or server error.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Continue';
+            }
+        }
+
+        async function forgotResetPassword() {
+            const email = document.getElementById('fpEmail').value.trim();
+            const pass = document.getElementById('fpNewPass').value;
+            const confirm = document.getElementById('fpConfirmPass').value;
+            const errId = 'fpErrorReset';
+            document.getElementById(errId).classList.remove('show');
+
+            if (!pass || !confirm) {
+                fpShowErr(errId, 'Please fill in both password fields.');
+                return;
+            }
+            if (pass !== confirm) {
+                fpShowErr(errId, 'Passwords do not match.');
+                return;
+            }
+            if (pass.length < 6) {
+                fpShowErr(errId, 'Password must be at least 6 characters.');
+                return;
+            }
+
+            const btn = document.getElementById('fpResetBtn');
+            btn.disabled = true;
+            btn.textContent = 'Resetting...';
+
+            try {
+                const res = await fetch('forgot_password.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'reset', role: 'student', email: email, password: pass })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    closeForgotModal();
+                    showSuccessModal('Your password has been reset successfully. You can now sign in.', () => {
+                        document.getElementById('loginEmail').value = email;
+                        document.getElementById('password').focus();
+                    });
+                } else {
+                    fpShowErr(errId, data.message || 'Could not reset password.');
+                }
+            } catch (err) {
+                fpShowErr(errId, 'Network or server error.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Reset Password';
+            }
+        }
+
         function showSuccessModal(message, onConfirm) {
             document.getElementById('successMessage').textContent = message;
             const modal = document.getElementById('successModal');
@@ -861,6 +1050,15 @@
                 if (onConfirm) onConfirm();
             };
         }
+    </script>
+
+    <script src="js/google-auth.js"></script>
+    <script>
+        MotoMasterGoogleAuth.init({
+            role: 'student',
+            buttons: ['googleBtn', 'googleBtnSignup'],
+            onError: function (msg) { alert(msg); }
+        });
     </script>
 
 </body>

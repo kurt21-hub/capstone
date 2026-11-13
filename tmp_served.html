@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -53,7 +53,7 @@
         width: 92.7%;
         top: 5px;
         left: 80px;
-        /* ð KEY FIX */
+        /* �??? KEY FIX */
         right: 0;
 
         height: 2px;
@@ -86,12 +86,12 @@
         position: absolute;
         left: 0;
         top: -2px;
-        /* ð move slightly up to cover line */
+        /* �??? move slightly up to cover line */
 
         width: 150px;
-        /* ð increase width */
+        /* �??? increase width */
         height: 90px;
-        /* ð increase height */
+        /* �??? increase height */
 
         background: red;
 
@@ -103,16 +103,16 @@
 
         font-size: 26px;
         z-index: 8;
-        /* ð make sure it's ABOVE the line */
+        /* �??? make sure it's ABOVE the line */
     }
 
     .back-btn img {
         width: 40px;
-        /* ð smaller size */
+        /* �??? smaller size */
         height: 40px;
         /* keep it square */
         object-fit: contain;
-        /* ð prevents stretching */
+        /* �??? prevents stretching */
         filter: brightness(0) invert(1);
         margin-left: 2px;
     }
@@ -358,7 +358,7 @@
 
     .bar {
         flex: 1;
-        /* ð takes remaining space */
+        /* �??? takes remaining space */
         height: 6px;
         background: rgba(255, 255, 255, 0.2);
         border-radius: 3px;
@@ -376,7 +376,7 @@
         font-size: 13px;
         color: red;
         min-width: 35px;
-        /* ð keeps alignment clean */
+        /* �??? keeps alignment clean */
         text-align: right;
     }
 
@@ -440,7 +440,7 @@
         padding: 14px 35px;
 
         background: #ff1a1a;
-        /* ð BRIGHT RED */
+        /* �??? BRIGHT RED */
         border: none;
 
         color: #fff;
@@ -453,7 +453,7 @@
         cursor: pointer;
 
         z-index: 20;
-        /* ð VERY IMPORTANT (bring forward) */
+        /* �??? VERY IMPORTANT (bring forward) */
 
         box-shadow:
             0 0 20px rgba(255, 0, 0, 0.9),
@@ -502,7 +502,7 @@
         padding: 12px 18px;
 
         background: rgba(0, 0, 0, 0.75);
-        /* ð darker for contrast */
+        /* �??? darker for contrast */
 
         border: 1px solid rgba(255, 0, 0, 0.8);
 
@@ -515,7 +515,7 @@
         /* inner glow */
 
         z-index: 10;
-        /* ð bring forward */
+        /* �??? bring forward */
     }
 
     /* 3D SIMULATION AREA */
@@ -889,12 +889,12 @@
                     // give the module a moment to attach renderer
                     setTimeout(() => {
                         if (!sim.querySelector('canvas')) {
-                            sim.innerHTML = '<div class="sim-error">3D viewer failed to initialize â check console for errors</div>';
+                            sim.innerHTML = '<div class="sim-error">3D viewer failed to initialize �?? check console for errors</div>';
                         }
                     }, 400);
                 }).catch((err) => {
                     console.error('ThreeScene2 import failed', err);
-                    sim.innerHTML = '<div class="sim-error">3D viewer import failed â check console</div>';
+                    sim.innerHTML = '<div class="sim-error">3D viewer import failed �?? check console</div>';
                 });
             }
         });
@@ -925,7 +925,7 @@
                             return;
                         }
                         if (Date.now() - start > 2000) {
-                            // no model signal within timeout â show fallback
+                            // no model signal within timeout �?? show fallback
                             mv.style.display = 'block';
                             clearInterval(interval);
                         }
@@ -949,7 +949,7 @@
                     if (open === null) return;
                     btn.textContent = open ? 'Close Hood' : 'Open Hood';
                 } else {
-                    console.warn('toggleHood not available on window â hood control not initialized.');
+                    console.warn('toggleHood not available on window �?? hood control not initialized.');
                 }
             });
         });

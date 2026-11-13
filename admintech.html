@@ -1073,7 +1073,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Assigned Classes (Comma-separated)</label>
-                                <input type="text" id="addClasses" class="form-input" placeholder="e.g. BSMA 1-A, BSMA 2-B" value="BSMA 1-A">
+                                <input type="text" id="addClasses" class="form-input" placeholder="e.g. A, B, C" value="A">
                             </div>
                             <div class="form-group">
                                 <label>Status</label>
@@ -1137,7 +1137,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Assigned Classes (Comma-separated)</label>
-                                <input type="text" id="editClasses" class="form-input">
+                                <input type="text" id="editClasses" class="form-input" placeholder="e.g. A, B, C">
                             </div>
                             <div class="form-group">
                                 <label>Status</label>
@@ -1199,7 +1199,7 @@
         let currentPage = 1;
         const pageSize = 8;
 
-        // API Configuration - connects directly to motomasterdb via PHP backend
+        // API Configuration - connects directly to motomaster via PHP backend
         const API_BASE = (window.location.protocol === 'http:' || window.location.protocol === 'https:')
             ? 'admin_data_api.php'
             : 'http://localhost/motomaster/admin_data_api.php';
@@ -1221,7 +1221,7 @@
                     filterAndRender();
                 })
                 .catch(err => {
-                    console.error('Failed to load registered faculty from motomasterdb:', err);
+                    console.error('Failed to load registered faculty from motomaster:', err);
                     allTeachers = [];
                     calculateKPIs();
                     filterAndRender();
@@ -1238,9 +1238,9 @@
                 email: t.email || '',
                 contact_number: t.contact_number || '—',
                 specialization: t.specialization || 'Automotive Servicing NC II',
-                classes: Array.isArray(t.classes) ? t.classes : (t.classes ? t.classes.split(',').map(s => s.trim()) : ['BSMA 1-A']),
+                classes: Array.isArray(t.classes) ? t.classes : (t.classes ? t.classes.split(',').map(s => s.trim()) : ['A']),
                 students_count: t.students_count !== undefined ? parseInt(t.students_count) : 0,
-                avg_pass_rate: t.avg_pass_rate !== undefined ? parseInt(t.avg_pass_rate) : 0,
+                avg_pass_rate: (t.avg_pass_rate === null || t.avg_pass_rate === undefined) ? null : parseInt(t.avg_pass_rate),
                 status: t.status || 'Active',
                 last_active: t.last_active || 'Active now',
                 joined_date: t.joined_date || 'Registered Faculty'
@@ -1397,7 +1397,7 @@
                     </td>
                     <td style="text-align: center;">
                         <div style="display: inline-flex; flex-direction: column; align-items: center; gap: 3px;">
-                            <span style="font-weight: 800; font-size: 11.5px; color: ${t.avg_pass_rate >= 80 ? 'var(--green)' : 'var(--text-primary)'};">${t.avg_pass_rate || 0}%</span>
+                            <span style="font-weight: 800; font-size: 11.5px; color: ${t.avg_pass_rate >= 80 ? 'var(--green)' : 'var(--text-primary)'};">${t.avg_pass_rate === null ? '—' : t.avg_pass_rate + '%'}</span>
                             <div style="width: 50px; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden;">
                                 <div style="width: ${t.avg_pass_rate || 0}%; height: 100%; background: ${t.avg_pass_rate >= 80 ? 'var(--green)' : 'var(--accent)'};"></div>
                             </div>
@@ -1513,6 +1513,7 @@
             const email = document.getElementById('addEmail').value.trim();
             const contact = document.getElementById('addContact').value.trim();
             const specialization = document.getElementById('addSpecialization').value;
+            const classes = document.getElementById('addClasses').value.trim();
 
             const submitBtn = e.target.querySelector('button[type="submit"]');
             if (submitBtn) submitBtn.disabled = true;
@@ -1525,7 +1526,8 @@
                     last_name: last,
                     email: email,
                     contact_number: contact,
-                    specialization: specialization
+                    specialization: specialization,
+                    classes: classes
                 })
             })
             .then(res => res.json())
@@ -1533,7 +1535,7 @@
                 if (submitBtn) submitBtn.disabled = false;
                 if (data.success) {
                     closeAddTeacherModal();
-                    showToast(`Teacher ${first} ${last} registered in motomasterdb!`);
+                    showToast(`Teacher ${first} ${last} registered in motomaster!`);
                     loadAdminTeachers();
                 } else {
                     alert(data.message || 'Failed to add teacher to database');
@@ -1575,6 +1577,7 @@
             const email = document.getElementById('editEmail').value.trim();
             const contact = document.getElementById('editContact').value.trim();
             const specialization = document.getElementById('editSpecialization').value;
+            const classes = document.getElementById('editClasses').value.trim();
 
             const submitBtn = e.target.querySelector('button[type="submit"]');
             if (submitBtn) submitBtn.disabled = true;
@@ -1588,7 +1591,8 @@
                     last_name: last,
                     email: email,
                     contact_number: contact,
-                    specialization: specialization
+                    specialization: specialization,
+                    classes: classes
                 })
             })
             .then(res => res.json())
@@ -1596,7 +1600,7 @@
                 if (submitBtn) submitBtn.disabled = false;
                 if (data.success) {
                     closeEditTeacherModal();
-                    showToast('Teacher record updated in motomasterdb!');
+                    showToast('Teacher record updated in motomaster!');
                     loadAdminTeachers();
                 } else {
                     alert(data.message || 'Failed to update teacher in database');
@@ -1668,7 +1672,7 @@
                     </div>
                     <div>
                         <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Average Student Pass Rate</div>
-                        <div style="font-size: 16px; font-weight: 800; color: var(--green); font-family: 'Rajdhani', sans-serif;">${t.avg_pass_rate || 0}%</div>
+                        <div style="font-size: 16px; font-weight: 800; color: var(--green); font-family: 'Rajdhani', sans-serif;">${t.avg_pass_rate === null ? '—' : t.avg_pass_rate + '%'}</div>
                     </div>
                 </div>
             `;
@@ -1690,7 +1694,7 @@
             const t = allTeachers.find(item => item.teacher_id === id);
             if (!t) return;
 
-            if (confirm(`Are you sure you want to remove ${t.first_name} ${t.last_name} from motomasterdb?`)) {
+            if (confirm(`Are you sure you want to remove ${t.first_name} ${t.last_name} from motomaster?`)) {
                 fetch(`${API_BASE}?action=delete_teacher`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1733,7 +1737,7 @@
                     `"${t.specialization}"`,
                     `"${classesStr}"`,
                     t.students_count || 0,
-                    `${t.avg_pass_rate || 0}%`,
+                    t.avg_pass_rate === null ? '—' : `${t.avg_pass_rate}%`,
                     `"${t.status}"`,
                     `"${t.last_active}"`
                 ].join(',');
@@ -1788,6 +1792,8 @@
         // Initialize on DOM load
         document.addEventListener('DOMContentLoaded', loadAdminTeachers);
     </script>
+    <script src="admin-live-refresh.js"></script>
+    <script>window.ADMIN_REFRESH_FN = 'loadAdminTeachers';</script>
 </body>
 
 </html>

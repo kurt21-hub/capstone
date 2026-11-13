@@ -844,6 +844,7 @@
             height: 13px;
         }
     </style>
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 
 <body>
@@ -868,9 +869,9 @@
                 </svg>
             </button>
             <a class="nav-user" href="index.html" title="Log Out">
-                <div class="nav-avatar"><img src="images/bluehumanbg.png" alt="User"></div>
+                <div class="nav-avatar"><img src="images/userprofile.jpg" alt="User"></div>
                 <div>
-                    <div class="nav-user-name">Juan Dela Cruz</div>
+                    <div class="nav-user-name">Student</div>
                     <div class="nav-user-role">Student</div>
                 </div>
                 <span class="nav-chevron">
@@ -1029,7 +1030,7 @@
                 </a>
             </div>
 
-            <a href="#" class="dl-btn">
+            <a href="engine_oil_change_guide.html" target="_blank" class="dl-btn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -2001,7 +2002,7 @@
             <div>
                 <div class="rs-label">Resources</div>
                 <div class="res-list">
-                    <div class="res-item">
+                    <a href="engine_oil_change_guide.html" target="_blank" class="res-item" style="text-decoration:none;color:inherit;">
                         <div class="res-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -2011,8 +2012,8 @@
                             <div class="res-name">Module Guide (PDF)</div>
                             <div class="res-link">Download</div>
                         </div>
-                    </div>
-                    <div class="res-item">
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=7NBE_TTQ4rY" target="_blank" class="res-item" style="text-decoration:none;color:inherit;">
                         <div class="res-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <circle cx="12" cy="12" r="10" />
@@ -2022,8 +2023,8 @@
                             <div class="res-name">Engine Oil Change Video</div>
                             <div class="res-link">Watch (8:24)</div>
                         </div>
-                    </div>
-                    <div class="res-item">
+                    </a>
+                    <a href="engine_oil_change_checklist.html" target="_blank" class="res-item" style="text-decoration:none;color:inherit;">
                         <div class="res-icon grey"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path d="M9 11l3 3L22 4" />
@@ -2033,7 +2034,7 @@
                             <div class="res-name">Oil Change Checklist</div>
                             <div class="res-link">Download</div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
 
@@ -2183,7 +2184,13 @@
                 sections[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
                 setTimeout(() => { isScrolling = false; }, 700);
             } else {
+                // Complete the module and save progress
                 moduleProgress.complete();
+
+                // Show completion state briefly, then return to the learning modules list
+                setTimeout(() => {
+                    window.location.href = 'modules.html';
+                }, 1000);
             }
         });
         prevBtn.addEventListener('click', () => {
@@ -2197,6 +2204,7 @@
 
     </script>
     <script src="js/notifications.js"></script>
+    <script src="js/user-avatar.js"></script>
 </body>
 
 </html>

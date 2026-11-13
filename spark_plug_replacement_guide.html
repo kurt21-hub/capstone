@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spark Plug Replacement — Module Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background: #5b6170; color: #1a1a2e; padding: 32px 16px; }
+        .page { width: 210mm; max-width: 100%; margin: 0 auto 24px; background: #fff; padding: 22mm 20mm; box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+        .doc-header { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; border-bottom: 3px solid #2563eb; }
+        .doc-logo { width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 1.35rem; font-weight: 700; flex-shrink: 0; }
+        .doc-brand { font-size: 0.72rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #2563eb; }
+        .doc-title { font-family: 'Rajdhani', sans-serif; font-size: 1.9rem; font-weight: 700; color: #12122b; line-height: 1.1; }
+        .doc-sub { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+        .doc-badge { margin-left: auto; text-align: right; flex-shrink: 0; font-size: 0.7rem; color: #6b7280; line-height: 1.5; }
+        .doc-badge strong { display: block; color: #12122b; font-size: 0.78rem; }
+        .section { margin-top: 26px; }
+        .section-title { display: flex; align-items: center; gap: 10px; font-family: 'Rajdhani', sans-serif; font-size: 1.15rem; font-weight: 700; color: #1d4ed8; margin-bottom: 10px; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+        .section-num { width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; font-size: 0.78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .lead { font-size: 0.85rem; color: #374151; line-height: 1.6; margin-bottom: 10px; }
+        .step { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; page-break-inside: avoid; }
+        .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .step-num { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1d4ed8; font-size: 0.78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .step-name { font-size: 0.92rem; font-weight: 800; color: #12122b; }
+        .step-meta { margin-left: auto; display: flex; gap: 6px; flex-shrink: 0; }
+        .chip { font-size: 0.62rem; font-weight: 800; padding: 3px 9px; border-radius: 20px; background: #f3f4f6; color: #6b7280; }
+        .chip.diff-easy { background: #ecfdf5; color: #16a34a; }
+        .chip.diff-medium { background: #fffbeb; color: #d97706; }
+        .step-desc { font-size: 0.78rem; color: #6b7280; margin: 2px 0 8px 36px; }
+        .step-list { margin-left: 36px; list-style: none; }
+        .step-list li { position: relative; font-size: 0.8rem; color: #374151; line-height: 1.55; padding-left: 18px; margin-bottom: 3px; }
+        .step-list li::before { content: counter(list-item); position: absolute; left: 0; font-size: 0.66rem; font-weight: 800; color: #2563eb; }
+        .safety { display: flex; align-items: flex-start; gap: 8px; margin: 9px 0 0 36px; padding: 8px 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 9px; font-size: 0.74rem; color: #9a3412; line-height: 1.45; }
+        .safety svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+        .safety strong { font-weight: 800; }
+        .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin-left: 4px; }
+        .tool { display: flex; align-items: center; gap: 9px; font-size: 0.82rem; color: #374151; font-weight: 600; }
+        .tool::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); flex-shrink: 0; }
+        .quiz-item { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 9px; margin-bottom: 7px; font-size: 0.82rem; color: #374151; }
+        .q-num { width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0; background: #eef2ff; color: #4f46e5; font-size: 0.72rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .takeaway { display: flex; align-items: flex-start; gap: 10px; font-size: 0.84rem; color: #374151; margin-bottom: 7px; font-weight: 600; }
+        .takeaway svg { width: 17px; height: 17px; color: #16a34a; flex-shrink: 0; margin-top: 1px; }
+        .doc-footer { margin-top: 30px; padding-top: 14px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; font-size: 0.68rem; color: #9ca3af; }
+        .print-hint { position: fixed; bottom: 18px; right: 18px; background: #12122b; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 10px 16px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.3); }
+        @media print { body { background: #fff; padding: 0; } .page { width: auto; margin: 0; box-shadow: none; padding: 0; } .print-hint { display: none; } }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="doc-header">
+        <div class="doc-logo">M</div>
+        <div>
+            <div class="doc-brand">MotoMaster Module Guide</div>
+            <div class="doc-title">Spark Plug Replacement</div>
+            <div class="doc-sub">Spark plug inspection, gapping, and installation</div>
+        </div>
+        <div class="doc-badge"><strong>14 Lessons</strong>~65 min total · Easy</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">1</span>Overview</div>
+        <p class="lead">This guide covers the spark plug replacement procedure — why plugs matter for combustion efficiency — the same procedure taught in the Spark Plug learning module, practice simulation, and assessment simulation.</p>
+        <p class="lead"><strong>What you will learn:</strong></p>
+        <ul class="step-list" style="margin-left:20px;">
+            <li>How spark plugs work and the signs that they need replacement.</li>
+            <li>The tools required including a spark plug socket and torque wrench.</li>
+            <li>A 10-step procedure to safely replace spark plugs.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">2</span>Tools &amp; Materials</div>
+        <div class="tools">
+            <div class="tool">New spark plugs (matching OEM specification)</div>
+            <div class="tool">Spark plug socket (5/8" or 16 mm) with extension bar</div>
+            <div class="tool">Torque wrench</div>
+            <div class="tool">Spark plug gap gauge</div>
+            <div class="tool">Anti-seize compound and dielectric grease</div>
+        </div>
+        <div class="safety" style="margin-left:4px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span><strong>Safety Reminder:</strong> Always work on a fully cooled engine. Hot spark plug threads can cross-thread or cause burns.</span></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">3</span>Procedure — 10 Steps</div>
+
+        <div class="step"><div class="step-head"><span class="step-num">1</span><span class="step-name">Let the Engine Cool</span><span class="step-meta"><span class="chip">30 min wait</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Allow sufficient cooling time before touching any engine components.</div>
+            <ol class="step-list">
+                <li>Turn off the engine and open the hood.</li>
+                <li>Wait at least 30 minutes for the engine to fully cool before proceeding.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Installing spark plugs into a hot engine can cause thread damage</strong> or aluminum head warping — never rush this step.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">2</span><span class="step-name">Locate the Spark Plugs</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Find each spark plug on the engine — the number matches the cylinder count.</div>
+            <ol class="step-list">
+                <li>Follow the ignition wires or coil-on-plug connectors leading from the ignition system to the engine head.</li>
+                <li>Each wire or coil corresponds to one spark plug — work one at a time.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">3</span><span class="step-name">Remove the Ignition Wire or Coil</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Disconnect the ignition wire or coil-on-plug from the first spark plug.</div>
+            <ol class="step-list">
+                <li>For ignition wire: grip the rubber boot — not the wire — and twist while pulling straight out.</li>
+                <li>For coil-on-plug: unclip the electrical connector, then remove the retaining bolt and lift the coil straight up.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Replace plugs one at a time to avoid mixing up the firing order</strong> — label wires if necessary.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">4</span><span class="step-name">Remove the Spark Plug</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Use the spark plug socket to unscrew and extract the old plug.</div>
+            <ol class="step-list">
+                <li>Insert the spark plug socket with extension bar into the plug well.</li>
+                <li>Turn counter-clockwise to loosen, then remove the plug by hand for the final turns.</li>
+                <li>Keep the plug upright to avoid debris falling into the cylinder.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">5</span><span class="step-name">Inspect the Old Spark Plug</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Read the condition of the old plug to identify any engine issues.</div>
+            <ol class="step-list">
+                <li>Light tan or grey deposit — normal wear, replacement is due.</li>
+                <li>Black sooty deposit — rich mixture or oil fouling, investigate further.</li>
+                <li>Melted or blistered electrode — engine overheating or incorrect heat range.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">6</span><span class="step-name">Check the Gap</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Verify the new spark plug gap matches the vehicle's specification before installation.</div>
+            <ol class="step-list">
+                <li>Slide the correct feeler gauge blade between the center and ground electrode.</li>
+                <li>The gauge should pass with slight resistance — check the spec in your owner's manual (typically 0.8–1.1 mm).</li>
+                <li>Bend the ground electrode gently with a gap tool to adjust if needed.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>An incorrect gap causes misfires, poor fuel economy, and hard starting</strong> — always verify before installing.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">7</span><span class="step-name">Apply Anti-Seize Compound</span><span class="step-meta"><span class="chip">2 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Coat the plug threads lightly with anti-seize to ease future removal.</div>
+            <ol class="step-list">
+                <li>Apply a very thin coat of anti-seize compound to the first two or three threads only.</li>
+                <li>Do NOT apply anti-seize to iridium or platinum plugs — check the plug manufacturer's recommendation first.</li>
+            </ol>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">8</span><span class="step-name">Install the New Spark Plug</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Thread the new plug into the cylinder head carefully by hand first.</div>
+            <ol class="step-list">
+                <li>Place the new plug into the socket and lower it carefully into the plug well.</li>
+                <li>Thread in by hand (clockwise) until finger-tight — this prevents cross-threading.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Never use the ratchet to start threading</strong> — cross-threading an aluminum head is a costly mistake.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">9</span><span class="step-name">Torque to Specification</span><span class="step-meta"><span class="chip">3 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Use a torque wrench to tighten the plug to the manufacturer's specified torque.</div>
+            <ol class="step-list">
+                <li>Set the torque wrench to the specified value (typically 15–25 Nm — confirm in vehicle manual).</li>
+                <li>Tighten until the torque wrench clicks — do not over-tighten.</li>
+            </ol>
+            <div class="safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><strong>Over-tightening can crack the porcelain insulator or strip the threads.</strong> Always use a torque wrench.</span></div>
+        </div>
+
+        <div class="step"><div class="step-head"><span class="step-num">10</span><span class="step-name">Reattach Wire or Coil &amp; Test</span><span class="step-meta"><span class="chip">5 min</span><span class="chip diff-easy">Easy</span></span></div>
+            <div class="step-desc">Reconnect the ignition wire or coil-on-plug and start the engine to verify operation.</div>
+            <ol class="step-list">
+                <li>Apply dielectric grease inside the boot, then press the wire boot or coil firmly onto the plug until it clicks.</li>
+                <li>Repeat Steps 3–10 for each remaining spark plug.</li>
+                <li>Start the engine — listen for smooth idling with no misfires or rough running.</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">4</span>Knowledge Check</div>
+        <div class="quiz-item"><span class="q-num">Q1</span>Why must spark plugs be replaced one at a time?</div>
+        <div class="quiz-item"><span class="q-num">Q2</span>What does a black sooty spark plug electrode indicate?</div>
+        <div class="quiz-item"><span class="q-num">Q3</span>Why is it important to torque spark plugs to specification?</div>
+        <div class="quiz-item"><span class="q-num">Q4</span>What is the purpose of dielectric grease on the ignition boot?</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><span class="section-num">5</span>Key Takeaways</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Always work on a cool engine — never install plugs into a hot head.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Replace plugs one at a time to maintain the correct firing order.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Verify the gap before installing and torque to specification with a torque wrench.</div>
+        <div class="takeaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Inspect the old plug condition — it can reveal underlying engine problems.</div>
+    </div>
+
+    <div class="doc-footer"><span>MotoMaster — Automotive Repair Simulation</span><span>Spark Plug Replacement Module Guide</span></div>
+</div>
+
+<div class="print-hint">Ctrl + P → Save as PDF</div>
+
+</body>
+</html>

@@ -684,7 +684,7 @@
                                         <tr><th>User</th><th>Email</th><th>Role</th><th>Last Login</th><th>Status</th><th>Actions</th></tr>
                                     </thead>
                                     <tbody id="adminUsersTbody">
-                                        <!-- Dynamically populated from motomasterdb -->
+                                        <!-- Dynamically populated from motomaster -->
                                     </tbody>
                                 </table>
                             </div>
@@ -784,14 +784,14 @@
                                         <div class="danger-title">Clear Activity Logs</div>
                                         <div class="danger-sub">Permanently deletes all admin and system activity log entries older than 30 days.</div>
                                     </div>
-                                    <button class="btn-danger" onclick="confirmDanger('clear_logs', 'Clear activity logs older than 30 days from motomasterdb?')"><i class="fa-solid fa-trash-can"></i> Clear Logs</button>
+                                    <button class="btn-danger" onclick="confirmDanger('clear_logs', 'Clear activity logs older than 30 days from motomaster?')"><i class="fa-solid fa-trash-can"></i> Clear Logs</button>
                                 </div>
                                 <div class="danger-item">
                                     <div>
                                         <div class="danger-title">Delete All Student Accounts</div>
                                         <div class="danger-sub">Permanently removes every student account and their associated data from the system.</div>
                                     </div>
-                                    <button class="btn-danger" onclick="confirmDanger('delete_students', 'Delete ALL student accounts and records from motomasterdb? This is permanent.')"><i class="fa-solid fa-user-xmark"></i> Delete Accounts</button>
+                                    <button class="btn-danger" onclick="confirmDanger('delete_students', 'Delete ALL student accounts and records from motomaster? This is permanent.')"><i class="fa-solid fa-user-xmark"></i> Delete Accounts</button>
                                 </div>
                                 <div class="danger-item">
                                     <div>
@@ -1100,7 +1100,7 @@
             .then(r => r.json())
             .then(res => {
                 if (res.success) {
-                    showSettingsToast(res.message || 'Profile saved to motomasterdb.');
+                    showSettingsToast(res.message || 'Profile saved to motomaster.');
                     loadSettingsFromDB();
                 } else {
                     showSettingsToast(res.message || 'Error saving profile.');
@@ -1276,7 +1276,7 @@
                     document.getElementById('newAdminFirst').value = '';
                     document.getElementById('newAdminLast').value = '';
                     document.getElementById('newAdminEmail').value = '';
-                    showSettingsToast(res.message || 'Admin user added to motomasterdb.');
+                    showSettingsToast(res.message || 'Admin user added to motomaster.');
                     loadSettingsFromDB();
                 } else {
                     alert(res.message || 'Failed to add admin user.');
@@ -1296,7 +1296,7 @@
                 .then(res => {
                     closeModal();
                     if (res.success) {
-                        showSettingsToast(res.message || 'Admin deleted from motomasterdb.');
+                        showSettingsToast(res.message || 'Admin deleted from motomaster.');
                         loadSettingsFromDB();
                     } else {
                         alert(res.message || 'Failed to delete admin.');

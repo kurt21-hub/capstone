@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <script src="js/teacher-notif-badge.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MotoMaster – Teacher Dashboard</title>
@@ -2374,7 +2375,10 @@
     </div>
 
     <script src="teacher-profile.js"></script>
+    <script src="teacher-live-refresh.js"></script>
     <script>
+        window.TEACHER_REFRESH_FN = 'fetchDashboardData';
+
         let progressChartInstance = null;
 
         function initChart(moduleData) {
@@ -2690,7 +2694,7 @@
         }
 
         function fetchDashboardData() {
-            fetch('teacher_data_api.php?action=get_dashboard_data')
+            return fetch('teacher_data_api.php?action=get_dashboard_data')
                 .then(res => res.json())
                 .then(data => {
                     updateDashboard(data);

@@ -835,6 +835,71 @@
             border-radius: 2px;
         }
 
+        /* ── TESDA DOCS ── */
+        .doc-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .doc-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            text-decoration: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .doc-item:hover {
+            border-color: #bfdbfe;
+            background: var(--accent-light);
+        }
+
+        .doc-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--red-bg);
+            color: var(--red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .doc-name {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .doc-desc {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .doc-open {
+            margin-left: auto;
+            color: #9ca3af;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+
+        .doc-item:hover .doc-open {
+            color: var(--accent);
+        }
+
+        @media (max-width: 900px) {
+            .doc-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* ── FOOTER ── */
         footer {
             display: flex;
@@ -904,15 +969,14 @@
             <li class="nav-item" onclick="window.location.href='messages.html'">
                 <i class="fa-solid fa-envelope"></i> Messages
             </li>
-            <li class="nav-item">
-                <i class="fa-solid fa-list-check" onclick="window.location.href='adminactivitylogs.html'"></i> Activity
-                Logs
+            <li class="nav-item" onclick="window.location.href='adminactivitylogs.html'">
+                <i class="fa-solid fa-list-check"></i> Activity Logs
             </li>
-            <li class="nav-item">
-                <i class="fa-solid fa-server" onclick="window.location.href='adminsystembackup.html'"></i> System Backup
+            <li class="nav-item" onclick="window.location.href='adminsystembackup.html'">
+                <i class="fa-solid fa-server"></i> System Backup
             </li>
-            <li class="nav-item">
-                <i class="fa-regular fa-bell" onclick="window.location.href='adminnotif.html'"></i> Notifications
+            <li class="nav-item" onclick="window.location.href='adminnotif.html'">
+                <i class="fa-regular fa-bell"></i> Notifications
             </li>
         </ul>
 
@@ -929,7 +993,7 @@
         <!-- TOPBAR -->
         <div class="topbar">
             <div class="topbar-left">
-                <h1>Welcome back, Administrator</h1>
+                <h1 id="welcomeTitle">Welcome back, Administrator</h1>
                 <p>Here's an overview of the MotoMaster system.</p>
             </div>
             <div class="topbar-right">
@@ -937,14 +1001,14 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" placeholder="Search...">
                 </div>
-                <div class="notif-btn">
+                <div class="notif-btn" onclick="window.location.href='adminnotif.html'">
                     <i class="fa-regular fa-bell"></i>
-                    <span class="notif-badge">8</span>
+                    <span class="notif-badge" id="notifBadge">0</span>
                 </div>
                 <div class="profile-pill">
                     <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
                     <div>
-                        <div class="profile-name">Administrator</div>
+                        <div class="profile-name" id="adminName">Administrator</div>
                         <div class="profile-role">Super Admin</div>
                     </div>
                 </div>
@@ -961,54 +1025,51 @@
                         <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
                         <div class="kpi-title">Total Students</div>
                     </div>
-                    <div class="kpi-value">256</div>
-                    <div class="kpi-stat text-green"><i class="fa-solid fa-arrow-up"></i> 12% <span
-                            class="text-muted">vs last month</span></div>
+                    <div class="kpi-value" id="kpiStudents">—</div>
+                    <div class="kpi-stat text-muted"><i class="fa-solid fa-user-graduate"></i> Registered in database
+                    </div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-header">
                         <div class="kpi-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
                         <div class="kpi-title">Total Teachers</div>
                     </div>
-                    <div class="kpi-value">18</div>
-                    <div class="kpi-stat text-green"><i class="fa-solid fa-arrow-up"></i> 5% <span class="text-muted">vs
-                            last month</span></div>
+                    <div class="kpi-value" id="kpiTeachers">—</div>
+                    <div class="kpi-stat text-muted"><i class="fa-solid fa-chalkboard-user"></i> Registered in database
+                    </div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-header">
                         <div class="kpi-icon"><i class="fa-solid fa-book-open"></i></div>
                         <div class="kpi-title">Total Modules</div>
                     </div>
-                    <div class="kpi-value">34</div>
-                    <div class="kpi-stat text-blue"><i class="fa-solid fa-arrow-up"></i> 3 new <span
-                            class="text-muted">this month</span></div>
+                    <div class="kpi-value" id="kpiModules">—</div>
+                    <div class="kpi-stat text-blue"><i class="fa-solid fa-book-open"></i> Core modules published</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-header">
                         <div class="kpi-icon"><i class="fa-solid fa-clipboard-check"></i></div>
                         <div class="kpi-title">Total Assessments</div>
                     </div>
-                    <div class="kpi-value">27</div>
-                    <div class="kpi-stat text-blue"><i class="fa-solid fa-arrow-up"></i> 4 new <span
-                            class="text-muted">this month</span></div>
+                    <div class="kpi-value" id="kpiAssessments">—</div>
+                    <div class="kpi-stat text-blue"><i class="fa-solid fa-clipboard-check"></i> Attempts recorded</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-header">
                         <div class="kpi-icon"><i class="fa-solid fa-display"></i></div>
                         <div class="kpi-title">Active Sessions</div>
                     </div>
-                    <div class="kpi-value">18</div>
-                    <div class="kpi-stat text-red"><i class="fa-solid fa-circle" style="font-size:7px"></i> Live ongoing
-                    </div>
+                    <div class="kpi-value" id="kpiSessions">—</div>
+                    <div class="kpi-stat text-red"><i class="fa-solid fa-circle" style="font-size:7px"></i> Active in
+                        last 24h</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-header">
                         <div class="kpi-icon"><i class="fa-solid fa-trophy"></i></div>
                         <div class="kpi-title">Avg. Score</div>
                     </div>
-                    <div class="kpi-value">72%</div>
-                    <div class="kpi-stat text-green"><i class="fa-solid fa-arrow-up"></i> 8% <span class="text-muted">vs
-                            last month</span></div>
+                    <div class="kpi-value" id="kpiAvgScore">—</div>
+                    <div class="kpi-stat text-muted"><i class="fa-solid fa-trophy"></i> Across all attempts</div>
                 </div>
             </div>
 
@@ -1030,23 +1091,19 @@
                     <div class="performance-metrics">
                         <div class="metric-item">
                             <div class="metric-label">Assessments Done</div>
-                            <div class="metric-val">1,248 <span class="metric-sub text-green"><i
-                                        class="fa-solid fa-arrow-up"></i> 18%</span></div>
+                            <div class="metric-val" id="metricAssessments">—</div>
                         </div>
                         <div class="metric-item">
                             <div class="metric-label">Modules Completed</div>
-                            <div class="metric-val">2,459 <span class="metric-sub text-green"><i
-                                        class="fa-solid fa-arrow-up"></i> 16%</span></div>
+                            <div class="metric-val" id="metricModules">—</div>
                         </div>
                         <div class="metric-item">
-                            <div class="metric-label">Avg. Completion Time</div>
-                            <div class="metric-val">18m 42s <span class="metric-sub text-red"><i
-                                        class="fa-solid fa-arrow-down"></i> 5m</span></div>
+                            <div class="metric-label">Practice Attempts</div>
+                            <div class="metric-val" id="metricPractices">—</div>
                         </div>
                         <div class="metric-item">
                             <div class="metric-label">Success Rate</div>
-                            <div class="metric-val">72% <span class="metric-sub text-green"><i
-                                        class="fa-solid fa-arrow-up"></i> 8%</span></div>
+                            <div class="metric-val" id="metricSuccess">—</div>
                         </div>
                     </div>
                 </div>
@@ -1065,7 +1122,7 @@
                             <div class="doughnut-container">
                                 <canvas id="doughnutChart"></canvas>
                                 <div class="doughnut-center">
-                                    <div class="doughnut-center-val">1,248</div>
+                                    <div class="doughnut-center-val" id="doughnutTotal">—</div>
                                     <div class="doughnut-center-label">Total</div>
                                 </div>
                             </div>
@@ -1074,66 +1131,30 @@
                             <div class="legend-item">
                                 <div class="legend-dot" style="background:#16a34a"></div>
                                 <span>Passed</span>
-                                <span class="legend-val">872 <span style="color:#9ca3af">(70%)</span></span>
+                                <span class="legend-val" id="legendPassed">—</span>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-dot" style="background:#dc2626"></div>
                                 <span>Failed</span>
-                                <span class="legend-val">276 <span style="color:#9ca3af">(22%)</span></span>
+                                <span class="legend-val" id="legendFailed">—</span>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-dot" style="background:#d97706"></div>
                                 <span>In Progress</span>
-                                <span class="legend-val">100 <span style="color:#9ca3af">(8%)</span></span>
+                                <span class="legend-val" id="legendInProgress">—</span>
                             </div>
                         </div>
                     </div>
-                    <a href="#" class="view-report">View Full Report &rarr;</a>
+                    <a href="adminreports.html" class="view-report">View Full Report &rarr;</a>
                 </div>
 
                 <!-- Recent Activities -->
                 <div class="panel">
                     <div class="panel-header">
                         <div class="panel-title">Recent Activities</div>
-                        <a href="#" class="view-all">View All</a>
+                        <a href="adminactivitylogs.html" class="view-all">View All</a>
                     </div>
-                    <div class="activity-list">
-                        <div class="activity-item">
-                            <div class="activity-icon"><i class="fa-solid fa-user-plus"></i></div>
-                            <div class="activity-header-flex">
-                                <div class="activity-text">Teacher <span>Juan Dela Cruz</span> was added</div>
-                                <div class="activity-time">2 min ago</div>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon"><i class="fa-solid fa-book"></i></div>
-                            <div class="activity-header-flex">
-                                <div class="activity-text">Module <span>"Fuel System"</span> was updated</div>
-                                <div class="activity-time">15 min ago</div>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon"><i class="fa-solid fa-clipboard-check"></i></div>
-                            <div class="activity-header-flex">
-                                <div class="activity-text">Assessment <span>"Engine Tune-Up"</span> created</div>
-                                <div class="activity-time">28 min ago</div>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon"><i class="fa-solid fa-user-graduate"></i></div>
-                            <div class="activity-header-flex">
-                                <div class="activity-text">Student <span>Carla Santos</span> was added</div>
-                                <div class="activity-time">1 hr ago</div>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                            <div class="activity-header-flex">
-                                <div class="activity-text"><span>Backup</span> completed successfully</div>
-                                <div class="activity-time">2 hrs ago</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="activity-list" id="activityList"></div>
                 </div>
             </div>
 
@@ -1143,83 +1164,16 @@
                 <div class="panel">
                     <div class="panel-header">
                         <div class="panel-title">Most Used Modules</div>
-                        <a href="#" class="view-all">View All</a>
+                        <a href="adminmod.html" class="view-all">View All</a>
                     </div>
-                    <div class="module-list">
-                        <div class="module-item">
-                            <div class="module-rank">1</div>
-                            <div class="module-img"><i class="fa-solid fa-gear"></i></div>
-                            <div class="module-info">
-                                <div class="module-header"><span>Engine Oil Change</span><span
-                                        class="module-sessions">1,245 sessions</span></div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width:90%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="module-item">
-                            <div class="module-rank">2</div>
-                            <div class="module-img"><i class="fa-solid fa-circle-stop"></i></div>
-                            <div class="module-info">
-                                <div class="module-header"><span>Brake Pad Module</span><span
-                                        class="module-sessions">1,120 sessions</span></div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width:85%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="module-item">
-                            <div class="module-rank">3</div>
-                            <div class="module-img"><i class="fa-solid fa-filter"></i></div>
-                            <div class="module-info">
-                                <div class="module-header"><span>Air Filter Module</span><span
-                                        class="module-sessions">1,032 sessions</span></div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width:80%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="module-item">
-                            <div class="module-rank">4</div>
-                            <div class="module-img"><i class="fa-solid fa-gas-pump"></i></div>
-                            <div class="module-info">
-                                <div class="module-header"><span>Fuel Filter Module</span><span
-                                        class="module-sessions">765 sessions</span></div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width:55%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="module-item">
-                            <div class="module-rank">5</div>
-                            <div class="module-img"><i class="fa-solid fa-plug"></i></div>
-                            <div class="module-info">
-                                <div class="module-header"><span>Spark Plug Module</span><span
-                                        class="module-sessions">680 sessions</span></div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width:50%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="module-item">
-                            <div class="module-rank">6</div>
-                            <div class="module-img"><i class="fa-solid fa-car-battery"></i></div>
-                            <div class="module-info">
-                                <div class="module-header"><span>Battery Maintenance</span><span
-                                        class="module-sessions">654 sessions</span></div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width:45%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="module-list" id="moduleList"></div>
                 </div>
 
                 <!-- Top Performing Classes -->
                 <div class="panel">
                     <div class="panel-header">
                         <div class="panel-title">Top Performing Classes</div>
-                        <a href="#" class="view-all">View All</a>
+                        <a href="adminstud.html" class="view-all">View All</a>
                     </div>
                     <table class="classes-table">
                         <thead>
@@ -1230,48 +1184,7 @@
                                 <th>Students</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td><span class="rank-medal rank-1">1</span></td>
-                                <td>
-                                    <div class="class-name"><i class="fa-solid fa-users"></i> BSMA 2A</div>
-                                </td>
-                                <td>89%</td>
-                                <td>28</td>
-                            </tr>
-                            <tr>
-                                <td><span class="rank-medal rank-2">2</span></td>
-                                <td>
-                                    <div class="class-name"><i class="fa-solid fa-users"></i> BSMA 2B</div>
-                                </td>
-                                <td>86%</td>
-                                <td>25</td>
-                            </tr>
-                            <tr>
-                                <td><span class="rank-medal rank-3">3</span></td>
-                                <td>
-                                    <div class="class-name"><i class="fa-solid fa-users"></i> BSMA 1A</div>
-                                </td>
-                                <td>83%</td>
-                                <td>30</td>
-                            </tr>
-                            <tr>
-                                <td><span class="rank-medal rank-other">4</span></td>
-                                <td>
-                                    <div class="class-name"><i class="fa-solid fa-users"></i> BSMA 1B</div>
-                                </td>
-                                <td>80%</td>
-                                <td>26</td>
-                            </tr>
-                            <tr>
-                                <td><span class="rank-medal rank-other">5</span></td>
-                                <td>
-                                    <div class="class-name"><i class="fa-solid fa-users"></i> BSMA 3A</div>
-                                </td>
-                                <td>78%</td>
-                                <td>24</td>
-                            </tr>
-                        </tbody>
+                        <tbody id="classTableBody"></tbody>
                     </table>
                 </div>
 
@@ -1298,6 +1211,31 @@
                 </div>
             </div>
 
+            <!-- TESDA Reference Documents -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">TESDA Reference Documents</div>
+                </div>
+                <div class="doc-list">
+                    <a href="tesdamodules/CBC-Automotive-Servicing-NC-I.pdf" target="_blank" class="doc-item">
+                        <div class="doc-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                        <div>
+                            <div class="doc-name">CBC — Automotive Servicing NC I</div>
+                            <div class="doc-desc">Competency-Based Curriculum</div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square doc-open"></i>
+                    </a>
+                    <a href="tesdamodules/TR-Automotive-Servicing-NC-I.pdf" target="_blank" class="doc-item">
+                        <div class="doc-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                        <div>
+                            <div class="doc-name">TR — Automotive Servicing NC I</div>
+                            <div class="doc-desc">Training Regulations</div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square doc-open"></i>
+                    </a>
+                </div>
+            </div>
+
         </div>
 
         <footer>
@@ -1312,91 +1250,192 @@
         Chart.defaults.font.family = "'Nunito', sans-serif";
         Chart.defaults.font.size = 11;
 
-        // 1. Line Chart
-        const perfCtx = document.getElementById('performanceChart').getContext('2d');
-        const gradBlue = perfCtx.createLinearGradient(0, 0, 0, 180);
-        gradBlue.addColorStop(0, 'rgba(37,99,235,0.18)');
-        gradBlue.addColorStop(1, 'rgba(37,99,235,0)');
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-        new Chart(perfCtx, {
-            type: 'line',
-            data: {
-                labels: ['May 1', 'May 8', 'May 15', 'May 22', 'May 29'],
-                datasets: [{
-                    label: 'Performance',
-                    data: [30, 50, 45, 65, 72],
-                    borderColor: '#2563eb',
-                    backgroundColor: gradBlue,
-                    borderWidth: 2,
-                    pointBackgroundColor: '#2563eb',
-                    pointBorderColor: '#fff',
-                    pointRadius: [0, 0, 0, 0, 5],
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        mode: 'index', intersect: false,
-                        backgroundColor: '#1a1a2e',
-                        titleColor: '#fff', bodyColor: '#e5e7eb',
-                        borderColor: '#374151', borderWidth: 1
+        function loadDashboardData() {
+        return fetch('admin_data_api.php?action=get_dashboard_data&t=' + Date.now())
+            .then(r => r.json())
+            .then(data => {
+                if (!data || !data.success) return;
+
+                // Topbar
+                const adminName = data.admin_name || 'Administrator';
+                document.getElementById('adminName').textContent = adminName;
+                document.getElementById('welcomeTitle').textContent = 'Welcome back, ' + adminName;
+                const badge = document.getElementById('notifBadge');
+                badge.textContent = data.unread_notifications || 0;
+                badge.style.display = (data.unread_notifications > 0) ? 'flex' : 'none';
+
+                // KPIs
+                const k = data.kpis;
+                document.getElementById('kpiStudents').textContent = k.total_students.toLocaleString();
+                document.getElementById('kpiTeachers').textContent = k.total_teachers.toLocaleString();
+                document.getElementById('kpiModules').textContent = k.total_modules;
+                document.getElementById('kpiAssessments').textContent = k.total_assessments.toLocaleString();
+                document.getElementById('kpiSessions').textContent = k.active_sessions;
+                document.getElementById('kpiAvgScore').textContent = k.avg_score + '%';
+
+                // Metrics strip
+                const m = data.metrics;
+                document.getElementById('metricAssessments').textContent = m.assessments_done.toLocaleString();
+                document.getElementById('metricModules').textContent = m.modules_completed.toLocaleString();
+                document.getElementById('metricPractices').textContent = m.practice_attempts.toLocaleString();
+                document.getElementById('metricSuccess').textContent = m.success_rate + '%';
+
+                // Doughnut + legend
+                const d = data.doughnut;
+                const pct = n => d.total > 0 ? Math.round(n / d.total * 100) : 0;
+                document.getElementById('doughnutTotal').textContent = d.total.toLocaleString();
+                document.getElementById('legendPassed').innerHTML = `${d.passed} <span style="color:#9ca3af">(${pct(d.passed)}%)</span>`;
+                document.getElementById('legendFailed').innerHTML = `${d.failed} <span style="color:#9ca3af">(${pct(d.failed)}%)</span>`;
+                document.getElementById('legendInProgress').innerHTML = `${d.in_progress} <span style="color:#9ca3af">(${pct(d.in_progress)}%)</span>`;
+
+                // Recent activities
+                const list = document.getElementById('activityList');
+                if (data.recent_activities.length === 0) {
+                    list.innerHTML = '<div class="activity-text" style="text-align:center;padding:16px 0">No activity recorded yet.</div>';
+                } else {
+                    list.innerHTML = data.recent_activities.map(a => `
+                        <div class="activity-item">
+                            <div class="activity-icon"><i class="${esc(a.icon)}"></i></div>
+                            <div class="activity-header-flex">
+                                <div class="activity-text"><span>${esc(a.actor)}</span> ${esc(a.text)}</div>
+                                <div class="activity-time">${esc(a.time)}</div>
+                            </div>
+                        </div>`).join('');
+                }
+
+                // Most used modules
+                const mods = document.getElementById('moduleList');
+                if (data.top_modules.length === 0) {
+                    mods.innerHTML = '<div class="activity-text" style="text-align:center;padding:16px 0">No module sessions recorded yet.</div>';
+                } else {
+                    mods.innerHTML = data.top_modules.map(m2 => `
+                        <div class="module-item">
+                            <div class="module-rank">${m2.rank}</div>
+                            <div class="module-img"><i class="${esc(m2.icon)}"></i></div>
+                            <div class="module-info">
+                                <div class="module-header"><span>${esc(m2.name)}</span><span
+                                        class="module-sessions">${m2.sessions.toLocaleString()} session${m2.sessions === 1 ? '' : 's'}</span></div>
+                                <div class="progress-bar"><div class="progress-fill" style="width:${m2.pct}%"></div></div>
+                            </div>
+                        </div>`).join('');
+                }
+
+                // Top performing classes
+                const tbody = document.getElementById('classTableBody');
+                if (data.top_classes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary)">No classes found.</td></tr>';
+                } else {
+                    tbody.innerHTML = data.top_classes.map((c, i) => {
+                        const medal = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+                        return `<tr>
+                            <td><span class="rank-medal ${medal}">${i + 1}</span></td>
+                            <td><div class="class-name"><i class="fa-solid fa-users"></i> ${esc(c.name)}</div></td>
+                            <td>${c.avg}%</td>
+                            <td>${c.students}</td>
+                        </tr>`;
+                    }).join('');
+                }
+
+                // 1. Line Chart (weekly avg score)
+                const perfCtx = document.getElementById('performanceChart').getContext('2d');
+                const gradBlue = perfCtx.createLinearGradient(0, 0, 0, 180);
+                gradBlue.addColorStop(0, 'rgba(37,99,235,0.18)');
+                gradBlue.addColorStop(1, 'rgba(37,99,235,0)');
+
+                ['perfChart', 'doughnutChart', 'usageChart'].forEach(function (id) {
+                    var existing = Chart.getChart(document.getElementById(id));
+                    if (existing) existing.destroy();
+                });
+
+                new Chart(perfCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.performance.labels,
+                        datasets: [{
+                            label: 'Avg. Score',
+                            data: data.performance.values,
+                            borderColor: '#2563eb',
+                            backgroundColor: gradBlue,
+                            borderWidth: 2,
+                            pointBackgroundColor: '#2563eb',
+                            pointBorderColor: '#fff',
+                            pointRadius: 4,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                mode: 'index', intersect: false,
+                                backgroundColor: '#1a1a2e',
+                                titleColor: '#fff', bodyColor: '#e5e7eb',
+                                borderColor: '#374151', borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                            y: {
+                                grid: { color: 'rgba(0,0,0,0.04)' },
+                                min: 0, max: 100,
+                                ticks: { stepSize: 25, callback: v => v + '%', font: { size: 10 } }
+                            }
+                        }
                     }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                    y: {
-                        grid: { color: 'rgba(0,0,0,0.04)' },
-                        min: 0, max: 100,
-                        ticks: { stepSize: 25, callback: v => v + '%', font: { size: 10 } }
+                });
+
+                // 2. Doughnut
+                new Chart(document.getElementById('doughnutChart').getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Passed', 'Failed', 'In Progress'],
+                        datasets: [{ data: [d.passed, d.failed, d.in_progress], backgroundColor: ['#16a34a', '#dc2626', '#d97706'], borderWidth: 0, hoverOffset: 4 }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '80%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { backgroundColor: '#1a1a2e', titleColor: '#fff', bodyColor: '#e5e7eb' }
+                        }
                     }
-                }
-            }
-        });
+                });
 
-        // 2. Doughnut
-        new Chart(document.getElementById('doughnutChart').getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Passed', 'Failed', 'In Progress'],
-                datasets: [{ data: [872, 276, 100], backgroundColor: ['#16a34a', '#dc2626', '#d97706'], borderWidth: 0, hoverOffset: 4 }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '80%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { backgroundColor: '#1a1a2e', titleColor: '#fff', bodyColor: '#e5e7eb' }
-                }
-            }
-        });
+                // 3. Bar Chart (weekly attempts)
+                new Chart(document.getElementById('usageChart').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.usage.labels,
+                        datasets: [
+                            { label: 'Practices', data: data.usage.practices, backgroundColor: '#2563eb', barPercentage: 0.55, categoryPercentage: 0.8, borderRadius: 4 },
+                            { label: 'Assessments', data: data.usage.assessments, backgroundColor: '#d1d5db', barPercentage: 0.55, categoryPercentage: 0.8, borderRadius: 4 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                            y: { grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true, ticks: { font: { size: 10 } } }
+                        }
+                    }
+                });
+            })
+            .catch(err => console.error('Failed to load dashboard data:', err));
+        }
 
-        // 3. Bar Chart
-        new Chart(document.getElementById('usageChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
-                datasets: [
-                    { label: 'Practices', data: [480, 580, 720, 850, 450], backgroundColor: '#2563eb', barPercentage: 0.55, categoryPercentage: 0.8, borderRadius: 4 },
-                    { label: 'Assessments', data: [350, 420, 600, 950, 200], backgroundColor: '#d1d5db', barPercentage: 0.55, categoryPercentage: 0.8, borderRadius: 4 }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                    y: { grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true, ticks: { font: { size: 10 } } }
-                }
-            }
-        });
+        window.ADMIN_REFRESH_FN = 'loadDashboardData';
+        loadDashboardData();
     </script>
+    <script src="admin-live-refresh.js"></script>
 </body>
 
 </html>

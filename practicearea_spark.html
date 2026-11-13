@@ -4,10 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Practice Simulation</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
         rel="stylesheet" />
+    <script src="js/devtools-guard.js?v=3"></script>
 </head>
 <style>
     *,
@@ -257,7 +261,8 @@
         font-weight: 700;
         color: #2563eb;
         text-decoration: none;
-        margin-top: 4px;
+        margin-top: auto;
+        flex-shrink: 0;
     }
 
     .view-all-btn svg {
@@ -501,6 +506,32 @@
         letter-spacing: 0.6px;
         text-transform: uppercase;
         color: #2563eb;
+    }
+
+    .check-plug-btn {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 62px;
+        height: 32px;
+        flex-shrink: 0;
+        border: none;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 60%, #1d4ed8 100%);
+        box-shadow: 0 3px 10px rgba(37, 99, 235, .35), inset 0 1px 0 rgba(255, 255, 255, .3);
+        cursor: pointer;
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .check-plug-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, .45), inset 0 1px 0 rgba(255, 255, 255, .3);
+    }
+
+    .check-plug-btn:active {
+        transform: translateY(0) scale(.96);
+        box-shadow: 0 2px 6px rgba(37, 99, 235, .4), inset 0 1px 0 rgba(255, 255, 255, .3);
     }
 
     .rp-label {
@@ -762,7 +793,7 @@
     }
 </style>
 
-<script type="module" src="ThreeScene2.js"></script>
+<script type="module" src="ThreeScene2.js?v=20261102f"></script>
 
 <body>
 
@@ -796,6 +827,13 @@
                     <div class="timer-val" id="timer">00:00:00</div>
                 </div>
             </div>
+            <button class="end-btn" onclick="restartSimulation()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 4v6h6" />
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+                Restart
+            </button>
             <button class="end-btn" onclick="endSimulationAndSave()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10" />
@@ -818,25 +856,33 @@
                     <div class="tool-3d-placeholder" id="gloves-model"></div>
                     <div class="tool-label">Gloves</div>
                 </div>
-                <div class="tool-card" id="batteryToolCard">
+                <div class="tool-card" id="batteryToolCard" style="display:none;">
                     <div class="tool-3d-placeholder" id="battery-model" style="cursor:pointer;user-select:none;"></div>
                     <div class="tool-label">Battery (Click to use)</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="water-model"></div>
-                    <div class="tool-label">Water</div>
+                    <div class="tool-label">Compressed Air</div>
                 </div>
                 <div class="tool-card">
-                    <div class="tool-3d-placeholder" id="baking-model"></div>
-                    <div class="tool-label">Baking Soda</div>
+                    <div class="tool-3d-placeholder" id="baking-model" style="display:none;"></div>
+                    <div class="tool-label" style="display:none;">Baking Soda</div>
                 </div>
                 <div class="tool-card">
-                    <div class="tool-3d-placeholder" id="wire-model"></div>
-                    <div class="tool-label">Wire Brush</div>
+                    <div class="tool-3d-placeholder" id="wire-model" style="display:none;"></div>
+                    <div class="tool-label" style="display:none;">Wire Brush</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="socket-model"></div>
                     <div class="tool-label">Socket Wrench</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-3d-placeholder" id="sparkplug-model"></div>
+                    <div class="tool-label">Spark Plug</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-3d-placeholder" id="feeler-model"></div>
+                    <div class="tool-label">Gap Gauge</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="goggles-model"></div>
@@ -844,11 +890,11 @@
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="bowl-model"></div>
-                    <div class="tool-label">Bowl</div>
+                    <div class="tool-label">Parts Tray</div>
                 </div>
                 <div class="tool-card">
                     <div class="tool-3d-placeholder" id="papertowel-model"></div>
-                    <div class="tool-label">Paper Towel</div>
+                    <div class="tool-label">Shop Rag</div>
                 </div>
             </div>
             <a href="#" class="view-all-btn">
@@ -872,27 +918,27 @@
                 <div class="step-bar">
                     <div class="step-node">
                         <div class="step-circle active">1</div>
-                        <div class="step-name active">Inspect Battery</div>
+                        <div class="step-name active">Prepare & Locate</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">2</div>
-                        <div class="step-name">Clean Terminals</div>
+                        <div class="step-name">Coils & Plugs Out</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">3</div>
-                        <div class="step-name">Check Electrolyte</div>
+                        <div class="step-name">Inspect & Gap</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">4</div>
-                        <div class="step-name">Secure Battery</div>
+                        <div class="step-name">Install & Reassemble</div>
                     </div>
                     <div class="step-connector"></div>
                     <div class="step-node">
                         <div class="step-circle">5</div>
-                        <div class="step-name">Test System</div>
+                        <div class="step-name">Test Run</div>
                     </div>
                 </div>
             </div>
@@ -913,7 +959,7 @@
                             style="width:94%;height:86%;border-radius:10px;border:2px dashed rgba(99,102,241,0.18);display:flex;align-items:center;justify-content:center;padding:6px;background:transparent;">
                             <div
                                 style="text-align:center;color:rgba(99,102,241,0.95);font-weight:800;font-size:0.82rem;">
-                                Mix Here</div>
+                                Parts Tray Area</div>
                         </div>
                     </div>
                 </div>
@@ -933,23 +979,30 @@
                     </svg>
                     Current Task
                 </div>
-                <div class="rp-task-title">Inspect Battery Condition</div>
-                <div class="rp-task-desc">Check the battery body, terminals, and cables for cracks, leaks, swelling,
-                    or damage.</div>
+                <div class="rp-task-title">Prepare & Locate the Spark Plugs</div>
+                <div class="rp-task-desc">Make sure the engine is OFF and cool, open the hood, and locate the
+                    spark plugs.</div>
             </div>
 
             <div class="rp-section">
                 <div class="sound-toggle-card">
                     <div class="sound-toggle-copy">
-                        <div class="sound-toggle-label">Engine Swipe</div>
-                        <strong>Engine sound</strong>
-                        <span>Turn ON to play the engine audio loop.</span>
-                        <span class="sound-state" id="engineSoundState">OFF</span>
+                        <div class="sound-toggle-label" id="engineSwipeLabel">Engine Swipe</div>
+                        <strong id="engineSwipeTitle">Engine sound</strong>
+                        <span id="engineSwipeDesc">Starts ON — switch OFF to service safely.</span>
+                        <span class="sound-state" id="engineSoundState">ON</span>
                     </div>
                     <label class="sound-switch" for="engineSwipeToggle" aria-label="Engine sound toggle">
                         <input type="checkbox" id="engineSwipeToggle">
                         <span class="sound-slider"></span>
                     </label>
+                    <button id="checkSparkPlugBtn" class="check-plug-btn" type="button"
+                        aria-label="Check spark plug" title="Check Spark Plug">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="7" />
+                            <path d="m21 21-4.35-4.35" />
+                        </svg>
+                    </button>
                 </div>
             </div>
 
@@ -966,7 +1019,7 @@
 
             <!-- Battery Diagnostic Status Indicator -->
             <div id="batteryStatusIndicator" style="display:none;margin-bottom:15px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.05);border:1.5px solid #e5e7eb;">
-                <div style="font-size:0.75rem;color:#6b7280;font-weight:700;margin-bottom:4px;">BATTERY DIAGNOSTIC STATUS</div>
+                <div style="font-size:0.75rem;color:#6b7280;font-weight:700;margin-bottom:4px;">SPARK PLUG STATUS</div>
                 <div id="batteryStatusValue" style="font-size:0.9rem;font-weight:800;display:flex;align-items:center;gap:6px;">
                     <!-- Filled dynamically -->
                 </div>
@@ -986,10 +1039,10 @@
                     Instructions
                 </div>
                 <ol class="instr-list" id="instrList">
-                    <li>Ensure ignition is off and keys are removed</li>
-                    <li>Visually inspect the battery for cracks, bulging, or leaks</li>
-                    <li>Check terminal connections are tight and corrosion-free</li>
-                    <li>Inspect battery cables for fraying or damage</li>
+                    <li>Engine is OFF and completely cool</li>
+                    <li>Open the hood and secure it</li>
+                    <li>Locate the spark plugs on top of the engine</li>
+                    <li>Identify ignition coils or spark plug wires</li>
                 </ol>
             </div>
 
@@ -1000,23 +1053,13 @@
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <path d="M9 11l3 3L22 4" />
                     </svg>
-                    Inspection Checklist
+                    Preparation & Safety Checklist
                 </div>
-                <div id="inspectionList" style="display:flex;flex-direction:column;gap:10px;">
-                    <label
-                        style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:8px;cursor:pointer;transition:all 0.2s;">
-                        <input type="checkbox" class="inspect-check" data-index="0"
-                            style="width:18px;height:18px;accent-color:#2563eb;cursor:pointer;">
-                        <span style="font-size:0.75rem;color:#374151;flex:1;">Ignition off and keys removed</span>
-                    </label>
-                    <label
-                        style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:8px;cursor:pointer;transition:all 0.2s;">
-                        <input type="checkbox" class="inspect-check" data-index="1"
-                            style="width:18px;height:18px;accent-color:#2563eb;cursor:pointer;">
-                        <span style="font-size:0.75rem;color:#374151;flex:1;">Battery has no cracks, bulging,
-                            or leaks</span>
-                    </label>
-                </div>
+                <ol class="instr-list" id="inspectionList">
+                    <li data-index="0">Engine is OFF and completely cool</li>
+                    <li data-index="1">Hood opened and secured</li>
+                    <li data-index="2">Wearing gloves and safety goggles</li>
+                </ol>
                 <div
                     style="margin-top:12px;padding:10px 12px;background:#f1f5f9;border-radius:8px;border-left:3px solid #2563eb;">
                     <span style="font-size:0.75rem;color:#64748b;">✓ Complete all inspections, then click <strong>Next
@@ -1033,7 +1076,7 @@
                         </svg>
                         Safety Reminder
                     </div>
-                    <p id="safetyText">Always wear safety goggles and gloves — battery acid can cause burns.</p>
+                    <p id="safetyText">Never work on a hot engine — plug threads can warp and hot parts will burn you.</p>
                 </div>
             </div>
 
@@ -1053,7 +1096,7 @@
                         <!-- Removed items will appear here -->
                     </div>
                     <div id="noItemsMessage" style="text-align:center;color:#9ca3af;font-size:0.7rem;padding:10px 0;">
-                        No items removed yet. Hover over battery caps to remove them.
+                        No items removed yet. Removed parts will appear here.
                     </div>
                 </div>
             </div>
@@ -1073,7 +1116,7 @@
                     <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
             </div>
-            <div class="tip-text"><strong>TIP</strong> Follow each step carefully for a successful oil change.</div>
+            <div class="tip-text"><strong>TIP</strong> Follow each step carefully for a successful spark plug replacement.</div>
         </div>
         <button class="step-nav-btn prev">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -1095,6 +1138,11 @@
     </div>
 
     <script src="js/practice_progress.js"></script>
+    <script>
+        // Flag that a practice simulation is open — an assessment running in
+        // another tab watches this key and finalizes itself immediately.
+        try { localStorage.setItem('motomasterActiveSim', 'practice:' + document.title); } catch (e) {}
+    </script>
     <script>
         const toggleBtn = document.getElementById('toggleBtn');
         const panel = document.querySelector('.panel');
@@ -1261,6 +1309,20 @@
         });
     </script>
     <script type="module">
+        import { initSparkPlugViewer } from './SparkPlugViewer.js';
+
+        window.addEventListener('load', () => {
+            initSparkPlugViewer('sparkplug-model');
+        });
+    </script>
+    <script type="module">
+        import { initGaugeViewer } from './GaugeViewer.js';
+
+        window.addEventListener('load', () => {
+            initGaugeViewer('feeler-model');
+        });
+    </script>
+    <script type="module">
         import { initSafetyGogglesViewer } from './SafetyGogglesViewer.js';
 
         window.addEventListener('load', () => {
@@ -1336,14 +1398,15 @@
             }
 
             function onPointerDown(e) {
-                // Require inspection completion before allowing mixing station interactions
-                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
-                    showSequenceWarning('Please complete the inspection checklist and proceed to the next step before using the mixing station.');
-                    return;
-                }
+                // The parts tray feeds the baking-soda mix station — a battery
+                // cleaning process disabled in the spark plug simulation.
+                showSequenceWarning('The parts tray is not used in the spark plug procedure.');
+                return;
+            }
 
+            function onPointerDown_DISABLED(e) {
                 if (bowlPlaced) {
-                    showSequenceWarning('Bowl already placed in the mix area.');
+                    showSequenceWarning('Parts tray already placed in the work area.');
                     return;
                 }
                 e.preventDefault();
@@ -1398,17 +1461,20 @@
             }
 
             function onItemPointerDown(e, type) {
-                // Require inspection completion before allowing mixing station interactions
-                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
-                    showSequenceWarning('Please complete the inspection checklist and proceed to the next step before using the mixing station.');
-                    return;
-                }
+                // Baking soda + water mixing is a battery terminal cleaning
+                // process — disabled in the spark plug simulation.
+                showSequenceWarning(type === 'soda'
+                    ? 'Baking soda is not used in the spark plug procedure.'
+                    : 'Compressed air is not used in the spark plug procedure.');
+                return;
+            }
 
+            function onItemPointerDown_DISABLED(e, type) {
                 e.preventDefault();
                 dragging = true;
                 draggingItemType = type;
                 if (ghost) ghost.remove();
-                ghost = createItemGhost(type === 'soda' ? 'Baking Soda' : 'Water');
+                ghost = createItemGhost(type === 'soda' ? 'Baking Soda' : 'Compressed Air');
                 moveGhost(e.clientX, e.clientY);
                 window.addEventListener('pointermove', onItemPointerMove);
                 window.addEventListener('pointerup', onItemPointerUp, { once: true });
@@ -1438,7 +1504,7 @@
 
                 if (hit) {
                     if (!bowlPlaced) {
-                        showSequenceWarning('Please place the bowl in the mixing area first.');
+                        showSequenceWarning('Please place the parts tray in the work area first.');
                         draggingItemType = null;
                         return;
                     }
@@ -1589,7 +1655,7 @@
                     showMixModal();
                 } else {
                     const t = document.createElement('div');
-                    t.textContent = 'Water added to bowl. Now drag and drop Baking Soda into the bowl.';
+                    t.textContent = 'Compressed air blown into the plug wells.';
                     t.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 14px;border-radius:10px;z-index:100050;font-weight:700;';
                     document.body.appendChild(t);
                     setTimeout(() => t.remove(), 2500);
@@ -1614,18 +1680,6 @@
                 setTimeout(() => t.remove(), 1600);
                 // mark that the user has mixed baking soda + water
                 window.mixtureDone = true;
-                // Mark the first instruction of the Clean Terminals step (step index 1, instruction 0) as done
-                try {
-                    window.stepInstrDone = window.stepInstrDone || {};
-                    window.stepInstrDone[1] = window.stepInstrDone[1] || [];
-                    window.stepInstrDone[1][0] = true;
-                    // If the instructions panel is currently showing step 2, update the DOM
-                    const instrList = document.getElementById('instrList');
-                    if (instrList && currentStepIndex === 1) {
-                        const li = instrList.children[0];
-                        if (li) li.classList.add('done');
-                    }
-                } catch (e) { console.warn('Failed to mark instruction done', e); }
             });
 
             if (btnCloseMix) btnCloseMix.addEventListener('click', () => { mixModal.style.display = 'none'; });
@@ -2300,16 +2354,66 @@
     <script>
         // ── STEP REVIEW DATA (tracked from user actions during simulation) ───
         const STEP_REVIEW_TITLES = [
-            'Step 1: Inspect Battery Condition',
-            'Step 2: Clean Battery Terminals',
-            'Step 3: Check Electrolyte Level',
-            'Step 4: Secure Battery Mount',
-            'Step 5: Test Electrical System'
+            'Step 1: Prepare & Locate the Spark Plugs',
+            'Step 2: Remove Coils & Spark Plugs',
+            'Step 3: Inspect & Gap the Spark Plugs',
+            'Step 4: Install & Reassemble',
+            'Step 5: Final Engine Check'
         ];
 
         function getRecommendationForMistake(message) {
             const m = (message || '').toLowerCase();
-            
+
+            // Spark-plug-specific recommendations
+            if (m.includes('engine is off') || m.includes('completely cool')) {
+                return 'Tip: Never work on a hot engine — plug threads can warp and hot components will burn you.';
+            }
+            if (m.includes('hood')) {
+                return 'Tip: Always open and secure the hood fully before reaching into the engine bay.';
+            }
+            if (m.includes('spark plugs on top') || m.includes('locate the spark')) {
+                return 'Tip: Spark plugs sit on top of the engine, under the ignition coils or plug wires.';
+            }
+            if (m.includes('ignition coils') || m.includes('plug wires')) {
+                return 'Tip: Identify whether the engine uses coil-on-plug units or spark plug wires before removing anything.';
+            }
+            if (m.includes('gloves and safety goggles')) {
+                return 'Tip: Always wear gloves and safety goggles when working in the engine bay.';
+            }
+            if (m.includes('electrical connector')) {
+                return 'Tip: Squeeze the connector tab and pull straight — yanking wires damages the connector.';
+            }
+            if (m.includes('coil') && (m.includes('bolt') || m.includes('straight out'))) {
+                return 'Tip: Pull the coil straight out of the plug well — twisting or prying breaks the coil boot.';
+            }
+            if (m.includes('socket with extension') || m.includes('counterclockwise')) {
+                return 'Tip: Use a spark plug socket with extension and turn counterclockwise to loosen the plug.';
+            }
+            if (m.includes('brown') || m.includes('gray')) {
+                return 'Tip: A light brown/gray plug tip is normal — that engine is running correctly.';
+            }
+            if (m.includes('black') || m.includes('rich')) {
+                return 'Tip: A black sooty tip signals a rich fuel condition — the engine may need further diagnosis.';
+            }
+            if (m.includes('oil-coated') || m.includes('oil')) {
+                return 'Tip: An oil-coated plug suggests worn rings or seals — report it instead of just swapping plugs.';
+            }
+            if (m.includes('feeler gauge') || m.includes('gap')) {
+                return 'Tip: Always verify the electrode gap with a feeler gauge against the manufacturer spec.';
+            }
+            if (m.includes('by hand') || m.includes('cross-thread')) {
+                return 'Tip: Always start the plug threads by hand — cross-threading ruins the cylinder head.';
+            }
+            if (m.includes('snug') || m.includes('over-tightened')) {
+                return 'Tip: Tighten the plug snug with the socket — over-tightening strips the head or cracks the insulator.';
+            }
+            if (m.includes('every cylinder') || m.includes('repeat')) {
+                return 'Tip: Service every cylinder — replacing only some plugs causes uneven engine running.';
+            }
+            if (m.includes('idle') || m.includes('misfire') || m.includes('smooth')) {
+                return 'Tip: After service the engine should idle smoothly — a misfire means a loose connector or wrong gap.';
+            }
+
             // Critical battery feedback
             if (m.includes('critical battery condition') || m.includes('critical battery not replaced')) {
                 return 'CRITICAL WARNING: A damaged battery with cracks, bulging, or leaks must be replaced immediately. If you continue without replacement: (1) The vehicle will likely not start due to insufficient voltage, (2) Acid leaks can corrode surrounding components and the engine bay, (3) A damaged battery may explode during charging or operation, causing injury. Always replace batteries showing physical damage.';
@@ -2469,6 +2573,41 @@
                 } else {
                     // Restore tracker data
                     PracticeProgress.restoreProgress(saved, simulationTracker);
+
+                    // Restore step position, checklist state, and elapsed time
+                    if (typeof saved.current_step_index === 'number') {
+                        currentStepIndex = Math.max(0, Math.min(saved.current_step_index, totalSteps - 1));
+                    }
+                    if (saved.step_instr_done) {
+                        window.stepInstrDone = saved.step_instr_done;
+                    }
+                    if (typeof saved.time_elapsed_seconds === 'number') {
+                        window.__practiceElapsedSeconds = saved.time_elapsed_seconds;
+                    }
+                    // The engine sound is only for Step 1 — a reload landing on
+                    // a later step must leave the engine OFF.
+                    if (currentStepIndex !== 0) {
+                        try { setEngineSwipeEnabled(false); } catch (e) {}
+                    }
+                    updateStepUI();
+                    // Removed parts stay in storage until clicked to replace —
+                    // re-apply the saved removed state to the scene.
+                    restoreRemovedItems(saved.scene_state);
+                    // The render-time check can't see the plug until the model
+                    // loads — poll, then verify the insert instruction when we
+                    // landed on reassembly with the plug already seated.
+                    (function autoVerifySeatedPlug(tries) {
+                        if (typeof window.checkBattery !== 'function' || !window.checkBattery()) {
+                            if (tries < 60) setTimeout(() => autoVerifySeatedPlug(tries + 1), 500);
+                            return;
+                        }
+                        try { updateRemovedItemsContainer(); } catch (e) {}
+                        try {
+                            if (currentStepIndex === 3 && !window.checkBattery().removed) {
+                                markInstructionDone(3, 0);
+                            }
+                        } catch (e) {}
+                    })(0);
                 }
 
                 // Show welcome back notification with previous score
@@ -2523,6 +2662,7 @@
                 __progressLoaded = true;
             } else {
                 console.log('PracticeArea: No saved progress found');
+                __progressLoaded = true;
             }
         }
 
@@ -2534,20 +2674,91 @@
             }
         }
 
-        /**
-         * Save current progress to database
-         */
-        async function saveCurrentProgress(status = 'In Progress') {
-            const summary = PracticeProgress.getSummary(simulationTracker);
-            if (!summary) return;
+        // Re-apply saved removed-parts state to the scene after a reload —
+        // connector/coil caps and the spark plug stay lifted out and listed
+        // in the Removed Items storage until clicked to replace.
+        function restoreRemovedItems(state) {
+            if (!state) return;
+            const caps = Array.isArray(state.caps) ? state.caps : [];
+            const plugOut = !!state.plug_removed;
+            if (!caps.length && !plugOut) return;
 
-            const payload = {
+            let tries = 0;
+            const poll = setInterval(() => {
+                tries++;
+                const ready = typeof window.toggleBatteryCap === 'function'
+                    && typeof window.checkBatteryCap === 'function'
+                    && typeof window.toggleBattery === 'function'
+                    && typeof window.setPlugCoversVisible === 'function'
+                    && typeof window.hidePlugCoverAt === 'function';
+                if (!ready) {
+                    if (tries > 60) clearInterval(poll);
+                    return;
+                }
+                clearInterval(poll);
+                try {
+                    caps.forEach((idx) => {
+                        const info = window.checkBatteryCap(idx);
+                        if (!info) return;
+                        window.toggleBatteryCap(idx);
+                        if (info.type === 'negative') negativeCapRemoved = true;
+                        if (info.type === 'positive') positiveCapRemoved = true;
+                        removedItems.set(idx, info);
+                    });
+                    if (plugOut) {
+                        window.toggleBattery();
+                        if (state.plug_discarded) {
+                            // Worn plug was thrown out — stays out and is NOT
+                            // relisted; a new plug is installed via the tool.
+                            window.batteryNeedsReplacement = true;
+                        } else {
+                            removedItems.set('battery', { type: 'battery', name: 'Spark Plug', removed: true });
+                        }
+                    }
+                    if (Array.isArray(state.covers)) {
+                        state.covers.forEach((cover) => {
+                            if (!cover) return;
+                            const idx = (typeof cover.index === 'number') ? cover.index : cover;
+                            try { window.hidePlugCoverAt(idx); } catch (e) {}
+                            window.__plugCoversRemoved = true;
+                            removedItems.set('cover_' + idx, { type: 'cover', name: cover.name || 'Cover Part', index: idx });
+                        });
+                    }
+                    updateRemovedItemsContainer();
+                } catch (e) {
+                    console.warn('Could not restore removed items:', e);
+                }
+            }, 500);
+        }
+
+        /**
+         * Build the progress payload (shared by fetch save and beacon unload save)
+         */
+        function buildProgressPayload(status) {
+            const summary = PracticeProgress.getSummary(simulationTracker);
+            if (!summary) return null;
+
+            const student = getLoggedInStudent();
+            return {
                 title: 'Spark Plug Replacement',
                 score: summary.overall_score,
                 completion_status: status,
                 time_elapsed_seconds: window.__practiceElapsedSeconds || 0,
-                steps: PracticeProgress.transformTrackerData(simulationTracker, STEP_REVIEW_TITLES)
+                current_step_index: currentStepIndex,
+                step_instr_done: window.stepInstrDone || {},
+                scene_state: window.removedItemsSnapshot || null,
+                steps: PracticeProgress.transformTrackerData(simulationTracker, STEP_REVIEW_TITLES),
+                student_id: student ? student.student_id : undefined,
+                student: student || undefined
             };
+        }
+
+        /**
+         * Save current progress to database
+         */
+        async function saveCurrentProgress(status = 'In Progress') {
+            const payload = buildProgressPayload(status);
+            if (!payload) return;
 
             const result = await PracticeProgress.saveProgress(payload);
             if (result.success) {
@@ -2555,6 +2766,22 @@
             }
             return result;
         }
+
+        // Debounced save — every sim action (removal, refit, instruction
+        // check, step change) persists to the database within ~1.5s so a
+        // refresh always resumes exactly where the user left off.
+        let __progressSaveTimer = null;
+        function scheduleProgressSave() {
+            if (window.__practiceCompleted) return;
+            // Never write before the saved state has been applied — an early
+            // save would overwrite the database with a fresh/default state.
+            if (!__progressLoaded) return;
+            clearTimeout(__progressSaveTimer);
+            __progressSaveTimer = setTimeout(() => {
+                try { saveCurrentProgress('In Progress'); } catch (e) {}
+            }, 1500);
+        }
+        window.scheduleProgressSave = scheduleProgressSave;
 
         async function endSimulationAndSave() {
             try {
@@ -2565,6 +2792,41 @@
             window.location.href = 'practicetasks.html';
         }
         window.endSimulationAndSave = endSimulationAndSave;
+
+        // Restart the simulation from Step 1 — stores the steps completed so
+        // far, clears the current attempt, then reloads so the scene,
+        // checklist, and removed-items storage all return to a fresh state.
+        window.restartSimulation = function () {
+            const doRestart = async () => {
+                try { await saveCurrentProgress('In Progress'); } catch (e) { console.warn('Save before reset failed:', e); }
+                try {
+                    const res = await fetch('reset_practice.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: 'Spark Plug Replacement' })
+                    });
+                    const data = await res.json();
+                    if (!data || !data.success) throw new Error((data && data.message) || 'Reset failed');
+                } catch (e) {
+                    console.warn('Reset request failed:', e);
+                    try {
+                        if (typeof window.showSequenceWarning === 'function') {
+                            window.showSequenceWarning('Restart failed — the attempt could not be reset.');
+                        } else {
+                            console.warn('Restart failed — the attempt could not be reset.');
+                        }
+                    } catch (e2) { console.warn('Restart failed — the attempt could not be reset.'); }
+                    return;
+                }
+                window.__practiceCompleted = true;
+                window.location.reload();
+            };
+            if (typeof window.showToolUseCard === 'function') {
+                window.showToolUseCard('Restart Simulation?', 'Your progress is saved first, then the simulation starts over from Step 1.', doRestart);
+            } else if (window.confirm('Restart simulation? Your progress will be saved and the simulation will start over from Step 1.')) {
+                doRestart();
+            }
+        };
 
         /**
          * Start auto-save interval (saves every 30 seconds)
@@ -2592,15 +2854,35 @@
             startAutoSave();
         });
 
-        // Save on page unload
+        // Save on page unload — sendBeacon survives refresh/navigation
         window.addEventListener('beforeunload', () => {
             if (window.__practiceCompleted) return;
-            saveCurrentProgress('In Progress');
+            const payload = buildProgressPayload('In Progress');
+            if (!payload) return;
+            const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain' });
+            if (!navigator.sendBeacon('save_practice_simulation.php', blob)) {
+                fetch('save_practice_simulation.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload),
+                    keepalive: true
+                }).catch(() => {});
+            }
         });
 
         const engineSwipeAudio = new Audio('music/notstarting.mp3');
         engineSwipeAudio.loop = true;
         engineSwipeAudio.preload = 'auto';
+        // Surface load/decode failures in the console — a silent audio element
+        // is otherwise impossible to diagnose.
+        engineSwipeAudio.addEventListener('error', () => {
+            const codes = { 1: 'ABORTED', 2: 'NETWORK', 3: 'DECODE', 4: 'SRC_NOT_SUPPORTED' };
+            const err = engineSwipeAudio.error;
+            console.error('Engine audio element error:', err ? (codes[err.code] || err.code) : 'unknown');
+        });
+        engineSwipeAudio.addEventListener('canplay', () => {
+            console.log('Engine audio ready to play.');
+        });
 
         let engineSwipeEnabled = false;
 
@@ -2621,9 +2903,23 @@
                     await engineSwipeAudio.play();
                 } catch (error) {
                     console.warn('Engine swipe audio could not start:', error);
-                    engineSwipeEnabled = false;
-                    if (stateLabel) stateLabel.textContent = 'OFF';
-                    if (toggle) toggle.checked = false;
+                    // Browsers block autoplay before the first user gesture.
+                    // Keep the engine ON and keep retrying on every user
+                    // interaction until the audio actually starts playing.
+                    const startEvents = ['pointerdown', 'keydown', 'touchstart', 'click'];
+                    const stopRetrying = () => {
+                        startEvents.forEach((evt) => document.removeEventListener(evt, retryPlay));
+                    };
+                    function retryPlay() {
+                        if (!engineSwipeEnabled) {
+                            stopRetrying();
+                            return;
+                        }
+                        engineSwipeAudio.play()
+                            .then(stopRetrying)
+                            .catch(() => { /* still blocked — try again on the next gesture */ });
+                    }
+                    startEvents.forEach((evt) => document.addEventListener(evt, retryPlay));
                 }
             } else {
                 engineSwipeAudio.pause();
@@ -2632,6 +2928,10 @@
         }
 
         window.setEngineSwipeEnabled = setEngineSwipeEnabled;
+
+        // Engine starts ON when the simulation loads — the student must switch
+        // it OFF to verify the "Engine is OFF" inspection item on Step 1.
+        setEngineSwipeEnabled(true);
 
         let currentStepIndex = 0;
         const totalSteps = stepReviewData.length;
@@ -2679,26 +2979,13 @@
             const data = simulationTracker.steps[stepIdx];
             data.title = STEP_REVIEW_TITLES[stepIdx];
 
-            // Clear previous correct items for checklists to prevent carryover of unchecked/previous states
-            if (stepIdx === 0 || stepIdx === 3 || stepIdx === 4) {
-                data.correct = [];
-            } else if (stepIdx === 1 || stepIdx === 2) {
-                // Remove list-item instructions from correct array to re-evaluate them cleanly
-                const instructionsList = [
-                    ['Mix baking soda', 'Disconnect negative', 'Apply paste', 'Wipe terminals', 'Reconnect positive', 'Remove the old battery', 'Drag and drop the new battery'],
-                    ['Remove battery caps', 'Check electrolyte', 'Top up', 'Do not overfill', 'Replace caps']
-                ];
-                const activeInstrs = instructionsList[stepIdx - 1];
-                data.correct = data.correct.filter(c => {
-                    const text = c.toLowerCase();
-                    return !activeInstrs.some(pattern => text.includes(pattern.toLowerCase()));
-                });
-            }
+            // Clear previous correct items to re-evaluate them cleanly from the checklists
+            data.correct = [];
 
             if (stepIdx === 0) {
-                document.querySelectorAll('.inspect-check').forEach((cb) => {
-                    const label = cb.closest('label')?.querySelector('span')?.textContent?.trim();
-                    if (cb.checked && label) simulationTracker.addCorrect(label, 0);
+                document.querySelectorAll('#inspectionList li').forEach((li) => {
+                    const label = li.textContent?.trim();
+                    if (li.classList.contains('done') && label) simulationTracker.addCorrect(label, 0);
                 });
             } else {
                 const done = window.stepInstrDone?.[stepIdx] || [];
@@ -2750,7 +3037,11 @@
                         score: overallScore,
                         completion_status: 'Completed',
                         time_elapsed_seconds: window.__practiceElapsedSeconds || 0,
-                        steps: stepsPayload
+                        current_step_index: currentStepIndex,
+                        step_instr_done: window.stepInstrDone || {},
+                        steps: stepsPayload,
+                        student_id: student.student_id,
+                        student: student
                     })
                 });
                 const data = await res.json();
@@ -2895,8 +3186,9 @@
         function canProceedFromStep(stepIdx) {
             // Step 0 uses the inspection checklist
             if (stepIdx === 0) {
-                const checkboxes = document.querySelectorAll('.inspect-check');
-                return Array.from(checkboxes).every(cb => cb.checked);
+                const items = document.querySelectorAll('#inspectionList li');
+                if (!items || items.length === 0) return true;
+                return Array.from(items).every(li => li.classList.contains('done'));
             }
 
             // For other steps, ensure every instruction list item is marked done
@@ -2958,6 +3250,11 @@
         function updateStepUI() {
             syncPracticeStepIndex();
 
+            // Engine sound only belongs on Step 1 — shut it off on later steps.
+            if (currentStepIndex !== 0 && typeof engineSwipeEnabled !== 'undefined' && engineSwipeEnabled) {
+                try { setEngineSwipeEnabled(false); } catch (e) {}
+            }
+
             // Update engine sound source depending on the step: start.mp3 for Step 5 (index 4), notstarting.mp3 for Steps 1-4
             if (typeof engineSwipeAudio !== 'undefined') {
                 const targetSrc = (currentStepIndex === 4) ? 'music/start.mp3' : 'music/notstarting.mp3';
@@ -2983,72 +3280,87 @@
             });
 
             // Update right panel task title & desc
-            const titles = ['Inspect Battery Condition', 'Clean Battery Terminals', 'Check Electrolyte Level', 'Secure Battery Mount', 'Test Electrical System'];
+            const titles = ['Prepare & Locate the Spark Plugs', 'Remove Coils & Spark Plugs', 'Inspect & Gap the Spark Plugs', 'Install & Reassemble', 'Final Engine Check'];
             const descs = [
-                'Check battery casing for cracks, leaks, or swelling. Verify terminal connections.',
-                'Remove corrosion from terminals using a wire brush and baking soda solution.',
-                'Check electrolyte levels in each cell and top up with distilled water if needed.',
-                'Ensure battery hold-down bracket is tight and battery does not move.',
-                'Start engine and verify charging system voltage. Check all electrical functions.'
+                'Make sure the engine is OFF and cool, open the hood, and put on safety gear.',
+                'Remove the ignition coils or wires, then loosen and lift out each spark plug.',
+                'Inspect each plug tip condition and verify the electrode gap against spec.',
+                'Hand-thread each new plug to avoid cross-threading, tighten, and reinstall coils.',
+                'Start the engine and confirm a smooth idle with no misfires.'
             ];
             document.querySelector('.rp-task-title').textContent = titles[currentStepIndex] || titles[titles.length - 1];
             document.querySelector('.rp-task-desc').textContent = descs[currentStepIndex] || descs[descs.length - 1];
 
             // Update instructions list
             const instructions = [
-                ['Ensure ignition is off and keys are removed', 'Visually inspect the battery for cracks, bulging, or leaks'],
-                window.batteryNeedsReplacement ?
-                    ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Remove the old battery from the car engine bay', 'Drag and drop the new battery from the tools area to install it', 'Reconnect positive (+) first, then negative (-) terminal'] :
-                    ['Mix baking soda with water to create cleaning paste', 'Disconnect negative (-) terminal first, then positive (+)', 'Apply paste to terminals and use wire brush to remove corrosion', 'Wipe terminals clean with a damp cloth and dry thoroughly', 'Reconnect positive (+) first, then negative (-) terminal'],
-                ['Remove battery caps carefully — wear safety goggles', 'Check electrolyte level in each cell against MIN/MAX marks', 'Top up ONLY with distilled water if below minimum', 'Do not overfill — leave space for expansion', 'Replace caps securely and wipe any spills'],
-                ['Check battery hold-down bracket for tightness', 'Inspect bracket bolts for corrosion and tightness', 'Ensure battery sits level and does not shift when pushed', 'Check that battery tray is not rusted through', 'Tighten bracket evenly — do not over-tighten'],
-                ['Reconnect all terminals and start the engine', 'Listen for smooth starter motor operation', 'Record battery test results and service date in log']
+                ['Engine is OFF and completely cool', 'Open the hood and secure it', 'Wear gloves and safety goggles'],
+                ['Unplug the electrical connector carefully', 'Remove the bolts holding the ignition coil', 'Pull the coil straight out of the plug well', 'Insert a spark plug socket with extension'],
+                ['Use Check Spark Plug to inspect the plug tip condition', 'Use a feeler gauge to check the electrode gap'],
+                ['Insert the new plug by hand first to avoid cross-threading', 'Tighten with the socket — snug, not over-tightened', 'Push the coil back into place and reinstall its bolt'],
+                ['Refit the ignition coil and reconnect the electrical connector', 'Start the engine and let it idle', 'Check for misfires or rough running', 'Shut off the engine and clean up tools']
             ];
             const safetyNotes = [
-                'Always wear safety goggles and gloves — battery acid can cause burns.',
-                'Disconnect negative terminal first to avoid short circuits.',
-                'Never smoke or create sparks near a battery — hydrogen gas is explosive.',
-                'Do not overtighten hold-down bracket — it can crack the battery case.',
-                'If battery is hot, wait for it to cool before opening caps.'
+                'Never work on a hot engine — plug threads can warp and hot parts will burn you.',
+                'Pull coils straight out — twisting or prying breaks the coil boot.',
+                'Debris falling into an open plug well goes straight into the cylinder — keep wells clean.',
+                'Cross-threading a plug ruins the cylinder head — always start threads by hand.',
+                'A misfire after service usually means a loose connector or wrong gap — recheck both.'
             ];
             const instrList = document.getElementById('instrList');
             if (instrList) {
-                const checklistMode = currentStepIndex === 3 || currentStepIndex === 4;
+                const checklistMode = false; // all steps are action-verified
                 instrList.classList.toggle('checklist-mode', checklistMode);
                 window.stepInstrDone = window.stepInstrDone || {};
                 const doneArray = window.stepInstrDone[currentStepIndex] || [];
                 instrList.innerHTML = (instructions[currentStepIndex] || instructions[0])
                     .map((item, index) => {
                         const done = doneArray[index] ? 'done' : '';
-                        if (!checklistMode) {
-                            return `<li class="${done}">${item}</li>`;
-                        }
-                        const checkedAttr = doneArray[index] ? 'checked' : '';
-                        return `
-                            <li class="${done}">
-                                <label class="instr-check-row">
-                                    <input type="checkbox" ${checkedAttr} data-step="${currentStepIndex}" data-idx="${index}" />
-                                    <span>${item}</span>
-                                </label>
-                            </li>`;
+                        return `<li class="${done}">${item}</li>`;
                     }).join('');
-
-                // wire checkbox change for checklist mode to persist done state
-                setTimeout(() => {
-                    const checkboxes = instrList.querySelectorAll('input[type="checkbox"]');
-                    checkboxes.forEach(cb => {
-                        cb.addEventListener('change', (e) => {
-                            const idx = parseInt(cb.getAttribute('data-idx') || '0', 10);
-                            window.stepInstrDone[currentStepIndex] = window.stepInstrDone[currentStepIndex] || [];
-                            window.stepInstrDone[currentStepIndex][idx] = !!cb.checked;
-                            const li = cb.closest('li');
-                            if (li) li.classList.toggle('done', !!cb.checked);
-                        });
-                    });
-                }, 30);
             }
             const safetyEl = document.getElementById('safetyText');
             if (safetyEl) safetyEl.textContent = safetyNotes[currentStepIndex] || safetyNotes[0];
+
+            // If the plug is already seated when the reassembly step renders,
+            // the "insert by hand" instruction verifies automatically.
+            try {
+                if (currentStepIndex === 3 && typeof window.checkBattery === 'function'
+                    && window.checkBattery() && !window.checkBattery().removed) {
+                    markInstructionDone(3, 0);
+                }
+            } catch (e) {}
+
+            // If the coil and connector are already refitted when the final
+            // step renders, the refit instruction verifies automatically.
+            try {
+                if (currentStepIndex === 4 && typeof removedItems !== 'undefined'
+                    && !Array.from(removedItems.keys()).some((k) => typeof k === 'number')) {
+                    markInstructionDone(4, 0);
+                }
+            } catch (e) {}
+
+            // On the inspect step the engine-sound card becomes a
+            // "Check Spark Plug" card that opens the inspection modal.
+            try {
+                const onInspectStep = currentStepIndex === 2;
+                const swipeLabel = document.getElementById('engineSwipeLabel');
+                const swipeTitle = document.getElementById('engineSwipeTitle');
+                const swipeDesc = document.getElementById('engineSwipeDesc');
+                const swipeState = document.getElementById('engineSoundState');
+                const swipeSwitch = document.querySelector('.sound-switch');
+                const checkBtn = document.getElementById('checkSparkPlugBtn');
+                if (swipeLabel) swipeLabel.textContent = onInspectStep ? 'Spark Plug' : 'Engine Swipe';
+                if (swipeTitle) swipeTitle.textContent = onInspectStep ? 'Check Spark Plug' : 'Engine sound';
+                if (swipeDesc) swipeDesc.textContent = onInspectStep
+                    ? 'Inspect the plug tip — keep or remove it.'
+                    : 'Starts ON — switch OFF to service safely.';
+                if (swipeState) swipeState.style.display = onInspectStep ? 'none' : '';
+                if (swipeSwitch) swipeSwitch.style.display = onInspectStep ? 'none' : '';
+                if (checkBtn) checkBtn.style.display = onInspectStep ? 'flex' : 'none';
+            } catch (e) {}
+
+            // Persist the step position — every navigation updates the save.
+            try { scheduleProgressSave(); } catch (e) {}
 
             // Update progress
             const pct = Math.round((currentStepIndex / totalSteps) * 100);
@@ -3062,39 +3374,34 @@
                 if (currentStepIndex === 0) {
                     inspectionSection.style.display = 'block';
                     if (instructionsSection) instructionsSection.style.display = 'none';
+                    // Restore verified state — inspection items persist in stepInstrDone[0]
+                    const inspectDone = (window.stepInstrDone && window.stepInstrDone[0]) || [];
+                    document.querySelectorAll('#inspectionList li').forEach((li, i) => {
+                        li.classList.toggle('done', !!inspectDone[i]);
+                    });
                 } else {
                     inspectionSection.style.display = 'none';
                     if (instructionsSection) instructionsSection.style.display = 'block';
                 }
             }
 
-            // Show mix area only on step 2 (index 1)
+            // The baking-soda + water mix station is a battery-cleaning
+            // process and stays hidden in the spark plug simulation.
             const mixDrop = document.getElementById('mixDropZone');
-            if (mixDrop) mixDrop.style.display = (currentStepIndex === 1) ? 'flex' : 'none';
+            if (mixDrop) mixDrop.style.display = 'none';
 
-            // Show/hide Step 2 Battery Replacement Diagnostic Status indicator
+            // Show/hide Spark Plug Status indicator on the inspect step
             const statusIndicator = document.getElementById('batteryStatusIndicator');
             if (statusIndicator) {
-                if (currentStepIndex === 1) {
+                if (currentStepIndex === 2) {
                     statusIndicator.style.display = 'block';
                     const valueEl = document.getElementById('batteryStatusValue');
                     if (valueEl) {
-                        if (window.batteryNeedsReplacement) {
-                            valueEl.innerHTML = '<span style="color:#dc2626;">REPLACE BATTERY (Health: 42%)</span>';
-                        } else {
-                            valueEl.innerHTML = '<span style="color:#22c55e;">GOOD (Health: 88%)</span>';
-                        }
+                        valueEl.innerHTML = '<span style="color:#dc2626;">WORN ELECTRODE — REPLACE</span>';
                     }
                 } else {
                     statusIndicator.style.display = 'none';
                 }
-            }
-
-            // Update battery hover action label: CLEAN BATTERY on Step 2, otherwise CHECK BATTERY
-            const btnCheck = document.getElementById('btnCheckBattery');
-            const btnLabel = document.getElementById('btnCheckBatteryLabel');
-            if (btnLabel) {
-                btnLabel.textContent = (currentStepIndex === 1) ? 'CLEAN BATTERY' : 'CHECK BATTERY';
             }
 
             // Disable battery tool in tools area for steps 1, 4, and 5 (indices 0, 3, 4)
@@ -3113,97 +3420,234 @@
                 console.warn('Failed to update battery tool state', e);
             }
 
-        }
+            // Parts covering the spark plug are clickable only on the
+            // inspection step so the plug can be exposed and seen.
+            try {
+                if (window.setPlugCoverEnabled) window.setPlugCoverEnabled(currentStepIndex === 2);
+            } catch (e) {}
 
-        // Handle checkbox changes for visual feedback
-        document.querySelectorAll('.inspect-check').forEach(cb => {
-            cb.addEventListener('change', () => {
-                // Visual feedback
-                const label = cb.closest('label');
-                if (cb.checked) {
-                    label.style.background = '#dbeafe';
-                    label.style.border = '1px solid #93c5fd';
-                } else {
-                    label.style.background = '#f9fafb';
-                    label.style.border = 'none';
-                }
-            });
-        });
+            // The battery body stands in for the plug only while a step
+            // actually services it (remove / inspect / install) — on every
+            // other step the car battery is just set dressing: no hover tip,
+            // no click, no lift-out.
+            window.__batteryBodyEnabled = (currentStepIndex >= 1 && currentStepIndex <= 3);
+
+            // Reflect which tools are usable on the current step
+            try {
+                const usable = {
+                    'gloves-model': [0],
+                    'goggles-model': [0],
+                    'socket-model': [1, 3],
+                    'sparkplug-model': [3],
+                    'feeler-model': [2],
+                    'papertowel-model': [0],
+                    'water-model': [],
+                    'bowl-model': []
+                };
+                Object.entries(usable).forEach(([id, steps]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.cursor = steps.includes(currentStepIndex) ? 'pointer' : 'not-allowed';
+                });
+            } catch (e) {
+                console.warn('Failed to update tool availability', e);
+            }
+
+            // Previous Step is disabled on the first step so its state is
+            // obvious instead of a dead click.
+            const prevBtn = document.querySelector('.step-nav-btn.prev');
+            if (prevBtn) {
+                const isFirst = currentStepIndex === 0;
+                prevBtn.disabled = isFirst;
+                prevBtn.style.opacity = isFirst ? '0.45' : '1';
+                prevBtn.style.cursor = isFirst ? 'not-allowed' : 'pointer';
+            }
+
+        }
 
         // Wire Next Step button
         document.getElementById('nextStepBtn').addEventListener('click', () => {
-            // Identify unchecked checkboxes as mistakes
+            // Identify unverified inspection items as mistakes
             if (currentStepIndex === 0) {
                 // Clear all mistakes for Step 1
                 simulationTracker.steps[0].mistakes = [];
-                const checkboxes = document.querySelectorAll('.inspect-check');
-                checkboxes.forEach(cb => {
-                    if (!cb.checked) {
-                        const labelText = cb.closest('label').querySelector('span').textContent.trim();
-                        simulationTracker.addMistake(`Missed inspection: ${labelText}`, 0);
+                document.querySelectorAll('#inspectionList li').forEach(li => {
+                    if (!li.classList.contains('done')) {
+                        simulationTracker.addMistake(`Missed inspection: ${li.textContent.trim()}`, 0);
                     }
                 });
-                
-                // Check if battery is critical but user didn't mark it for replacement
-                if (window.batteryNeedsReplacement) {
-                    const cracksChecked = document.querySelector('.inspect-check[data-index="1"]')?.checked;
-                    if (!cracksChecked) {
-                        simulationTracker.addMistake('Critical battery condition not addressed: Battery has cracks/bulging/leaks and needs replacement. If not replaced, the battery may fail to start the vehicle, cause electrical system issues, or pose safety risks from acid leaks.', 0);
-                    }
-                }
-            } else if (currentStepIndex === 1 || currentStepIndex === 2) {
-                // Clear only previous unfinished task mistakes so we don't duplicate them
-                simulationTracker.steps[currentStepIndex].mistakes = simulationTracker.steps[currentStepIndex].mistakes.filter(
-                    m => !m.startsWith('Unfinished task:')
-                );
-                const instrList = document.getElementById('instrList');
-                if (instrList) {
-                    const items = instrList.querySelectorAll('li');
-                    items.forEach(li => {
-                        if (!li.classList.contains('done')) {
-                            const labelText = li.textContent.trim();
-                            simulationTracker.addMistake(`Unfinished task: ${labelText}`, currentStepIndex);
-                        }
-                    });
-                }
-                
-                // Check if battery needs replacement but wasn't replaced in Step 2
-                if (currentStepIndex === 1 && window.batteryNeedsReplacement) {
-                    const instructionsDone = window.stepInstrDone?.[1] || [];
-                    const batteryRemoved = instructionsDone[2]; // Index 2 is "Remove the old battery"
-                    const batteryInstalled = instructionsDone[3]; // Index 3 is "Drag and drop the new battery"
-                    
-                    if (!batteryRemoved || !batteryInstalled) {
-                        simulationTracker.addMistake('Critical battery not replaced: The battery has critical damage (cracks/bulging/leaks) and must be replaced. Continuing with a damaged battery will result in the vehicle not starting, unreliable electrical performance, and potential safety hazards from acid leakage or battery explosion.', 1);
-                    }
-                }
-            } else if (currentStepIndex === 3 || currentStepIndex === 4) {
-                // Clear all mistakes for checklist steps (Step 4 & 5)
+            } else if (currentStepIndex >= 1) {
+                // Clear all mistakes for the step and re-evaluate unfinished items
                 simulationTracker.steps[currentStepIndex].mistakes = [];
-                const checkboxes = document.querySelectorAll('#instrList input[type="checkbox"]');
-                checkboxes.forEach(cb => {
-                    if (!cb.checked) {
-                        const labelText = cb.closest('label').querySelector('span').textContent.trim();
-                        simulationTracker.addMistake(`Missed instruction: ${labelText}`, currentStepIndex);
+                // Steps 2-5 are action-verified — unfinished items are li's not marked done
+                document.querySelectorAll('#instrList li').forEach(li => {
+                    if (!li.classList.contains('done')) {
+                        simulationTracker.addMistake(`Missed instruction: ${li.textContent.trim()}`, currentStepIndex);
                     }
                 });
             }
             openStepReview();
         });
 
+        // Inspect-step card button — opens the plug tip inspection modal,
+        // or the gap checker once the tip reading is done.
+        const checkSparkPlugBtn = document.getElementById('checkSparkPlugBtn');
+        if (checkSparkPlugBtn) {
+            checkSparkPlugBtn.addEventListener('click', () => {
+                if (currentStepIndex !== 2) return;
+                const d = (window.stepInstrDone && window.stepInstrDone[2]) || [];
+                if (!d[0]) openBatteryInspectModal();
+                else openBatteryElectrolyteModal('sparkplug_' + Date.now());
+            });
+        }
+
         const engineSwipeToggle = document.getElementById('engineSwipeToggle');
         if (engineSwipeToggle) {
             engineSwipeToggle.addEventListener('change', () => {
                 setEngineSwipeEnabled(engineSwipeToggle.checked);
+                // Step 1 inspection item: engine OFF/cool state tracks the toggle
+                if (typeof window.syncEngineOffChecklist === 'function') window.syncEngineOffChecklist();
+                // Step 5 (index 4): starting the engine runs the idle checks;
+                // shutting it off finishes the cleanup and service log
+                if (engineSwipeToggle.checked && typeof currentStepIndex !== 'undefined' && currentStepIndex === 4) {
+                    // The coil and electrical connector must be refitted before
+                    // the engine can be started — click them in Removed Items.
+                    const capsStillOut = Array.from(removedItems.keys())
+                        .some((k) => typeof k === 'number');
+                    if (capsStillOut) {
+                        engineSwipeToggle.checked = false;
+                        setEngineSwipeEnabled(false);
+                        showSequenceWarning('Refit the ignition coil and reconnect the electrical connector first — click them in Removed Items.');
+                        return;
+                    }
+                    markInstructionDone(4, 1); // Start the engine and let it idle
+                    showPrepToast('Engine started — letting it idle.');
+                    setTimeout(() => {
+                        if (!engineSwipeEnabled || currentStepIndex !== 4) return;
+                        showPrepToast('Idle sounds smooth and even.');
+                    }, 2500);
+                    setTimeout(() => {
+                        if (!engineSwipeEnabled || currentStepIndex !== 4) return;
+                        markInstructionDone(4, 2); // Check for misfires or rough running
+                        try { window.recordSimulationEvent('Engine started successfully — smooth idle, no misfires.'); } catch (e) {}
+                        showPrepToast('No misfires or rough running detected.');
+                    }, 5000);
+                }
+                if (!engineSwipeToggle.checked && typeof currentStepIndex !== 'undefined' && currentStepIndex === 4) {
+                    const d = (window.stepInstrDone && window.stepInstrDone[4]) || [];
+                    if (d[1]) {
+                        markInstructionDone(4, 3); // Shut off the engine and clean up tools
+                        showPrepToast('Engine shut off — tools cleaned up.');
+                    }
+                }
             });
         }
 
+        // Step 3 (index 2): parts that physically cover the spark plug can be
+        // removed so the plug becomes visible — they land in Removed Items.
+        function removePlugCover(idx, partName) {
+            try { window.hidePlugCoverAt(idx); } catch (err) {}
+            window.__plugCoversRemoved = true;
+            removedItems.set('cover_' + idx, { type: 'cover', name: partName, index: idx });
+            updateRemovedItemsContainer();
+            showPrepToast(partName + ' removed — stored in Removed Items.');
+        }
+
+        // Hovering a covering part on Step 3 opens a "Remove <part>?" yes/no
+        // modal; clicking it does the same. Only one modal shows at a time.
+        function promptPlugCoverRemoval(e) {
+            hidePartHoverTip();
+            if (currentStepIndex !== 2) {
+                showSequenceWarning('Covering parts are removed during the inspection step.');
+                return;
+            }
+            if (document.getElementById('toolUseCard')) return;
+            const idx = e.detail ? e.detail.index : -1;
+            const partName = (e.detail && e.detail.name) ? e.detail.name : 'covering part';
+            showToolUseCard('Remove "' + partName + '"?', 'This part covers the spark plug. Remove it so the plug is exposed and visible?', () => {
+                removePlugCover(idx, partName);
+            }, 'Yes', 'No');
+        }
+        // hover shows the part name beside the cursor; the remove modal opens
+        // only on click
+        window.addEventListener('plugCoverClicked', promptPlugCoverRemoval);
+        window.addEventListener('plugCoverHovered', function (e) {
+            if (currentStepIndex !== 2) return;
+            if (document.getElementById('toolUseCard')) return;
+            if (e.detail) showPartHoverTip(e.detail.name || 'Covering part', e.detail.x, e.detail.y);
+        });
+        window.addEventListener('plugCoverHoverEnd', hidePartHoverTip);
+
+        // Hover action card for the spark plug — on the inspect step it pops
+        // beside the cursor with Keep Plug / Remove Plug options.
+        const plugActionCard = document.createElement('div');
+        plugActionCard.style.cssText = 'display:none;position:fixed;z-index:99998;font-family:\'Nunito\',sans-serif;';
+        plugActionCard.innerHTML = `
+            <div style="background:#fff;border-radius:12px;padding:12px 14px;width:190px;box-shadow:0 8px 30px rgba(0,0,0,.35);border:2px solid #2563eb;">
+                <div style="font-family:'Rajdhani',sans-serif;font-size:.9rem;font-weight:700;color:#1a1a2e;line-height:1;">Spark Plug</div>
+                <div style="font-size:.62rem;color:#6b7280;margin:4px 0 10px;">Keep or remove this plug?</div>
+                <div style="display:flex;gap:6px;">
+                    <button id="plugKeepBtn" style="flex:1;padding:8px;border:none;border-radius:8px;background:#2563eb;color:#fff;font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">KEEP</button>
+                    <button id="plugRemoveBtn" style="flex:1;padding:8px;border:none;border-radius:8px;background:#dc2626;color:#fff;font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">REMOVE</button>
+                </div>
+            </div>`;
+        document.body.appendChild(plugActionCard);
+
+        plugActionCard.querySelector('#plugKeepBtn').addEventListener('click', () => {
+            plugActionCard.style.display = 'none';
+            const d = (window.stepInstrDone && window.stepInstrDone[2]) || [];
+            if (!d[0]) {
+                try { markInstructionDone(2, 0); } catch (e) {}
+                try { window.recordSimulationEvent('Plug tip condition inspected — readings recorded successfully.'); } catch (e) {}
+                showPrepToast('Plug kept — run the gap check next.');
+            }
+        });
+        plugActionCard.querySelector('#plugRemoveBtn').addEventListener('click', () => {
+            plugActionCard.style.display = 'none';
+            try { confirmInspectionReplace(); } catch (e) {}
+        });
+
+        window.addEventListener('sparkPlugHovered', (e) => {
+            if (currentStepIndex !== 2 || !e.detail) { plugActionCard.style.display = 'none'; return; }
+            // Tip already inspected — the options no longer apply, just label it.
+            const d = (window.stepInstrDone && window.stepInstrDone[2]) || [];
+            if (d[0]) {
+                plugActionCard.style.display = 'none';
+                showPartHoverTip(e.detail.name || 'Spark Plug', e.detail.x, e.detail.y);
+                return;
+            }
+            plugActionCard.style.left = (e.detail.x + 14) + 'px';
+            plugActionCard.style.top = (e.detail.y + 10) + 'px';
+            plugActionCard.style.display = 'block';
+        });
+        window.addEventListener('sparkPlugHoverEnd', () => {
+            hidePartHoverTip();
+            setTimeout(() => {
+                if (!plugActionCard.matches(':hover')) plugActionCard.style.display = 'none';
+            }, 250);
+        });
+
+        // Clicking the seated spark plug on the inspect step pops the same
+        // Keep / Remove option card right beside the cursor.
+        window.addEventListener('sparkPlugClicked', (e) => {
+            if (currentStepIndex !== 2) return;
+            if (document.getElementById('toolUseCard')) return;
+            const d = (window.stepInstrDone && window.stepInstrDone[2]) || [];
+            if (d[0]) { openBatteryElectrolyteModal('sparkplug_' + Date.now()); return; }
+            if (e.detail && typeof e.detail.x === 'number') {
+                plugActionCard.style.left = (e.detail.x + 14) + 'px';
+                plugActionCard.style.top = (e.detail.y + 10) + 'px';
+            }
+            plugActionCard.style.display = 'block';
+        });
+
         // Wire Previous Step button
         document.querySelector('.step-nav-btn.prev').addEventListener('click', () => {
-            if (currentStepIndex > 0) {
-                currentStepIndex--;
-                updateStepUI();
+            if (currentStepIndex <= 0) {
+                showPrepToast('You are already on the first step.');
+                return;
             }
+            currentStepIndex--;
+            updateStepUI();
         });
 
         // Initialize UI on page load
@@ -3223,8 +3667,7 @@
                 return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             };
 
-            let elapsedSeconds = 0;
-            window.__practiceElapsedSeconds = 0;
+            let elapsedSeconds = window.__practiceElapsedSeconds || 0;
             timerEl.textContent = formatTime(elapsedSeconds);
 
             if (window.__practiceTimerInterval) {
@@ -3246,184 +3689,75 @@
         }
     </script>
 
-    <!-- Battery Terminal Cap Hover Card (appears on hover) -->
-    <div id="capHoverCard"
-        style="display:none;position:fixed;z-index:99998;pointer-events:auto;font-family:'Nunito',sans-serif;transition:opacity 0.2s;">
-        <div
-            style="background:#fff;border-radius:12px;padding:12px 16px;width:220px;box-shadow:0 8px 30px rgba(0,0,0,0.35);border:2px solid #2563eb;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                <div id="hoverIconBg"
-                    style="width:28px;height:28px;border-radius:8px;background:#dc2626;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                </div>
-                <div>
-                    <div id="hoverTitle"
-                        style="font-family:'Rajdhani',sans-serif;font-size:0.9rem;font-weight:700;color:#1a1a2e;line-height:1;">
-                        Positive (+)</div>
-                    <div id="hoverStatus" style="font-size:0.6rem;color:#6b7280;">Cap On</div>
-                </div>
-            </div>
+    <!-- Battery Terminal Cap Hover Card removed — cap clicks open a
+         Remove/Refit "<part>" yes/no modal instead of a hover-chasing card -->
 
-            <div style="display:flex;flex-direction:column;gap:6px;">
-                <button id="btnHoverRemove" onclick="hoverCapAction('remove')"
-                    style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:none;border-radius:8px;background:#dc2626;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:700;transition:all 0.2s;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <path d="M18 6L6 18" />
-                        <path d="M6 6l12 12" />
-                    </svg>
-                    REMOVE CAP
-                </button>
-
-                <button id="btnHoverReplace" onclick="hoverCapAction('replace')"
-                    style="display:none;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:none;border-radius:8px;background:#16a34a;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:700;transition:all 0.2s;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6" />
-                        <path d="M12 12L20 4" />
-                        <path d="M16 4h4v4" />
-                    </svg>
-                    REPLACE CAP
-                </button>
-            </div>
-
-            <div
-                style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid #2563eb;">
-            </div>
-        </div>
-    </div>
-    <style>
-        #capHoverCard button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        #btnHoverRemove:hover {
-            background: #b91c1c !important;
-        }
-
-        #btnHoverReplace:hover {
-            background: #15803d !important;
-        }
-
-        #batteryHoverCard button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        #btnCheckBattery:hover {
-            background: #1d4ed8 !important;
-        }
-
-        #btnRemoveBattery:hover {
-            background: #b91c1c !important;
-        }
-
-        #btnReplaceBattery:hover {
-            background: #15803d !important;
-        }
-    </style>
-
-    <!-- Battery Main Body Hover Card (appears on hover) -->
-    <div id="batteryHoverCard"
-        style="display:none;position:fixed;z-index:99998;pointer-events:auto;font-family:'Nunito',sans-serif;transition:opacity 0.2s;">
-        <div
-            style="background:#fff;border-radius:12px;padding:12px 16px;width:220px;box-shadow:0 8px 30px rgba(0,0,0,0.35);border:2px solid #2563eb;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                <div id="batteryIconBg"
-                    style="width:28px;height:28px;border-radius:8px;background:#2563eb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                </div>
-                <div>
-                    <div id="batteryTitle"
-                        style="font-family:'Rajdhani',sans-serif;font-size:0.9rem;font-weight:700;color:#1a1a2e;line-height:1;">
-                        Battery</div>
-                    <div id="batteryStatus" style="font-size:0.6rem;color:#6b7280;">In Position</div>
-                </div>
-            </div>
-
-            <div style="display:flex;flex-direction:column;gap:6px;">
-                <button id="btnCheckBattery" onclick="hoverBatteryAction('check')"
-                    style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:none;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:700;transition:all 0.2s;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M9 12l2 2 4-4" />
-                    </svg>
-                    <span id="btnCheckBatteryLabel">CHECK BATTERY</span>
-                </button>
-
-                <button id="btnRemoveBattery" onclick="hoverBatteryAction('remove')"
-                    style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:none;border-radius:8px;background:#dc2626;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:700;transition:all 0.2s;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <path d="M18 6L6 18" />
-                        <path d="M6 6l12 12" />
-                    </svg>
-                    REMOVE BATTERY
-                </button>
-
-                <button id="btnReplaceBattery" onclick="hoverBatteryAction('replace')"
-                    style="display:none;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:none;border-radius:8px;background:#16a34a;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:700;transition:all 0.2s;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5">
-                        <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6" />
-                        <path d="M12 12L20 4" />
-                        <path d="M16 4h4v4" />
-                    </svg>
-                    REPLACE BATTERY
-                </button>
-            </div>
-
-            <div
-                style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid #2563eb;">
-            </div>
-        </div>
-    </div>
+    <!-- Battery/plug hover card removed — hover shows a small name label and
+         clicks open step-gated yes/no modals instead -->
 
     <!-- Battery Physical Inspection Modal -->
     <div id="batteryInspectModal"
         style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">
         <div
             style="background:#fff;border-radius:16px;padding:24px;width:400px;max-width:94vw;box-shadow:0 24px 60px rgba(0,0,0,0.35);text-align:center;">
+            <!-- checking phase: shown first, then the readings reveal -->
+            <div id="plugCheckingPhase" style="padding:26px 0;">
+                <div class="plug-check-spinner"
+                    style="width:56px;height:56px;border-radius:50%;border:5px solid #e5e7eb;border-top-color:#2563eb;margin:0 auto 20px;">
+                </div>
+                <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.25rem;font-weight:700;color:#1a1a2e;margin-bottom:6px;">
+                    Checking the plug tip...</h3>
+                <p style="font-size:0.8rem;color:#6b7280;">Reading electrode condition</p>
+            </div>
+            <div id="plugInspectResults" style="display:none;">
             <div style="width:64px;height:64px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
             </div>
-            <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Physical Casing Inspection</h3>
+            <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Spark Plug Inspection</h3>
             <p style="font-size:0.85rem;color:#6b7280;line-height:1.5;margin-bottom:20px;">
-                The battery casing has been thoroughly inspected. The casing is completely intact with <strong>no cracks, bulging, or acid leaks</strong>.
+                The removed plug has been inspected. The electrode tip is <strong>heavily worn with carbon deposits</strong> — replacement is recommended.
             </p>
-            
+
             <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:20px;text-align:left;display:flex;flex-direction:column;gap:10px;">
                 <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
-                    <span style="color:#16a34a;font-weight:bold;">✓</span>
-                    <span>No visible casing cracks or damage</span>
+                    <span style="color:#dc2626;font-weight:bold;">✗</span>
+                    <span>Tip is dark and sooty — not the normal light brown/gray</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
+                    <span style="color:#dc2626;font-weight:bold;">✗</span>
+                    <span>Electrode shows visible wear — gap out of spec</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
                     <span style="color:#16a34a;font-weight:bold;">✓</span>
-                    <span>No bulging or swelling of the side walls</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:#374151;">
-                    <span style="color:#16a34a;font-weight:bold;">✓</span>
-                    <span>No electrolyte/acid leaks around terminals or seams</span>
+                    <span>Insulator intact — no cracks or oil coating</span>
                 </div>
             </div>
 
-            <button onclick="closeBatteryInspectModal(true)"
-                style="width:100%;padding:12px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;transition:background 0.2s;">
-                Confirm Inspection
-            </button>
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeBatteryInspectModal(true)"
+                    style="flex:1;padding:12px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;transition:background 0.2s;">
+                    Keep Plug
+                </button>
+                <button onclick="confirmInspectionReplace()"
+                    style="flex:1;padding:12px;border:none;border-radius:10px;background:#dc2626;color:#fff;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;transition:background 0.2s;">
+                    Remove Plug
+                </button>
+            </div>
+            </div>
         </div>
     </div>
+
+    <style>
+        @keyframes plugCheckSpin {
+            to { transform: rotate(360deg); }
+        }
+        .plug-check-spinner {
+            animation: plugCheckSpin 0.9s linear infinite;
+        }
+    </style>
 
     <!-- Battery Check Modal - shows 3D model with clean/throw away options -->
     <div id="batteryCheckModal"
@@ -3536,14 +3870,14 @@
                     <div style="text-align:center;margin-bottom:10px;">
                         <div
                             style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;color:#60a5fa;margin:0;">
-                            ELECTROLYTE CHECKER</div>
-                        <div style="font-size:0.7rem;color:#94a3b8;">Automatic Level Detection</div>
+                            FEELER GAUGE</div>
+                        <div style="font-size:0.7rem;color:#94a3b8;">Electrode Gap Readings</div>
                     </div>
 
                     <!-- Cell 1 -->
                     <div style="background:#1e293b;border-radius:8px;padding:12px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                            <span style="font-size:0.75rem;color:#cbd5e1;font-weight:600;">Cell 1</span>
+                            <span style="font-size:0.75rem;color:#cbd5e1;font-weight:600;">Reading 1</span>
                             <span id="cell1Status" style="font-size:0.65rem;color:#22c55e;font-weight:700;">GOOD</span>
                         </div>
                         <div style="height:8px;background:#334155;border-radius:4px;overflow:hidden;">
@@ -3559,7 +3893,7 @@
                     <!-- Cell 2 -->
                     <div style="background:#1e293b;border-radius:8px;padding:12px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                            <span style="font-size:0.75rem;color:#cbd5e1;font-weight:600;">Cell 2</span>
+                            <span style="font-size:0.75rem;color:#cbd5e1;font-weight:600;">Reading 2</span>
                             <span id="cell2Status" style="font-size:0.65rem;color:#22c55e;font-weight:700;">GOOD</span>
                         </div>
                         <div style="height:8px;background:#334155;border-radius:4px;overflow:hidden;">
@@ -3575,7 +3909,7 @@
                     <!-- Cell 3 -->
                     <div style="background:#1e293b;border-radius:8px;padding:12px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                            <span style="font-size:0.75rem;color:#cbd5e1;font-weight:600;">Cell 3</span>
+                            <span style="font-size:0.75rem;color:#cbd5e1;font-weight:600;">Reading 3</span>
                             <span id="cell3Status" style="font-size:0.65rem;color:#eab308;font-weight:700;">LOW</span>
                         </div>
                         <div style="height:8px;background:#334155;border-radius:4px;overflow:hidden;">
@@ -3591,7 +3925,7 @@
                     <!-- Cell 4 -->
                     <div style="background:#1e293b;border-radius:8px;padding:12px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                            <span style="font-size:0.75rem;color:#cbd5e1;font-weight:600;">Cell 4</span>
+                            <span style="font-size:0.75rem;color:#cbd5e1;font-weight:600;">Reading 4</span>
                             <span id="cell4Status" style="font-size:0.65rem;color:#22c55e;font-weight:700;">GOOD</span>
                         </div>
                         <div style="height:8px;background:#334155;border-radius:4px;overflow:hidden;">
@@ -3628,8 +3962,8 @@
                 <div style="margin-bottom:8px;">
                     <h3
                         style="font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700;color:#1a1a2e;margin:0;">
-                        Battery Check</h3>
-                    <p style="font-size:0.75rem;color:#6b7280;margin:4px 0 0;">New battery inspection results</p>
+                        Plug Gap Check</h3>
+                    <p style="font-size:0.75rem;color:#6b7280;margin:4px 0 0;">Electrode gap measurements</p>
                 </div>
 
                 <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
@@ -3650,8 +3984,8 @@
                                 <path d="M16.24 7.76l2.83-2.83" />
                             </svg>
                         </div>
-                        <span style="font-size:0.8rem;font-weight:700;color:#374151;">Refill Electrolyte</span>
-                        <span style="font-size:0.6rem;color:#6b7280;">Top up low cells</span>
+                        <span style="font-size:0.8rem;font-weight:700;color:#374151;">Adjust Gap</span>
+                        <span style="font-size:0.6rem;color:#6b7280;">Bend electrode into spec</span>
                     </button>
 
                     <!-- Replace Battery Button -->
@@ -3665,8 +3999,8 @@
                                 <path d="M6 6l12 12" />
                             </svg>
                         </div>
-                        <span style="font-size:0.8rem;font-weight:700;color:#374151;">Replace Battery</span>
-                        <span style="font-size:0.6rem;color:#6b7280;">If levels critical</span>
+                        <span style="font-size:0.8rem;font-weight:700;color:#374151;">Replace Plug</span>
+                        <span style="font-size:0.6rem;color:#6b7280;">If gap out of spec</span>
                     </button>
 
                     <!-- Accept Battery Button -->
@@ -3679,8 +4013,8 @@
                                 <polyline points="20 6 9 17 4 12" />
                             </svg>
                         </div>
-                        <span style="font-size:0.8rem;font-weight:700;color:#374151;">Accept Battery</span>
-                        <span style="font-size:0.6rem;color:#6b7280;">Install is complete</span>
+                        <span style="font-size:0.8rem;font-weight:700;color:#374151;">Accept Plug</span>
+                        <span style="font-size:0.6rem;color:#6b7280;">Gap within spec</span>
                     </button>
                 </div>
 
@@ -3786,15 +4120,14 @@
             style="background:#fff;border-radius:12px;padding:18px;width:340px;box-shadow:0 18px 40px rgba(0,0,0,0.25);">
             <div
                 style="font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700;color:#111827;margin-bottom:8px;">
-                Add Water</div>
-            <div style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">Enter amount of water (ml) to add to the
-                bowl.</div>
+                Use Compressed Air</div>
+            <div style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">Enter burst duration (seconds) to blow
+                debris out of the plug wells.</div>
             <input id="waterAmountInput" type="number" min="0" value="30"
                 style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;">
             <div style="display:flex;gap:10px;">
                 <button id="btnWaterConfirm"
-                    style="flex:1;padding:10px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer;">Add
-                    Water</button>
+                    style="flex:1;padding:10px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer;">Spray</button>
                 <button id="btnWaterCancel"
                     style="flex:1;padding:10px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;color:#374151;cursor:pointer;">Cancel</button>
             </div>
@@ -3885,13 +4218,13 @@
         let currentCapIndex = null;
         let currentCapType = null;
 
-        // Hover card element
-        const capHoverCard = document.getElementById('capHoverCard');
+        // Cap hover card removed — clicks open a Remove/Refit modal instead
         let hoverCapIndex = null;
-        let isCardLocked = false; // Track if card is locked in position
-        let lastCardX = 0, lastCardY = 0; // Store position
 
-        // Require inspection completion helper
+        // Require inspection completion helper — plug-level actions
+        // (remove/replace/check) stay blocked until the safety step is done,
+        // but cap and locate interactions are allowed because they verify
+        // the inspection items themselves.
         function requireInspectionOrWarn() {
             if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
                 showSequenceWarning('Please complete the inspection checklist and proceed to the next step before performing this action.');
@@ -3900,89 +4233,155 @@
             return true;
         }
 
-        // Show card on hover (follows mouse)
-        window.onBatteryCapHover = function (capInfo, screenX, screenY) {
-            if (!requireInspectionOrWarn()) return;
-            if (isCardLocked) return; // Don't update if locked
-
-            hoverCapIndex = capInfo.index;
-            const isPositive = capInfo.type === 'positive';
-
-            // Update content
-            document.getElementById('hoverTitle').textContent = isPositive ? 'Positive (+)' : 'Negative (-)';
-            document.getElementById('hoverStatus').textContent = capInfo.removed ? 'Cap Removed' : 'Cap On';
-            document.getElementById('hoverIconBg').style.background = isPositive ? '#dc2626' : '#374151';
-
-            // Border color matches type
-            capHoverCard.querySelector('div > div').style.borderColor = isPositive ? '#dc2626' : '#374151';
-            capHoverCard.querySelector('div > div > div:last-child').style.borderBottomColor = isPositive ? '#dc2626' : '#374151';
-
-            // Show/hide appropriate buttons
-            document.getElementById('btnHoverRemove').style.display = capInfo.removed ? 'none' : 'flex';
-            document.getElementById('btnHoverReplace').style.display = capInfo.removed ? 'flex' : 'none';
-
-            // Position and show - closer to the cap
-            capHoverCard.style.display = 'block';
-            capHoverCard.style.opacity = '1';
-            lastCardX = screenX - 110; // Center horizontally (220px / 2)
-            lastCardY = screenY - 80;  // Closer to cap (was 140)
-            capHoverCard.style.left = lastCardX + 'px';
-            capHoverCard.style.top = lastCardY + 'px';
-        };
-
-        // Lock card in fixed position when clicked
-        window.onBatteryCapClicked = function (capInfo, screenX, screenY) {
-            if (!requireInspectionOrWarn()) return;
-            if (!isCardLocked) {
-                // First click - lock position closer to cap
-                isCardLocked = true;
-                lastCardX = screenX - 110; // Center horizontally
-                lastCardY = screenY - 80;  // Closer to cap
-                capHoverCard.style.left = lastCardX + 'px';
-                capHoverCard.style.top = lastCardY + 'px';
-            }
-        };
-
-        // Hide card on hover end (only if not locked)
-        window.onBatteryCapHoverEnd = function () {
-            if (isCardLocked) return;
-            capHoverCard.style.opacity = '0';
-            setTimeout(() => {
-                if (!isCardLocked && capHoverCard.style.opacity === '0') {
-                    capHoverCard.style.display = 'none';
-                    hoverCapIndex = null;
-                }
-            }, 200);
-        };
-
-        // Unlock and hide card
-        function unlockAndHideCard() {
-            isCardLocked = false;
-            capHoverCard.style.opacity = '0';
-            setTimeout(() => {
-                if (!isCardLocked) {
-                    capHoverCard.style.display = 'none';
-                    hoverCapIndex = null;
-                }
-            }, 200);
+        // Floating hover label — shows the part name beside the cursor while
+        // hovering. The Remove/Refit yes/no modal only opens on CLICK.
+        const partHoverTip = document.createElement('div');
+        partHoverTip.style.cssText = [
+            'position:fixed', 'z-index:99997', 'pointer-events:none', 'display:none',
+            'background:rgba(30,41,59,.95)', 'color:#fff', 'padding:5px 10px',
+            'border-radius:6px', "font-family:'Nunito',sans-serif", 'font-size:.7rem',
+            'font-weight:700', 'box-shadow:0 4px 12px rgba(0,0,0,.3)', 'white-space:nowrap'
+        ].join(';');
+        document.body.appendChild(partHoverTip);
+        function showPartHoverTip(text, x, y) {
+            if (!text) return;
+            partHoverTip.textContent = text;
+            partHoverTip.style.left = (x + 16) + 'px';
+            partHoverTip.style.top = (y - 12) + 'px';
+            partHoverTip.style.display = 'block';
+        }
+        function hidePartHoverTip() {
+            partHoverTip.style.display = 'none';
         }
 
-        // Close cap card when clicking anywhere outside
-        document.addEventListener('click', function (e) {
-            if (isCardLocked && !capHoverCard.contains(e.target)) {
-                unlockAndHideCard();
+        // Small floating action card — clicking a cap pops this beside the
+        // part with Remove/Refit + Cancel buttons.
+        const capActionCard = document.createElement('div');
+        capActionCard.style.cssText = [
+            'display:none', 'position:fixed', 'z-index:99998',
+            "font-family:'Nunito',sans-serif"
+        ].join(';');
+        capActionCard.innerHTML = `
+            <div style="background:#fff;border-radius:12px;padding:12px 16px;width:210px;box-shadow:0 8px 30px rgba(0,0,0,.35);border:2px solid #2563eb;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <div id="capActionIcon" style="width:28px;height:28px;border-radius:8px;background:#dc2626;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <div>
+                        <div id="capActionTitle" style="font-family:'Rajdhani',sans-serif;font-size:.9rem;font-weight:700;color:#1a1a2e;line-height:1;">Part</div>
+                        <div id="capActionStatus" style="font-size:.6rem;color:#6b7280;">On</div>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <button id="capActionBtn" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:none;border-radius:8px;background:#dc2626;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.75rem;font-weight:700;">REMOVE</button>
+                    <button id="capCancelBtn" style="display:flex;align-items:center;justify-content:center;padding:8px 12px;border:none;border-radius:8px;background:#e5e7eb;color:#374151;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.75rem;font-weight:700;">CANCEL</button>
+                </div>
+            </div>`;
+        document.body.appendChild(capActionCard);
+
+        let lastCapHoverX = 0, lastCapHoverY = 0;
+        let capActionInfo = null;
+        let capCardJustOpened = false; // ignore the click that opened the card
+
+        function hideCapActionCard() {
+            capActionCard.style.display = 'none';
+            capActionInfo = null;
+        }
+
+        function showCapActionCard(capInfo) {
+            capActionInfo = capInfo;
+            const isPositive = capInfo.type === 'positive';
+            const partName = isPositive ? 'Ignition Coil' : 'Electrical Connector';
+            document.getElementById('capActionTitle').textContent = partName;
+            document.getElementById('capActionStatus').textContent = capInfo.removed ? 'Removed' : 'Installed';
+            document.getElementById('capActionIcon').style.background = isPositive ? '#dc2626' : '#374151';
+            const btn = document.getElementById('capActionBtn');
+            btn.textContent = capInfo.removed ? 'REFIT' : 'REMOVE';
+            btn.style.background = capInfo.removed ? '#16a34a' : '#dc2626';
+            capActionCard.querySelector('div').style.borderColor = isPositive ? '#dc2626' : '#374151';
+            capActionCard.style.display = 'block';
+            capActionCard.style.left = (lastCapHoverX + 18) + 'px';
+            capActionCard.style.top = Math.max(8, lastCapHoverY - 90) + 'px';
+        }
+
+        document.getElementById('capActionBtn').addEventListener('click', () => {
+            if (!capActionInfo) return;
+            const act = capActionInfo.removed ? 'replace' : 'remove';
+            hideCapActionCard();
+            hoverCapAction(act);
+        });
+        document.getElementById('capCancelBtn').addEventListener('click', hideCapActionCard);
+        document.addEventListener('click', (e) => {
+            // the cap click that opened the card bubbles here too — ignore it
+            if (capCardJustOpened) return;
+            if (capActionCard.style.display === 'block' && !capActionCard.contains(e.target)) {
+                hideCapActionCard();
             }
         });
 
-        // Battery hover card element
-        const batteryHoverCard = document.getElementById('batteryHoverCard');
-        let isBatteryCardLocked = false;
-        let lastBatteryCardX = 0, lastBatteryCardY = 0;
+        // keep the card open while the pointer is on it; a short delay on
+        // hover-end lets the user reach the buttons before it hides
+        let capCardHideTimer = null;
+        capActionCard.addEventListener('mouseenter', () => { clearTimeout(capCardHideTimer); });
+        capActionCard.addEventListener('mouseleave', hideCapActionCard);
+
+        // Hovering a cap on its active step shows the Remove/Cancel card
+        // beside the part; on other steps just the name label shows.
+        window.onBatteryCapHover = function (capInfo, screenX, screenY) {
+            hoverCapIndex = capInfo.index;
+            lastCapHoverX = screenX;
+            lastCapHoverY = screenY;
+            clearTimeout(capCardHideTimer);
+            const allowed = capInfo.removed ? (currentStepIndex === 3) : (currentStepIndex === 1);
+            if (!allowed || document.getElementById('toolUseCard')) {
+                hidePartHoverTip();
+                return;
+            }
+            hidePartHoverTip();
+            if (capActionCard.style.display !== 'block' ||
+                !capActionInfo || capActionInfo.index !== capInfo.index) {
+                showCapActionCard(capInfo);
+            }
+        };
+
+        window.onBatteryCapHoverEnd = function () {
+            hidePartHoverTip();
+            clearTimeout(capCardHideTimer);
+            capCardHideTimer = setTimeout(() => {
+                if (capActionCard.style.display === 'block') hideCapActionCard();
+            }, 350);
+        };
+
+        // the scene overwrites onBatteryCapClicked after model load and
+        // dispatches a 'batteryCapClicked' DOM event instead — listen for it
+        document.addEventListener('batteryCapClicked', function (e) {
+            const capInfo = e.detail;
+            if (!capInfo) return;
+            hoverCapIndex = capInfo.index;
+            hidePartHoverTip();
+            if (document.getElementById('toolUseCard')) return;
+            const allowed = capInfo.removed ? (currentStepIndex === 3) : (currentStepIndex === 1);
+            if (!allowed) {
+                // Wrong-step clicks get a direct warning, not a pointless card
+                showSequenceWarning(capInfo.removed
+                    ? 'Refit this part during the reassembly step.'
+                    : 'This part comes off during the removal step.');
+                return;
+            }
+            capCardJustOpened = true;
+            setTimeout(() => { capCardJustOpened = false; }, 0);
+            showCapActionCard(capInfo);
+        });
+
         let batteryInfo = null;
 
-        // Show battery card on hover only (no click locking)
-        // Only appears when both caps are removed first
+        // Hover = name label beside the part only; Step 3 also auto-runs the
+        // tip inspection modal while instruction 1 is pending.
+        let plugInspectPrompted = false; // suppress re-trigger while pointer stays on the plug
         window.onBatteryHover = function (info, screenX, screenY) {
+            // The battery body is inert outside the plug-service steps — it
+            // only stands in for the plug during remove / inspect / install.
+            if (window.__batteryBodyEnabled === false) return;
             if (!requireInspectionOrWarn()) return;
             // Check if both caps are removed - if not, return silently (no warning on hover)
             if (!areBothCapsRemoved()) {
@@ -3991,112 +4390,148 @@
 
             batteryInfo = info;
 
-            // Update content
-            document.getElementById('batteryTitle').textContent = 'Battery';
-            document.getElementById('batteryStatus').textContent = info.removed ? 'Removed' : 'In Position';
-
-            // Show/hide appropriate buttons
-            document.getElementById('btnRemoveBattery').style.display = info.removed ? 'none' : 'flex';
-            document.getElementById('btnReplaceBattery').style.display = info.removed ? 'flex' : 'none';
-
-            // Position and show - further away from battery (120px instead of 80px)
-            batteryHoverCard.style.display = 'block';
-            batteryHoverCard.style.opacity = '1';
-            lastBatteryCardX = screenX - 110; // centered horizontally
-            lastBatteryCardY = screenY - 120; // further above the cursor
-            batteryHoverCard.style.left = lastBatteryCardX + 'px';
-            batteryHoverCard.style.top = lastBatteryCardY + 'px';
-        };
-
-        // Hide battery card on hover end
-        window.onBatteryHoverEnd = function () {
-            batteryHoverCard.style.opacity = '0';
-            setTimeout(() => {
-                if (batteryHoverCard.style.opacity === '0') {
-                    batteryHoverCard.style.display = 'none';
+            // Step 3: hovering the plug runs the tip inspection directly —
+            // the modal shows "Checking the plug tip..." then the readings.
+            if (currentStepIndex === 2) {
+                const d = (window.stepInstrDone && window.stepInstrDone[2]) || [];
+                if (!d[0]) {
+                    hidePartHoverTip();
+                    if (!plugInspectPrompted) {
+                        plugInspectPrompted = true;
+                        openBatteryInspectModal();
+                    }
+                    return;
                 }
-            }, 200);
-        };
-
-        // Battery click - just keeps card visible while hovering, no lock
-        window.onBatteryClicked = function (info, screenX, screenY) {
-            if (!requireInspectionOrWarn()) return;
-            if (!areBothCapsRemoved()) {
-                showSequenceWarning('Remove both caps first!');
-                return;
             }
-            // No locking - card stays positioned where it was on hover
-            console.log('Battery clicked:', info);
+
+            if (document.getElementById('toolUseCard')) { hidePartHoverTip(); return; }
+            showPartHoverTip('Spark Plug', screenX, screenY);
         };
 
-        // Unlock and hide battery card
-        function unlockAndHideBatteryCard() {
-            isBatteryCardLocked = false;
-            batteryHoverCard.style.opacity = '0';
-            setTimeout(() => {
-                if (!isBatteryCardLocked) {
-                    batteryHoverCard.style.display = 'none';
-                }
-            }, 200);
-        }
+        window.onBatteryHoverEnd = function () {
+            plugInspectPrompted = false;
+            hidePartHoverTip();
+        };
 
-        // Handle battery actions from hover card
+        // The scene re-assigns window.onBatteryClicked after model load and
+        // dispatches a 'batteryClicked' DOM event — the click path below opens
+        // the right step-gated modal for the plug.
+        document.addEventListener('batteryClicked', function (e) {
+            if (window.__batteryBodyEnabled === false) return;
+            if (!requireInspectionOrWarn()) return;
+            const info = (window.checkBattery && typeof window.checkBattery === 'function') ? window.checkBattery() : (e.detail || null);
+            if (!info) return;
+            batteryInfo = info;
+            hidePartHoverTip();
+            if (document.getElementById('toolUseCard')) return;
+
+            if (!info.removed) {
+                // Plug still seated — removal only on the removal step
+                if (currentStepIndex === 1) {
+                    showToolUseCard('Remove "Spark Plug"?', 'Loosen it with the socket and lift it out of the plug well?', () => {
+                        hoverBatteryAction('remove');
+                    }, 'Yes', 'No');
+                } else if (currentStepIndex === 2) {
+                    hoverBatteryAction('check');
+                } else {
+                    showSequenceWarning('The plug comes out during the removal step.');
+                }
+            } else {
+                // Plug is out — installation only on the reassembly step
+                if (currentStepIndex === 3) {
+                    showToolUseCard('Install "Spark Plug"?', 'Hand-thread the plug back into the well?', () => {
+                        hoverBatteryAction('replace');
+                    }, 'Yes', 'No');
+                } else if (currentStepIndex === 2) {
+                    hoverBatteryAction('check');
+                } else {
+                    showSequenceWarning('The plug is installed during the reassembly step.');
+                }
+            }
+        });
+
+        // Handle battery actions from hover card — the battery body stands in
+        // for the spark plug being serviced; the two caps stand in for the
+        // electrical connector (negative) and the ignition coil (positive).
         function hoverBatteryAction(action) {
             if (!requireInspectionOrWarn()) return;
             if (!batteryInfo) return;
 
-            // Lock position when action is clicked
-            isBatteryCardLocked = true;
-
             switch (action) {
                 case 'check':
                     if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
-                        openBatteryInspectModal();
+                        showSequenceWarning('The spark plug is inspected after it has been lifted out — on a later step.');
                     } else if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 1) {
-                        openBatteryCheckModal();
+                        // Battery check/disposal modal disabled — battery
+                        // maintenance is not part of the spark plug procedure.
+                        showSequenceWarning('Inspect the plug after it has been lifted out — on the next step.');
+                    } else if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 2) {
+                        // Inspect & Gap step: tip inspection first, then the
+                        // electrode gap checker.
+                        const d = (window.stepInstrDone && window.stepInstrDone[2]) || [];
+                        if (!d[0]) {
+                            openBatteryInspectModal();
+                        } else {
+                            openBatteryElectrolyteModal('sparkplug_' + Date.now());
+                        }
                     } else {
                         // Open the electrolyte checker modal for other steps
-                        openBatteryElectrolyteModal('battery_' + Date.now());
+                        openBatteryElectrolyteModal('sparkplug_' + Date.now());
                     }
                     break;
 
                 case 'remove':
-                    // Require both caps removed before battery removal
+                    // Require both caps removed before pulling the plug
                     if (!areBothCapsRemoved()) {
-                        showSequenceWarning('Remove negative (-) and then positive (+) caps first!');
+                        showSequenceWarning('Disconnect the connector and remove the coil first!');
+                        return;
+                    }
+                    if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 1) {
+                        showSequenceWarning('The spark plug is only lifted out during the removal step.');
+                        return;
+                    }
+                    // The socket must be inserted into the plug well first
+                    const d1 = (window.stepInstrDone && window.stepInstrDone[1]) || [];
+                    if (!d1[3]) {
+                        showSequenceWarning('Insert the spark plug socket with extension first (use the Socket Wrench tool).');
                         return;
                     }
                     const result = window.toggleBattery();
-                    document.getElementById('batteryStatus').textContent = 'Removed';
-                    document.getElementById('btnRemoveBattery').style.display = 'none';
-                    document.getElementById('btnReplaceBattery').style.display = 'flex';
-                    document.getElementById('btnCheckBattery').style.display = 'none';
 
                     // Add to removed items container
-                    removedItems.set('battery', { type: 'battery', name: 'Battery', removed: true });
+                    removedItems.set('battery', { type: 'battery', name: 'Spark Plug', removed: true });
                     updateRemovedItemsContainer();
 
-                    // If battery replacement is active, mark instruction 3 (index 2) as done
-                    if (currentStepIndex === 1 && window.batteryNeedsReplacement) {
-                        try { markInstructionDone(1, 2); } catch (e) {}
+                    // Plug loosened and lifted out of the well
+                    if (currentStepIndex === 1) {
+                        try { window.recordSimulationEvent('Spark plug loosened and lifted out successfully.'); } catch (e) {}
+                        showPrepToast('Spark plug lifted out — stored in Removed Items.');
                     }
                     break;
 
                 case 'replace':
-                    // Only allow replacing battery if both caps are currently removed
+                    // The plug goes in while the coil and connector are still off
                     if (!(negativeCapRemoved && positiveCapRemoved)) {
-                        showSequenceWarning('Position the battery first only after both caps are removed.');
+                        showSequenceWarning('Insert the plug before refitting the coil and connector.');
+                        return;
+                    }
+                    if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 3) {
+                        showSequenceWarning('The new plug is installed during the reassembly step.');
                         return;
                     }
                     window.toggleBattery();
-                    document.getElementById('batteryStatus').textContent = 'In Position';
-                    document.getElementById('btnRemoveBattery').style.display = 'flex';
-                    document.getElementById('btnReplaceBattery').style.display = 'none';
-                    document.getElementById('btnCheckBattery').style.display = 'flex';
+                    window.batteryNeedsReplacement = false;
 
                     // Remove from container
                     removedItems.delete('battery');
                     updateRemovedItemsContainer();
+
+                    // New plug hand-threaded into the well
+                    if (currentStepIndex === 3) {
+                        try { markInstructionDone(3, 0); } catch (e) {}
+                        try { window.recordSimulationEvent('New spark plug inserted by hand successfully — no cross-threading.'); } catch (e) {}
+                        showPrepToast('New plug hand-threaded into the well.');
+                    }
                     break;
             }
         }
@@ -4108,6 +4543,11 @@
         let negativeCapRemoved = false;
         let positiveCapRemoved = false;
         window.batteryNeedsReplacement = true;
+        // This sim reuses the battery mesh only as a state flag for the plug —
+        // the real battery must never lift out or hide (the plug meshes hide
+        // instead via setSparkPlugVisible). Which steps the battery body stays
+        // interactive on is set per-step in updateStepUI.
+        window.__suppressBatteryVisual = true;
 
         // Check if both caps are removed
         function areBothCapsRemoved() {
@@ -4126,9 +4566,103 @@
             return false;
         }
 
+        // Per-step gating for cap removal — the caps stand in for the
+        // electrical connector (negative) and the ignition coil (positive).
+        function capRemovalAllowed(capType) {
+            if (currentStepIndex === 0) {
+                showSequenceWarning('Finish the preparation checklist first.');
+                return false;
+            }
+            if (currentStepIndex === 1) return true; // disconnect + coil removal step
+            if (currentStepIndex === 2) {
+                showSequenceWarning('Keep the coil and connector off during the inspection step.');
+                return false;
+            }
+            if (currentStepIndex === 3) {
+                showSequenceWarning('This is the reassembly step — refit the coil and connector, do not remove them.');
+                return false;
+            }
+            showSequenceWarning('The ignition system must stay connected for the test run.');
+            return false;
+        }
+
+        function capReplaceAllowed(capType) {
+            if (currentStepIndex !== 3 && currentStepIndex !== 4) {
+                showSequenceWarning('Refit the coil and connector during the reassembly or test run step.');
+                return false;
+            }
+            if (capType === 'positive') {
+                const d = (window.stepInstrDone && window.stepInstrDone[3]) || [];
+                if (!d[0] || !d[1]) {
+                    showSequenceWarning('Insert and tighten the new spark plug before refitting the coil.');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Shared cap-replace logic used by the hover card and the Removed
+        // Items container. Returns true when the cap actually went back on.
+        function performCapReplace(capIndex, capInfo) {
+            if (!capReplaceAllowed(capInfo.type)) return false;
+            // Enforce replacement order: positive (coil), then negative (connector)
+            if (capInfo.type === 'negative' && positiveCapRemoved) {
+                showSequenceWarning('Refit the coil before reconnecting the electrical connector.');
+                return false;
+            }
+
+            window.toggleBatteryCap(capIndex);
+
+            // Update removal state
+            if (capInfo.type === 'negative') negativeCapRemoved = false;
+            if (capInfo.type === 'positive') positiveCapRemoved = false;
+
+            // Remove from container
+            removedItems.delete(capIndex);
+            updateRemovedItemsContainer();
+
+            // Final-check step: refitting the last cap verifies instruction #1.
+            if (currentStepIndex === 4) {
+                const capsStillOut = Array.from(removedItems.keys()).some((k) => typeof k === 'number');
+                if (!capsStillOut) {
+                    try { markInstructionDone(4, 0); } catch (e) {}
+                    try { window.recordSimulationEvent('Ignition coil refitted and electrical connector reconnected successfully.'); } catch (e) {}
+                    showPrepToast('Coil and connector refitted — you can start the engine.');
+                }
+            }
+
+            // Step 4 verification: positive = coil refitted + bolt reinstalled;
+            // negative = electrical connector reconnected.
+            if (currentStepIndex === 3) {
+                if (capInfo.type === 'positive') {
+                    markInstructionDone(3, 2); // Push the coil back + reinstall its bolt
+                    try { window.recordSimulationEvent('Ignition coil refitted and bolt reinstalled successfully.'); } catch (e) {}
+                    // Refitting the coil covers the plug again — restore the
+                    // covering parts removed during inspection and clear them
+                    // out of the Removed Items storage.
+                    try { if (window.setPlugCoversVisible) window.setPlugCoversVisible(true); } catch (e) {}
+                    window.__plugCoversRemoved = false;
+                    for (const k of Array.from(removedItems.keys())) {
+                        if (typeof k === 'string' && k.startsWith('cover_')) removedItems.delete(k);
+                    }
+                    updateRemovedItemsContainer();
+                    showPrepToast('Coil pushed back into place — bolt reinstalled.');
+                } else if (capInfo.type === 'negative') {
+                    markInstructionDone(3, 3); // Reconnect the electrical connector
+                    try { window.recordSimulationEvent('Electrical connector reconnected successfully.'); } catch (e) {}
+                    showPrepToast('Electrical connector reconnected.');
+                    // Full reassembly done — the procedure repeats on every cylinder
+                    const d = (window.stepInstrDone && window.stepInstrDone[3]) || [];
+                    if (d[0] && d[1] && d[2] && d[3]) {
+                        markInstructionDone(3, 4); // Repeat for every cylinder
+                    }
+                }
+            }
+            return true;
+        }
+
         // Handle actions from hover card
         function hoverCapAction(action) {
-            if (!requireInspectionOrWarn()) return;
             if (hoverCapIndex === null) return;
 
             const capInfo = window.checkBatteryCap(hoverCapIndex);
@@ -4138,15 +4672,13 @@
                 case 'remove':
                     // Check sequential removal order
                     if (!canRemoveCap(capInfo.type)) {
-                        // Show warning: negative must be removed first
-                        showSequenceWarning('Remove negative (-) cap first!');
+                        // Show warning: connector must be unplugged first
+                        showSequenceWarning('Unplug the electrical connector first!');
                         return;
                     }
+                    if (!capRemovalAllowed(capInfo.type)) return;
 
                     window.toggleBatteryCap(hoverCapIndex);
-                    document.getElementById('hoverStatus').textContent = 'Cap Removed';
-                    document.getElementById('btnHoverRemove').style.display = 'none';
-                    document.getElementById('btnHoverReplace').style.display = 'flex';
 
                     // Track removal state
                     if (capInfo.type === 'negative') negativeCapRemoved = true;
@@ -4156,65 +4688,25 @@
                     removedItems.set(hoverCapIndex, capInfo);
                     updateRemovedItemsContainer();
 
-                    // If both caps removed, mark the appropriate instruction for the active step
-                    try {
-                        if (negativeCapRemoved && positiveCapRemoved) {
-                            // For Clean Terminals (step 1) mark its instruction
-                            markInstructionDone(1, 1);
-                            // For Check Electrolyte Level (step 2 index=2) mark "Remove battery caps" (instr 0)
-                            if (currentStepIndex === 2) markInstructionDone(2, 0);
-                        }
-                        // Removing caps clears final reconnect instruction (index 4) for the current step
-                        try {
-                            window.stepInstrDone = window.stepInstrDone || {};
-                            window.stepInstrDone[currentStepIndex] = window.stepInstrDone[currentStepIndex] || [];
-                            window.stepInstrDone[currentStepIndex][4] = false;
-                            if (currentStepIndex === currentStepIndex) {
-                                const instrList = document.getElementById('instrList');
-                                if (instrList && instrList.children[4]) instrList.children[4].classList.remove('done');
-                            }
-                        } catch (e) { /* ignore */ }
-                    } catch (err) { console.warn('Failed to update instructions after cap removal', err); }
-
-                    // Lock position after successful removal
-                    isCardLocked = true;
-                    break;
-
-                case 'replace':
-                    // Enforce replacement order: positive, then negative
-                    if (capInfo.type === 'negative') {
-                        // Negative replace requires positive cap to already be on
-                        if (positiveCapRemoved) {
-                            showSequenceWarning('Replace the positive (+) cap before replacing the negative (-) cap.');
-                            return;
+                    // Verification: negative = electrical connector unplugged;
+                    // positive = coil bolts removed + coil pulled straight out.
+                    if (currentStepIndex === 1) {
+                        if (capInfo.type === 'negative') {
+                            markInstructionDone(1, 0); // Unplug the electrical connector carefully
+                            try { window.recordSimulationEvent('Electrical connector unplugged successfully.'); } catch (e) {}
+                            showPrepToast('Electrical connector unplugged.');
+                        } else {
+                            markInstructionDone(1, 1); // Remove the bolts holding the ignition coil
+                            markInstructionDone(1, 2); // Pull the coil straight out of the plug well
+                            try { window.recordSimulationEvent('Coil bolts removed — coil pulled straight out successfully.'); } catch (e) {}
+                            showPrepToast('Coil bolts removed — coil pulled straight out.');
                         }
                     }
 
-                    window.toggleBatteryCap(hoverCapIndex);
-                    document.getElementById('hoverStatus').textContent = 'Cap On';
-                    document.getElementById('btnHoverRemove').style.display = 'flex';
-                    document.getElementById('btnHoverReplace').style.display = 'none';
+                    break;
 
-                    // Update removal state
-                    if (capInfo.type === 'negative') negativeCapRemoved = false;
-                    if (capInfo.type === 'positive') positiveCapRemoved = false;
-
-                    // Remove from container
-                    removedItems.delete(hoverCapIndex);
-                    updateRemovedItemsContainer();
-
-                    // Keep instruction 2 (both caps removed) marked once checked
-                    // It should remain checked until the overall step completes.
-
-                    // After replacing a cap, check whether both caps are now reattached -> mark instruction 5
-                    try {
-                        if (!negativeCapRemoved && !positiveCapRemoved) {
-                            markInstructionDone(currentStepIndex, 4);
-                        }
-                    } catch (err) { console.warn('Failed to update instruction 5 after cap replace', err); }
-
-                    // Lock position after successful replace
-                    isCardLocked = true;
+                case 'replace':
+                    if (!performCapReplace(hoverCapIndex, capInfo)) return;
                     break;
             }
         }
@@ -4268,6 +4760,82 @@
             const container = document.getElementById('removedItemsList');
             const noMessage = document.getElementById('noItemsMessage');
 
+            // Keep a serializable snapshot for progress saves — removed parts
+            // must stay in storage across reloads until clicked to replace.
+            // plug_removed tracks the actual seat state too: a plug discarded
+            // during inspection leaves storage but must still restore as "out".
+            const plugSeatOut = removedItems.has('battery')
+                || (typeof window.checkBattery === 'function' && window.checkBattery() && window.checkBattery().removed);
+            window.removedItemsSnapshot = {
+                caps: Array.from(removedItems.keys()).filter((k) => typeof k === 'number'),
+                plug_removed: plugSeatOut,
+                plug_discarded: plugSeatOut && !removedItems.has('battery'),
+                covers: Array.from(removedItems.keys())
+                    .filter((k) => typeof k === 'string' && k.startsWith('cover_'))
+                    .map((k) => removedItems.get(k))
+            };
+
+            try { scheduleProgressSave(); } catch (e) {}
+
+            // Keep the well consistent with the plug state — the plug meshes
+            // hide while the plug is lifted out (stored or discarded) and show
+            // once the new plug is installed. The lifted-out stand-in mesh is
+            // the plug "in storage", so it hides too — inspection is opened
+            // from the Removed Items entry instead of hovering the mesh.
+            try {
+                if (typeof window.checkBattery === 'function') {
+                    const plugRemoved = !!window.checkBattery().removed;
+                    if (typeof window.setSparkPlugVisible === 'function') {
+                        window.setSparkPlugVisible(!plugRemoved);
+                    }
+                    // The real battery stays seated and visible regardless —
+                    // only the plug meshes hide while the plug is out.
+                }
+            } catch (e) {}
+
+            // Reassembly truth check — a step-4 instruction can't stay checked
+            // while the part it verifies is still sitting in Removed Items.
+            try {
+                const d3 = window.stepInstrDone && window.stepInstrDone[3];
+                if (d3) {
+                    const coverStillOut = Array.from(removedItems.keys())
+                        .some((k) => typeof k === 'string' && k.startsWith('cover_'));
+                    const plugOut = removedItems.has('battery')
+                        || (typeof window.checkBattery === 'function' && window.checkBattery() && window.checkBattery().removed);
+                    if (plugOut) d3[0] = false;
+                    if (coverStillOut || window.__plugCoversRemoved) d3[2] = false;
+                    else if (currentStepIndex === 3 && !d3[2]) {
+                        try { markInstructionDone(3, 2); } catch (e) {}
+                    }
+                    if (!(d3[0] && d3[1] && d3[2])) { d3[3] = false; d3[4] = false; }
+                    if (currentStepIndex === 3) {
+                        const list = document.getElementById('instrList');
+                        if (list) {
+                            Array.from(list.children).forEach((li, i) => li.classList.toggle('done', !!d3[i]));
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            // Final-check truth check — the coil + connector refit instruction
+            // verifies once no cap remains in Removed Items.
+            try {
+                const d4 = window.stepInstrDone && window.stepInstrDone[4];
+                if (d4) {
+                    const capsStillOut = Array.from(removedItems.keys()).some((k) => typeof k === 'number');
+                    if (capsStillOut) d4[0] = false;
+                    else if (currentStepIndex === 4 && !d4[0]) {
+                        try { markInstructionDone(4, 0); } catch (e) {}
+                    }
+                    if (currentStepIndex === 4) {
+                        const list4 = document.getElementById('instrList');
+                        if (list4) {
+                            Array.from(list4.children).forEach((li, i) => li.classList.toggle('done', !!d4[i]));
+                        }
+                    }
+                }
+            } catch (e) {}
+
             if (removedItems.size === 0) {
                 container.innerHTML = '';
                 noMessage.style.display = 'block';
@@ -4281,17 +4849,28 @@
                                 <div style="width:16px;height:16px;border-radius:4px;background:#2563eb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                                 </div>
-                                <span style="font-size:0.7rem;font-weight:600;color:#374151;">Battery</span>
+                                <span style="font-size:0.7rem;font-weight:600;color:#374151;">${item.name || 'Battery'}</span>
                                 <span style="font-size:0.6rem;color:#9ca3af;margin-left:auto;">Click to replace</span>
                             </div>
                         `;
                     }
-                    // Handle cap items
+                    // Handle engine cover parts hiding the spark plug
+                    if (item.type === 'cover') {
+                        return `
+                            <div onclick="replaceItemFromContainer('${index}')" style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border-radius:8px;border:1.5px solid #d1d5db;box-shadow:0 1px 3px rgba(0,0,0,0.1);cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';">
+                                <div style="width:16px;height:16px;border-radius:4px;background:#6b7280;flex-shrink:0;"></div>
+                                <span style="font-size:0.7rem;font-weight:600;color:#374151;">${item.name || 'Cover Part'}</span>
+                                <span style="font-size:0.6rem;color:#9ca3af;margin-left:auto;">Click to replace</span>
+                            </div>
+                        `;
+                    }
+                    // Handle cap items — negative = electrical connector,
+                    // positive = ignition coil (they cap the plug well)
                     const cap = item;
                     return `
                         <div onclick="replaceItemFromContainer(${index})" style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border-radius:8px;border:1.5px solid ${cap.type === 'positive' ? '#fecaca' : '#e5e7eb'};box-shadow:0 1px 3px rgba(0,0,0,0.1);cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';">
                             <div style="width:16px;height:16px;border-radius:50%;background:${cap.type === 'positive' ? '#dc2626' : '#374151'};flex-shrink:0;"></div>
-                            <span style="font-size:0.7rem;font-weight:600;color:#374151;">${cap.type === 'positive' ? 'Pos (+)' : 'Neg (-)'}</span>
+                            <span style="font-size:0.7rem;font-weight:600;color:#374151;">${cap.type === 'positive' ? 'Ignition Coil' : 'Electrical Connector'}</span>
                             <span style="font-size:0.6rem;color:#9ca3af;margin-left:auto;">Click to replace</span>
                         </div>
                     `;
@@ -4300,21 +4879,88 @@
         }
 
         // Helper to mark an instruction done for a specific step and update UI
+        // (same pattern as practicearea_fuel.html — numbered instr-list items
+        // get .done from real sim actions instead of manual checkboxes)
         function markInstructionDone(stepIdx, instrIdx) {
             window.stepInstrDone = window.stepInstrDone || {};
             window.stepInstrDone[stepIdx] = window.stepInstrDone[stepIdx] || [];
             window.stepInstrDone[stepIdx][instrIdx] = true;
-            if (currentStepIndex === stepIdx) {
-                const instrList = document.getElementById('instrList');
-                if (instrList && instrList.children[instrIdx]) instrList.children[instrIdx].classList.add('done');
-            }
             const instrList = document.getElementById('instrList');
-            if (instrList && instrList.children[instrIdx]) {
+            if (instrList && instrList.children[instrIdx] && currentStepIndex === stepIdx) {
                 const li = instrList.children[instrIdx];
+                li.classList.add('done');
                 const text = (li.querySelector('span') || li).textContent.trim();
-                if (text && window.simulationTracker) window.simulationTracker.addCorrect(text, stepIdx);
+                if (text && typeof simulationTracker !== 'undefined') simulationTracker.addCorrect(text, stepIdx);
             }
+            // Step 4 (reassembly): once plug insert + tighten + coil + connector
+            // are all done, "repeat for every cylinder" verifies automatically.
+            if (stepIdx === 3 && instrIdx !== 4) {
+                const arr = window.stepInstrDone[3] || [];
+                if (arr[0] && arr[1] && arr[2] && arr[3]) {
+                    window.stepInstrDone[3][4] = true;
+                    if (instrList && instrList.children[4] && currentStepIndex === 3) {
+                        instrList.children[4].classList.add('done');
+                    }
+                }
+            }
+            try { scheduleProgressSave(); } catch (e) {}
         }
+        window.markStepInstructionDone = markInstructionDone;
+
+        // Marks a Step 1 inspection item verified (li.done + persisted state).
+        function setInspectChecked(index, checked) {
+            const li = document.querySelector(`#inspectionList li[data-index="${index}"]`);
+            if (li) li.classList.toggle('done', !!checked);
+            window.stepInstrDone = window.stepInstrDone || {};
+            window.stepInstrDone[0] = window.stepInstrDone[0] || [];
+            window.stepInstrDone[0][index] = !!checked;
+            try { scheduleProgressSave(); } catch (e) {}
+        }
+        window.setInspectChecked = setInspectChecked;
+
+        function showPrepToast(message) {
+            const t = document.createElement('div');
+            t.textContent = message;
+            t.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#166534;color:#fff;padding:8px 14px;border-radius:10px;z-index:100050;font-weight:700;font-family:Nunito,sans-serif;';
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
+        window.showPrepToast = showPrepToast;
+
+        // Shows a small Use/Cancel option card when a tool is clicked
+        function showToolUseCard(title, desc, onUse, confirmLabel = 'Use', cancelLabel = 'Cancel') {
+            const existing = document.getElementById('toolUseCard');
+            if (existing) existing.remove();
+
+            const card = document.createElement('div');
+            card.id = 'toolUseCard';
+            card.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100000;background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.4);font-family:\'Nunito\',sans-serif;min-width:280px;text-align:center;';
+            card.innerHTML = `
+                <div style="margin-bottom:16px;">
+                    <div style="width:48px;height:48px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;color:#1a1a2e;margin:0;">${title}</h3>
+                    <p style="font-size:0.8rem;color:#6b7280;margin:8px 0 0;">${desc}</p>
+                </div>
+                <div style="display:flex;gap:12px;">
+                    <button id="toolUseConfirm" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border:none;border-radius:10px;background:#16a34a;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        ${confirmLabel}
+                    </button>
+                    <button id="toolUseCancel" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border:2px solid #e5e7eb;border-radius:10px;background:#fff;color:#374151;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                        ${cancelLabel}
+                    </button>
+                </div>`;
+            document.body.appendChild(card);
+            document.getElementById('toolUseConfirm').addEventListener('click', () => {
+                card.remove();
+                onUse();
+            });
+            document.getElementById('toolUseCancel').addEventListener('click', () => card.remove());
+        }
+        window.showToolUseCard = showToolUseCard;
 
         // Replace item from container - puts it back
         function replaceItemFromContainer(itemKey) {
@@ -4326,10 +4972,49 @@
                 return null;
             };
 
+            // Handle engine cover parts — clicking puts the mesh back
+            if (typeof itemKey === 'string' && itemKey.startsWith('cover_')) {
+                const idx = parseInt(itemKey.slice(6), 10);
+                try { window.showPlugCoverAt(idx); } catch (e) {}
+                removedItems.delete(itemKey);
+                // Every cover is back on — the plug well is covered again,
+                // which verifies the coil-refit instruction (once the plug is
+                // inserted and torqued).
+                const coversStillOut = Array.from(removedItems.keys())
+                    .some((k) => typeof k === 'string' && k.startsWith('cover_'));
+                if (!coversStillOut) {
+                    window.__plugCoversRemoved = false;
+                    try {
+                        const dd = (window.stepInstrDone && window.stepInstrDone[3]) || [];
+                        if (currentStepIndex === 3 && !dd[2]) {
+                            markInstructionDone(3, 2);
+                        }
+                    } catch (e) {}
+                }
+                updateRemovedItemsContainer();
+                showPrepToast('Covering part put back in place.');
+                return;
+            }
+
             // Handle battery replacement
             if (itemKey === 'battery') {
                 const batteryStatus = (window.checkBattery && typeof window.checkBattery === 'function') ? window.checkBattery() : null;
                 if (!batteryStatus || !batteryStatus.removed) return;
+
+                // Inspection step: the removed stand-in mesh is hidden, so the
+                // stored plug opens the tip-inspection / gap-check modals.
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 2) {
+                    const d2 = (window.stepInstrDone && window.stepInstrDone[2]) || [];
+                    if (!d2[0]) openBatteryInspectModal();
+                    else openBatteryElectrolyteModal('sparkplug_' + Date.now());
+                    return;
+                }
+
+                // The plug only goes back in during the reassembly step
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 3) {
+                    showSequenceWarning('The new plug is installed during the reassembly step.');
+                    return;
+                }
 
                 // Position/install the battery first
                 if (window.installBattery) window.installBattery();
@@ -4339,73 +5024,21 @@
                 removedItems.delete('battery');
                 updateRemovedItemsContainer();
 
-                // Update UI
-                const batteryStatusEl = document.getElementById('batteryStatus');
-                if (batteryStatusEl) batteryStatusEl.textContent = 'In Position';
-                const btnCheckEl = document.getElementById('btnCheckBattery');
-                const btnRemoveEl = document.getElementById('btnRemoveBattery');
-                const btnReplaceEl = document.getElementById('btnReplaceBattery');
-                if (btnCheckEl) btnCheckEl.style.display = 'flex';
-                if (btnRemoveEl) btnRemoveEl.style.display = 'flex';
-                if (btnReplaceEl) btnReplaceEl.style.display = 'none';
-
                 updateRemovedItemsContainer();
-                // Keep instruction 2 (both caps removed) marked once checked
-                // It should remain checked until the overall step completes.
-                // After manual replace, if both caps on, mark instruction 5
-                try {
-                    if (!negativeCapRemoved && !positiveCapRemoved) {
-                        markInstructionDone(currentStepIndex, 4);
-                    }
-                } catch (err) { console.warn('Failed to update instruction 5 after battery replace', err); }
+
+                // Step 4 verification: the plug is back in the well
+                try { markInstructionDone(3, 0); } catch (err) {}
+                try { window.recordSimulationEvent('New spark plug inserted by hand successfully — no cross-threading.'); } catch (err) {}
+                showPrepToast('New plug hand-threaded into the well.');
                 return;
             }
 
-            // Handle cap replacement (clicked a cap entry)
+            // Handle cap replacement (clicked a cap entry) — shared logic keeps
+            // the reassembly order and marks the step 4 instructions.
             const capIndex = itemKey;
             const capInfo = (window.checkBatteryCap && typeof window.checkBatteryCap === 'function') ? window.checkBatteryCap(capIndex) : null;
             if (!capInfo || !capInfo.removed) return;
-
-            if (capInfo.type === 'negative') {
-                // Negative replacement requires positive cap to be on first
-                if (positiveCapRemoved) {
-                    showSequenceWarning('Replace the positive (+) cap before replacing the negative (-) cap.');
-                    return;
-                }
-
-                // Now replace negative
-                window.toggleBatteryCap(capIndex);
-                removedItems.delete(capIndex);
-                negativeCapRemoved = false;
-                updateRemovedItemsContainer();
-                // Keep instruction 2 (both caps removed) marked once checked
-                // It should remain checked until the overall step completes.
-
-                try {
-                    if (!negativeCapRemoved && !positiveCapRemoved) {
-                        markInstructionDone(currentStepIndex, 4);
-                    }
-                } catch (err) { console.warn('Failed to update instruction 5 after negative replace (container)', err); }
-                return;
-            }
-
-            if (capInfo.type === 'positive') {
-                // Replace positive
-                window.toggleBatteryCap(capIndex);
-                removedItems.delete(capIndex);
-                positiveCapRemoved = false;
-                updateRemovedItemsContainer();
-                // Keep instruction 2 (both caps removed) marked once checked
-                // It should remain checked until the overall step completes.
-
-                // After replacing positive, check if both caps are now on -> mark instruction 5
-                try {
-                    if (!negativeCapRemoved && !positiveCapRemoved) {
-                        markInstructionDone(currentStepIndex, 4);
-                    }
-                } catch (err) { console.warn('Failed to update instruction 5 after positive replace', err); }
-                return;
-            }
+            performCapReplace(capIndex, capInfo);
         }
 
         function closeBatteryCapModal() {
@@ -4417,21 +5050,53 @@
         // Battery Casing Inspection Modal Functions
         window.openBatteryInspectModal = function () {
             const modal = document.getElementById('batteryInspectModal');
-            if (modal) modal.style.display = 'flex';
+            if (!modal) return;
+            // "Checking the plug tip..." phase first, readings reveal after the scan
+            const checking = document.getElementById('plugCheckingPhase');
+            const results = document.getElementById('plugInspectResults');
+            if (checking && results) {
+                checking.style.display = 'block';
+                results.style.display = 'none';
+                clearTimeout(window.__plugCheckTimer);
+                window.__plugCheckTimer = setTimeout(() => {
+                    checking.style.display = 'none';
+                    results.style.display = 'block';
+                }, 1600);
+            }
+            modal.style.display = 'flex';
         };
 
         window.closeBatteryInspectModal = function (confirm = false) {
             const modal = document.getElementById('batteryInspectModal');
             if (modal) modal.style.display = 'none';
-            isBatteryCardLocked = false;
-            
+            clearTimeout(window.__plugCheckTimer);
+
             if (confirm) {
-                const cb = document.querySelector('.inspect-check[data-index="1"]');
-                if (cb && !cb.checked) {
-                    cb.checked = true;
-                    cb.dispatchEvent(new Event('change'));
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 2) {
+                    // Step 3: confirming the inspection records the tip readings
+                    try { markInstructionDone(2, 0); } catch (e) {}
+                    try { window.recordSimulationEvent('Plug tip condition inspected — readings recorded successfully.'); } catch (e) {}
+                    showPrepToast('Plug tip condition inspected — run the gap check next.');
                 }
             }
+        };
+
+        // The tip readings are bad — discard the worn plug and flag that a
+        // replacement must be installed during reassembly.
+        window.confirmInspectionReplace = function () {
+            const status = (window.checkBattery && typeof window.checkBattery === 'function') ? window.checkBattery() : null;
+            if (!status || !status.removed) {
+                try { window.toggleBattery(); } catch (e) {}
+            }
+            removedItems.delete('battery'); // discarded — not kept for refit
+            updateRemovedItemsContainer();
+            window.batteryNeedsReplacement = true;
+            if (typeof currentStepIndex !== 'undefined' && currentStepIndex === 2) {
+                try { markInstructionDone(2, 0); } catch (e) {}
+                try { window.recordSimulationEvent('Worn spark plug removed — a replacement plug is required.'); } catch (e) {}
+                showPrepToast('Worn plug removed — install a new plug during reassembly.');
+            }
+            closeBatteryInspectModal(false);
         };
 
         // Battery Check Modal Functions
@@ -4451,8 +5116,6 @@
                 if (viewer) {
                     const onMeshClick = (event) => {
                         const partName = event?.detail?.name || 'part';
-                        const status = document.getElementById('batteryStatus');
-                        if (status) status.textContent = `Selected: ${partName}`;
                     };
                     if (viewer.__batteryMeshClickHandler) {
                         viewer.removeEventListener('batteryMeshClicked', viewer.__batteryMeshClickHandler);
@@ -4472,18 +5135,7 @@
             switch (action) {
                 case 'clean':
                     showSequenceWarning('Battery cleaned successfully!');
-                    // Mark instruction 3 (apply paste & brush) and 4 (wipe) as done
-                    try {
-                        window.stepInstrDone = window.stepInstrDone || {};
-                        window.stepInstrDone[1] = window.stepInstrDone[1] || [];
-                        window.stepInstrDone[1][2] = true;
-                        window.stepInstrDone[1][3] = true;
-                        if (currentStepIndex === 1) {
-                            const instrList = document.getElementById('instrList');
-                            if (instrList && instrList.children[2]) instrList.children[2].classList.add('done');
-                            if (instrList && instrList.children[3]) instrList.children[3].classList.add('done');
-                        }
-                    } catch (err) { console.warn('Failed to mark instructions 3/4 after clean', err); }
+                    // Free-play only — not part of the spark plug procedure
 
                     // Close modal after a delay
                     setTimeout(() => {
@@ -4552,15 +5204,15 @@
             // Show modal
             modal.style.display = 'block';
 
-            // Initialize 3D battery viewer after modal is visible
+            // Initialize 3D spark plug viewer after modal is visible
             setTimeout(async () => {
                 try {
-                    const mod = await import('./BatteryViewer.js');
-                    if (mod && typeof mod.initBatteryViewer === 'function') {
-                        mod.initBatteryViewer('batteryElectrolyteViewer', { enableDrag: false });
+                    const mod = await import('./SparkPlugViewer.js');
+                    if (mod && typeof mod.initSparkPlugViewer === 'function') {
+                        mod.initSparkPlugViewer('batteryElectrolyteViewer');
                     }
                 } catch (err) {
-                    console.error('Failed to init battery viewer in electrolyte modal:', err);
+                    console.error('Failed to init spark plug viewer in gap modal:', err);
                 }
             }, 100);
         }
@@ -4640,37 +5292,45 @@
             }
         }
 
-        // Handle electrolyte actions
+        // Handle gap-checker actions — the modal stands in for the feeler
+        // gauge check on the Inspect & Gap step.
         function electrolyteAction(action) {
             switch (action) {
                 case 'refill':
-                    // Refill all cells to 100%
+                    // Adjust the electrode gap back into spec
                     if (currentBatteryElectrolyteData) {
                         currentBatteryElectrolyteData.cells.forEach(cell => cell.level = 100);
                         currentBatteryElectrolyteData.overallStatus = 'GOOD';
                         currentBatteryElectrolyteData.overallColor = '#22c55e';
                         updateElectrolyteDisplay(currentBatteryElectrolyteData);
                     }
-                    showSequenceWarning('Electrolyte refilled! All cells at 100%');
-                    // Mark electrolyte-related instructions (step index 2 -> instr 1,2,3)
-                    try { markInstructionDone(2, 1); markInstructionDone(2, 2); markInstructionDone(2, 3); } catch (e) { }
+                    showSequenceWarning('Gap adjusted back to spec!');
+                    // Gap checked with the feeler gauge + adjusted to spec
+                    try { markInstructionDone(2, 1); } catch (e) { }
+                    try { window.recordSimulationEvent('Electrode gap checked and adjusted to spec successfully.'); } catch (e) { }
                     break;
 
                 case 'replace':
-                    // Remove battery and close modal
+                    // Out-of-spec plug replaced — pull it from the well if it
+                    // is still installed, then close the modal.
                     closeBatteryElectrolyteModal();
-                    window.toggleBattery();
-                    removedItems.set('battery', { type: 'battery', name: 'Battery', removed: true });
-                    updateRemovedItemsContainer();
-                    showSequenceWarning('Battery removed for replacement!');
+                    const plugStatus = (window.checkBattery && typeof window.checkBattery === 'function') ? window.checkBattery() : null;
+                    if (!plugStatus || !plugStatus.removed) {
+                        window.toggleBattery();
+                        removedItems.set('battery', { type: 'battery', name: 'Spark Plug', removed: true });
+                        updateRemovedItemsContainer();
+                    }
+                    showSequenceWarning('Out-of-spec plug replaced!');
+                    try { markInstructionDone(2, 1); } catch (e) { }
+                    try { window.recordSimulationEvent('Gap out of spec — spark plug replaced successfully.'); } catch (e) { }
                     break;
 
                 case 'accept':
-                    // Just close modal
+                    // Gap is within spec — close modal and keep the plug
                     closeBatteryElectrolyteModal();
-                    showSequenceWarning('Battery accepted and installed!');
-                    // Mark electrolyte-related instructions (step index 2 -> instr 1,2,3)
-                    try { markInstructionDone(2, 1); markInstructionDone(2, 2); markInstructionDone(2, 3); } catch (e) { }
+                    showSequenceWarning('Gap verified — plug accepted!');
+                    try { markInstructionDone(2, 1); } catch (e) { }
+                    try { window.recordSimulationEvent('Electrode gap verified within spec successfully.'); } catch (e) { }
                     break;
             }
         }
@@ -4836,6 +5496,12 @@
                 const card = document.getElementById('batteryUseCard');
                 if (card) card.remove();
 
+                // Battery maintenance is disabled in the spark plug simulation —
+                // the new plug is installed via REPLACE on the plug itself or
+                // the Removed Items container.
+                showSequenceWarning('The battery tool is not part of the spark plug procedure.');
+                return;
+
                 // Check if caps are removed first
                 if (!areBothCapsRemoved()) {
                     showSequenceWarning('Remove both caps first before installing battery!');
@@ -4864,25 +5530,14 @@
 
                 updateRemovedItemsContainer();
 
-                // Update battery hover card to show options
-                const batteryStatusEl = document.getElementById('batteryStatus');
-                const btnCheckEl = document.getElementById('btnCheckBattery');
-                const btnRemoveEl = document.getElementById('btnRemoveBattery');
-                const btnReplaceEl = document.getElementById('btnReplaceBattery');
-
-                if (batteryStatusEl) batteryStatusEl.textContent = 'In Position';
-                if (btnCheckEl) btnCheckEl.style.display = 'flex';
-                if (btnRemoveEl) btnRemoveEl.style.display = 'flex';
-                if (btnReplaceEl) btnReplaceEl.style.display = 'none';
-
-                // Mark battery replaced in instruction if Step 2 and needs replacement
-                if (currentStepIndex === 1 && window.batteryNeedsReplacement) {
-                    try { markInstructionDone(1, 3); } catch (e) {}
-                    window.recordSimulationEvent('Battery accepted and installed!');
+                // Mark the plug installed during the reassembly step
+                if (currentStepIndex === 3) {
+                    try { markInstructionDone(3, 0); } catch (e) {}
+                    window.recordSimulationEvent('New spark plug inserted by hand successfully — no cross-threading.');
                     window.batteryNeedsReplacement = false;
                 }
 
-                showSequenceWarning('Battery installed successfully!');
+                showSequenceWarning('Spark plug installed successfully!');
             };
 
             // Cancel battery tool
@@ -4890,6 +5545,198 @@
                 const card = document.getElementById('batteryUseCard');
                 if (card) card.remove();
             };
+        })();
+    </script>
+
+    <script>
+        // ── ACTION-VERIFIED TOOL WIRING ──
+        // Same pattern as practicearea_fuel.html / practicearea_air.html:
+        // instruction items get .done from real sim actions instead of manual
+        // checkboxes. Tool-card clicks open a Use/Cancel card; confirming the
+        // action verifies the matching instruction for the current step.
+        (function () {
+            const prepState = { gloves: false, goggles: false };
+
+            // Item 1 follows the live engine state: done while the engine is
+            // OFF (off = cool enough to touch). Only synced on Step 1 — later
+            // steps start the engine on purpose and a completed inspection
+            // item must not un-verify.
+            function syncEngineOffChecklist() {
+                if (typeof currentStepIndex !== 'undefined' && currentStepIndex !== 0) return;
+                const off = (typeof engineSwipeEnabled === 'undefined') ? true : !engineSwipeEnabled;
+                setInspectChecked(0, off);
+            }
+            window.syncEngineOffChecklist = syncEngineOffChecklist;
+
+            function recordCorrect(message) {
+                try { window.recordSimulationEvent(message); } catch (e) { /* ignore */ }
+            }
+
+            function checkPpeDone() {
+                if (prepState.gloves && prepState.goggles) {
+                    setInspectChecked(2, true);
+                    recordCorrect('Gloves and safety goggles equipped successfully.');
+                    showPrepToast('Gloves and safety goggles equipped.');
+                }
+            }
+
+            function wireTool(id, onClick) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    onClick();
+                });
+            }
+
+            // Per-step wrench tasks — each Use verifies the next wrench-driven
+            // instruction that is still unfinished on the current step.
+            const WRENCH_TASKS = {
+                1: [{ idx: 3, needs: [2], needsMsg: 'Pull the ignition coil out of the plug well first.', title: 'Insert Spark Plug Socket?', desc: 'Insert the spark plug socket with extension into the plug well.', done: 'Spark plug socket inserted successfully.' }],
+                3: [{ idx: 1, needs: [0], needsMsg: 'Insert the new plug by hand first (hover the plug and use REPLACE).', title: 'Tighten the Spark Plug?', desc: 'Tighten with the socket — snug, not over-tightened.', done: 'Spark plug tightened successfully — snug, not over-tightened.' }]
+            };
+
+            window.addEventListener('load', () => {
+                // Item 2: "Hood opened and secured" — follows hoodToggled
+                // events dispatched by ThreeScene2.js (hood click or hood button)
+                window.addEventListener('hoodToggled', (e) => {
+                    const isOpen = !!(e.detail && e.detail.open);
+                    // Only mark on open — closing the hood later must not
+                    // un-verify this completed inspection item.
+                    if (isOpen && typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
+                        setInspectChecked(1, true);
+                        recordCorrect('Hood opened and secured successfully.');
+                        showPrepToast('Hood opened and secured.');
+                    }
+                });
+
+                // Restored progress: if the hood is already open once the scene
+                // API exists, mark the item done right away.
+                const hoodPoll = setInterval(() => {
+                    if (typeof window.isHoodOpen === 'function') {
+                        if (window.isHoodOpen() && typeof currentStepIndex !== 'undefined' && currentStepIndex === 0) {
+                            setInspectChecked(1, true);
+                        }
+                        clearInterval(hoodPoll);
+                    }
+                }, 500);
+                setTimeout(() => clearInterval(hoodPoll), 30000);
+
+                // ── PPE: gloves + goggles verify "Wearing gloves and safety goggles" (Step 1)
+                wireTool('gloves-model', () => {
+                    if (currentStepIndex !== 0) {
+                        showSequenceWarning('Safety gear is equipped during the safety step.');
+                        return;
+                    }
+                    showToolUseCard('Wear Gloves?', 'Put on protective gloves before working in the engine bay.', () => {
+                        prepState.gloves = true;
+                        showPrepToast('Gloves equipped.');
+                        checkPpeDone();
+                    });
+                });
+                wireTool('goggles-model', () => {
+                    if (currentStepIndex !== 0) {
+                        showSequenceWarning('Safety gear is equipped during the safety step.');
+                        return;
+                    }
+                    showToolUseCard('Wear Safety Goggles?', 'Protect your eyes from debris and broken plug ceramic.', () => {
+                        prepState.goggles = true;
+                        showPrepToast('Safety goggles equipped.');
+                        checkPpeDone();
+                    });
+                });
+
+                // ── Socket wrench: plug socket on Step 2, tightening on Step 4
+                wireTool('socket-model', () => {
+                    const done = (window.stepInstrDone && window.stepInstrDone[currentStepIndex]) || [];
+                    const tasks = WRENCH_TASKS[currentStepIndex] || [];
+                    const task = tasks.find(t => !done[t.idx]);
+                    if (!task) {
+                        if (currentStepIndex === 0) {
+                            showSequenceWarning('The socket wrench is used once the coils and plugs come out.');
+                        } else {
+                            showPrepToast('Nothing left to do with the wrench on this step.');
+                        }
+                        return;
+                    }
+                    if (task.needs && !task.needs.every(i => done[i])) {
+                        showSequenceWarning(task.needsMsg);
+                        return;
+                    }
+                    showToolUseCard(task.title, task.desc, () => {
+                        markInstructionDone(currentStepIndex, task.idx);
+                        recordCorrect(task.done);
+                        showPrepToast(task.done);
+                        // Plug torqued — the cover goes back over the plug well,
+                        // which verifies the coil-refit instruction.
+                        if (currentStepIndex === 3 && task.idx === 1) {
+                            try { if (window.setPlugCoversVisible) window.setPlugCoversVisible(true); } catch (e) {}
+                            window.__plugCoversRemoved = false;
+                            for (const k of Array.from(removedItems.keys())) {
+                                if (typeof k === 'string' && k.startsWith('cover_')) removedItems.delete(k);
+                            }
+                            updateRemovedItemsContainer();
+                            markInstructionDone(3, 2);
+                        }
+                    });
+                });
+
+                // ── Spark Plug tool: installs the new plug during reassembly
+                wireTool('sparkplug-model', () => {
+                    if (currentStepIndex !== 3) {
+                        showSequenceWarning('The new spark plug is installed during the reassembly step.');
+                        return;
+                    }
+                    if (!(negativeCapRemoved && positiveCapRemoved)) {
+                        showSequenceWarning('Insert the plug before refitting the coil and connector.');
+                        return;
+                    }
+                    // The plug may have been discarded at inspection — check the
+                    // actual seat state, not just the Removed Items list.
+                    const plugStatus = (window.checkBattery && typeof window.checkBattery === 'function') ? window.checkBattery() : null;
+                    if (plugStatus && !plugStatus.removed) {
+                        showPrepToast('The new plug is already in the well.');
+                        return;
+                    }
+                    showToolUseCard('Insert New Spark Plug?', 'Hand-thread the new spark plug into the well to avoid cross-threading.', () => {
+                        window.toggleBattery();
+                        removedItems.delete('battery');
+                        updateRemovedItemsContainer();
+                        markInstructionDone(3, 0);
+                        recordCorrect('New spark plug inserted by hand successfully — no cross-threading.');
+                        showPrepToast('New plug hand-threaded into the well.');
+                    });
+                });
+
+                // ── Gap gauge: feeler-gauge check lives on the inspect step
+                wireTool('feeler-model', () => {
+                    if (currentStepIndex !== 2) {
+                        showSequenceWarning('The gap gauge is used during the inspection step.');
+                        return;
+                    }
+                    const d = (window.stepInstrDone && window.stepInstrDone[2]) || [];
+                    if (!d[0]) {
+                        showSequenceWarning('Check the plug tip first — use Check Spark Plug to inspect it.');
+                        return;
+                    }
+                    if (d[1]) {
+                        showPrepToast('Gap already checked.');
+                        return;
+                    }
+                    showToolUseCard('Check Plug Gap?', 'Slide the feeler gauge blade between the electrodes to verify the gap.', () => {
+                        openBatteryElectrolyteModal('sparkplug_' + Date.now());
+                    });
+                });
+
+                // ── Shop rag: clean-up tasks live on the final step
+                wireTool('papertowel-model', () => {
+                    if (currentStepIndex === 0) {
+                        showPrepToast('Shop rag prepared.');
+                        return;
+                    }
+                    showSequenceWarning('The shop rag is not needed during this step.');
+                });
+            });
         })();
     </script>
 </body>

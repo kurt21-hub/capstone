@@ -86,7 +86,13 @@ const PracticeProgress = {
      * Load saved progress from database
      */
     async loadProgress(title = this.config.defaultTitle) {
+        const student = this.getStudentInfo();
         const params = new URLSearchParams({ title: title });
+        
+        // Add student_id if available
+        if (student && student.student_id) {
+            params.append('student_id', student.student_id);
+        }
 
         try {
             const response = await fetch(`${this.config.loadEndpoint}?${params}`);
@@ -109,13 +115,26 @@ const PracticeProgress = {
      * Save progress to database
      */
     async saveProgress(progressData) {
+        const student = this.getStudentInfo();
         const payload = {
             title: progressData.title || this.config.defaultTitle,
             score: progressData.score || 0,
             completion_status: progressData.completion_status || 'In Progress',
             time_elapsed_seconds: progressData.time_elapsed_seconds || 0,
+            current_step_index: progressData.current_step_index ?? null,
+            step_instr_done: progressData.step_instr_done ?? null,
+            battery_needs_replacement: progressData.battery_needs_replacement ?? null,
+            scene_state: progressData.scene_state ?? null,
             steps: progressData.steps || []
         };
+
+        // Include student identity so the backend can save even without a PHP session
+        if (student && student.student_id) {
+            payload.student_id = student.student_id;
+        }
+        if (student) {
+            payload.student = student;
+        }
 
         try {
             const response = await fetch(this.config.saveEndpoint, {
@@ -255,6 +274,65 @@ const PracticeProgress = {
         };
     }
 };
+
+/**
+ * Practice Access Gate
+ * A practice simulation may only open when its learning module has been fully
+ * read (progress >= 100), or when the student already has a saved simulation
+ * record — once unlocked it stays unlocked, even if the module is re-read.
+ */
+const PracticeAccessGate = {
+    pageRules: {
+        'practicearea_engine.html': { moduleKey: 'mod_progress_enginemodule', title: 'Engine Oil Change' },
+        'practicearea_brake.html': { moduleKey: 'mod_progress_brakemodule', title: 'Brake Pad Replacement' },
+        'practicearea_air.html': { moduleKey: 'mod_progress_airmodule', title: 'Air Filter Replacement' },
+        'practicearea_fuel.html': { moduleKey: 'mod_progress_fuelmodule', title: 'Fuel Filter Replacement' },
+        'practicearea_battery.html': { moduleKey: 'mod_progress_batterymodule', title: 'Battery Maintenance' },
+        'practicearea_spark.html': { moduleKey: 'mod_progress_sparkmodule', title: 'Spark Plug Replacement' }
+    },
+
+    redirectToHub() {
+        window.location.replace('practicetasks.html');
+    },
+
+    async enforce() {
+        const page = (window.location.pathname.split('/').pop() || '').toLowerCase();
+        const rule = this.pageRules[page];
+        if (!rule) return;
+
+        // Module fully read -> allowed
+        try {
+            const res = await fetch('student_progress.php');
+            const data = await res.json();
+            if (data.success && data.progress && (data.progress[rule.moduleKey] || 0) >= 100) {
+                return;
+            }
+        } catch (e) {
+            console.warn('PracticeAccessGate: module progress check failed', e);
+        }
+
+        // Existing practice record keeps the sim unlocked
+        try {
+            const student = PracticeProgress.getStudentInfo();
+            if (student) {
+                const params = new URLSearchParams({ title: rule.title });
+                if (student.student_id) params.append('student_id', student.student_id);
+                if (student.email) params.append('email', student.email);
+                const res = await fetch(`get_practice_progress.php?${params}`);
+                const data = await res.json();
+                if (data.success && data.current_progress) {
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('PracticeAccessGate: practice record check failed', e);
+        }
+
+        this.redirectToHub();
+    }
+};
+
+PracticeAccessGate.enforce();
 
 // Export for module usage
 if (typeof module !== 'undefined' && module.exports) {

@@ -13,7 +13,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Teacher') {
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 if ($mysqli->connect_errno) {
@@ -23,6 +23,49 @@ if ($mysqli->connect_errno) {
 }
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'get_dashboard_data';
+
+// ── Resolve sections assigned to this teacher by the admin ──
+$colRes = $mysqli->query("SHOW COLUMNS FROM instructors LIKE 'assigned_sections'");
+$hasSectionsCol = $colRes && $colRes->num_rows > 0;
+if ($colRes instanceof mysqli_result) {
+    $colRes->free();
+}
+if (!$hasSectionsCol) {
+    $mysqli->query("ALTER TABLE instructors ADD COLUMN assigned_sections VARCHAR(255) NULL DEFAULT NULL");
+}
+
+$teacherSections = [];
+$teacherId = (int)($_SESSION['teacher_id'] ?? 0);
+if ($teacherId) {
+    $stmtSec = $mysqli->prepare('SELECT assigned_sections FROM instructors WHERE instructor_id = ? LIMIT 1');
+    if ($stmtSec) {
+        $stmtSec->bind_param('i', $teacherId);
+        $stmtSec->execute();
+        $stmtSec->bind_result($secRaw);
+        if ($stmtSec->fetch() && $secRaw) {
+            foreach (explode(',', $secRaw) as $sec) {
+                $sec = strtoupper(trim($sec));
+                if (preg_match('/^[A-Z]$/', $sec) && !in_array($sec, $teacherSections, true)) {
+                    $teacherSections[] = $sec;
+                }
+            }
+        }
+        $stmtSec->close();
+    }
+}
+
+// SQL fragments that limit results to students in the teacher's sections.
+// No assigned sections -> the teacher sees no students (admin must assign one).
+if (!empty($teacherSections)) {
+    $secList = implode(',', array_map(function ($s) use ($mysqli) {
+        return "'" . $mysqli->real_escape_string($s) . "'";
+    }, $teacherSections));
+    $studentsWhere = "WHERE section IN ($secList)";   // for unaliased `students` table
+    $joinedWhere = "WHERE s.section IN ($secList)";   // for queries joined on students s
+} else {
+    $studentsWhere = 'WHERE 1 = 0';
+    $joinedWhere = 'WHERE 1 = 0';
+}
 
 // Helper: relative time formatter
 function formatSQLDateRelative($dateStr) {
@@ -61,7 +104,7 @@ $moduleColors = [
 if ($action === 'get_students_data' || $action === 'get_dashboard_data' || $action === 'get_analytics_data') {
     $studentsList = [];
     
-    $res = $mysqli->query('SELECT student_id, first_name, last_name, email, section, created_at FROM students ORDER BY last_name ASC');
+    $res = $mysqli->query("SELECT student_id, first_name, last_name, email, section, created_at FROM students $studentsWhere ORDER BY last_name ASC");
     if ($res) {
         while ($s = $res->fetch_assoc()) {
             $studentId = (int)$s['student_id'];
@@ -223,13 +266,22 @@ if ($action === 'get_logs' || $action === 'get_dashboard_data') {
     $assessmentsList = [];
     $recentActivities = [];
     
-    // Fetch practices
-    $res = $mysqli->query('SELECT p.simulation_id, p.title, p.score, p.completion_status, p.date_attempted, s.first_name, s.last_name, s.student_id
+    // Fetch practices — latest attempt per student per module only
+    // (rows are ordered newest-first; the first row seen per student+title is the current attempt)
+    $res = $mysqli->query("SELECT p.simulation_id, p.title, p.score, p.completion_status, p.date_attempted, s.first_name, s.last_name, s.student_id
                            FROM simulation p
                            JOIN students s ON p.student_id = s.student_id
-                           ORDER BY p.date_attempted DESC');
+                           $joinedWhere
+                           ORDER BY p.date_attempted DESC, p.simulation_id DESC");
     if ($res) {
+        $latestPracticeSeen = [];
         while ($row = $res->fetch_assoc()) {
+            $dedupeKey = $row['student_id'] . '|' . $row['title'];
+            if (isset($latestPracticeSeen[$dedupeKey])) {
+                continue;
+            }
+            $latestPracticeSeen[$dedupeKey] = true;
+
             $sessId = (int)$row['simulation_id'];
             $studentName = $row['first_name'] . ' ' . $row['last_name'];
             $title = $row['title'];
@@ -260,10 +312,11 @@ if ($action === 'get_logs' || $action === 'get_dashboard_data') {
     }
     
     // Fetch assessments
-    $res = $mysqli->query('SELECT a.assessment_id, a.title, a.score, a.remarks, a.date_taken, s.first_name, s.last_name, s.student_id
+    $res = $mysqli->query("SELECT a.assessment_id, a.title, a.score, a.remarks, a.date_taken, s.first_name, s.last_name, s.student_id
                            FROM assessment a
                            JOIN students s ON a.student_id = s.student_id
-                           ORDER BY a.date_taken DESC');
+                           $joinedWhere
+                           ORDER BY a.date_taken DESC");
     if ($res) {
         while ($row = $res->fetch_assoc()) {
             $assessId = (int)$row['assessment_id'];
@@ -305,6 +358,7 @@ if ($action === 'get_logs' || $action === 'get_dashboard_data') {
 if ($action === 'get_students_data') {
     echo json_encode([
         'success' => true,
+        'assigned_sections' => $teacherSections,
         'students' => $studentsList
     ]);
 } elseif ($action === 'get_logs') {
@@ -350,6 +404,7 @@ if ($action === 'get_students_data') {
             'pending_reviews' => $atRiskCount, // using atRisk as demo pending reviews
             'active_modules' => 6
         ],
+        'assigned_sections' => $teacherSections,
         'students' => $studentsList,
         'recent_activities' => array_slice($recentActivities, 0, 10),
         'practice_sessions' => array_slice($practiceSessions, 0, 10),

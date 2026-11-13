@@ -7,7 +7,7 @@ motoMasterStartSession();
 $dbHost = '127.0.0.1';
 $dbUser = 'root';
 $dbPass = '';
-$dbName = 'motomasterdb';
+$dbName = 'motomaster';
 
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 if ($mysqli->connect_errno) {
@@ -30,7 +30,9 @@ if (!$email || !$password) {
     exit;
 }
 
-$stmt = $mysqli->prepare('SELECT instructor_id, first_name, last_name, email, specialization, contact_number, password FROM instructors WHERE email = ? LIMIT 1');
+motoMasterEnsureProfilePhotoColumn($mysqli, 'instructors');
+
+$stmt = $mysqli->prepare('SELECT instructor_id, first_name, last_name, email, specialization, contact_number, password, profile_photo FROM instructors WHERE email = ? LIMIT 1');
 $stmt->bind_param('s', $email);
 $stmt->execute();
 $stmt->store_result();
@@ -41,7 +43,7 @@ if ($stmt->num_rows === 0) {
     exit;
 }
 
-$stmt->bind_result($instructorId, $firstName, $lastName, $storedEmail, $specialization, $contactNumber, $hash);
+$stmt->bind_result($instructorId, $firstName, $lastName, $storedEmail, $specialization, $contactNumber, $hash, $profilePhoto);
 $stmt->fetch();
 $stmt->close();
 
@@ -62,6 +64,7 @@ if (password_verify($password, $hash)) {
             'email' => $storedEmail,
             'specialization' => $specialization,
             'contact_number' => $contactNumber,
+            'profile_photo' => $profilePhoto ?: 'images/userprofile.jpg',
             'role' => 'Teacher'
         ]
     ]);

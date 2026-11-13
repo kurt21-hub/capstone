@@ -194,7 +194,7 @@
 
       <div class="field-group">
         <label for="regSection">Section:</label>
-        <input type="text" id="regSection" placeholder="Section/class" />
+        <select id="regSection" class="section-picker" data-placeholder="Select your section (A–Z)"></select>
       </div>
 
       <div class="field-group">
@@ -264,18 +264,45 @@
 
   <div class="bottom-bar"></div>
 
+  <script src="js/section-picker.js"></script>
   <script src="script.js"></script>
   <script>
+    // Fill the section dropdown with sections that already have registered
+    // students. Falls back to A–Z only when nothing is registered yet (fresh DB)
+    // or the list can't be fetched, so a first-ever student can still sign up.
+    (function loadRegisteredSections() {
+      const sel = document.getElementById('regSection');
+      const fill = (sections) => {
+        sections.forEach(sec => {
+          const opt = document.createElement('option');
+          opt.value = sec;
+          opt.textContent = sec.length === 1 ? 'Section ' + sec : sec;
+          sel.appendChild(opt);
+        });
+      };
+      fetch('register_student.php?action=sections')
+        .then(r => r.json())
+        .then(data => {
+          const sections = (data && data.sections) || [];
+          fill(sections.length ? sections : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+        })
+        .catch(() => fill('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')));
+    })();
+
     async function registerStudent() {
       const first = document.getElementById('regFirst').value.trim();
       const last = document.getElementById('regLast').value.trim();
       const email = document.getElementById('regEmail').value.trim();
-      const section = document.getElementById('regSection').value.trim();
+      const section = document.getElementById('regSection').value;
       const pass = document.getElementById('regPassword').value;
       const confirm = document.getElementById('confirmPassword').value;
 
       if (!first || !last || !email || !pass || !confirm) {
         alert('Please fill in all fields.');
+        return;
+      }
+      if (!section) {
+        alert('Please select your section.');
         return;
       }
       if (pass !== confirm) {
@@ -344,6 +371,17 @@
         if (onConfirm) onConfirm();
       };
     }
+  </script>
+
+  <script src="js/google-auth.js"></script>
+  <script>
+    MotoMasterGoogleAuth.init({
+      role: 'student',
+      buttons: ['googleBtn'],
+      sectionId: 'regSection',
+      requireSection: true,
+      onError: function (msg) { alert(msg); }
+    });
   </script>
 </body>
 
